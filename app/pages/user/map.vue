@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 
 /* =========================
    REFS
 ========================= */
 const mapRef = ref(null)
-
 let map
 let L
 let myMarker
 let destMarker
-let routeLine
+let routePolygon
+let watchId = null
 
 /* =========================
    FORM
@@ -24,29 +24,37 @@ const form = ref({
 let myLocation = null
 
 /* =========================
-   DRAW ROUTE LINE
+   DRAW RECTANGLE ROUTE
 ========================= */
-const drawLine = () => {
+const drawRectangle = () => {
   if (!myLocation || !destMarker) return
 
-  if (routeLine) map.removeLayer(routeLine)
+  // remove previous polygon
+  if (routePolygon) map.removeLayer(routePolygon)
 
   const dest = destMarker.getLatLng()
+  const lat1 = myLocation.lat
+  const lng1 = myLocation.lng
+  const lat2 = dest.lat
+  const lng2 = dest.lng
 
-  routeLine = L.polyline(
-    [
-      [myLocation.lat, myLocation.lng],
-      [dest.lat, dest.lng]
-    ],
-    {
-      color: 'red',
-      weight: 5
-    }
-  ).addTo(map)
+  // rectangle corners
+  const bounds = [
+    [lat1, lng1],
+    [lat1, lng2],
+    [lat2, lng2],
+    [lat2, lng1]
+  ]
+
+  routePolygon = L.polygon(bounds, {
+    color: 'red',
+    weight: 2,
+    fillOpacity: 0.1
+  }).addTo(map)
 }
 
 /* =========================
-   SET DESTINATION MARKER
+   SET DESTINATION
 ========================= */
 const setDestination = (lat, lng) => {
   if (destMarker) map.removeLayer(destMarker)
@@ -58,18 +66,18 @@ const setDestination = (lat, lng) => {
   form.value.lat = lat.toFixed(6)
   form.value.lng = lng.toFixed(6)
 
-  drawLine()
+  drawRectangle()
 
   destMarker.on('dragend', (e) => {
     const pos = e.target.getLatLng()
     form.value.lat = pos.lat.toFixed(6)
     form.value.lng = pos.lng.toFixed(6)
-    drawLine()
+    drawRectangle()
   })
 }
 
 /* =========================
-   SEARCH PLACE (OPTIONAL)
+   SEARCH PLACE
 ========================= */
 const searchPlace = async () => {
   if (!form.value.address) return
@@ -79,7 +87,6 @@ const searchPlace = async () => {
   )
 
   const data = await res.json()
-
   if (!data.length) return
 
   const { lat, lon } = data[0]
@@ -89,38 +96,42 @@ const searchPlace = async () => {
 }
 
 /* =========================
-   GET EXACT GPS LOCATION
+   LIVE GPS TRACKING
 ========================= */
 const useMyLocation = () => {
   if (!navigator.geolocation) return
 
-  navigator.geolocation.getCurrentPosition(
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+
+  watchId = navigator.geolocation.watchPosition(
     (pos) => {
       const { latitude, longitude } = pos.coords
 
-      myLocation = {
-        lat: latitude,
-        lng: longitude
-      }
+      myLocation = { lat: latitude, lng: longitude }
 
-      /* zoom very close (street level) */
+      // move map smoothly
       map.setView([latitude, longitude], 19)
 
-      /* blue marker for YOU */
-      if (myMarker) map.removeLayer(myMarker)
+      // blue marker
+      if (!myMarker) {
+        myMarker = L.circleMarker([latitude, longitude], {
+          radius: 10,
+          color: 'blue',
+          fillColor: 'blue',
+          fillOpacity: 0.8
+        }).addTo(map)
+      } else {
+        myMarker.setLatLng([latitude, longitude])
+      }
 
-      myMarker = L.circleMarker([latitude, longitude], {
-        radius: 10,
-        color: 'blue',
-        fillColor: 'blue',
-        fillOpacity: 0.7
-      }).addTo(map)
+      // update rectangle live
+      drawRectangle()
     },
     () => alert('Turn on GPS or allow location permission'),
     {
       enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 0
+      maximumAge: 0,
+      timeout: 15000
     }
   )
 }
@@ -133,13 +144,13 @@ onMounted(async () => {
 
   await nextTick()
 
-  /* IMPORTANT: dynamic import (fix SSR window error) */
+  // dynamic import for SSR safety
   L = (await import('leaflet')).default
   await import('leaflet/dist/leaflet.css')
 
   map = L.map(mapRef.value)
 
-  /* OpenStreetMap tiles */
+  // OpenStreetMap tiles
   L.tileLayer(
     'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
@@ -147,15 +158,22 @@ onMounted(async () => {
     }
   ).addTo(map)
 
-  /* click anywhere → set destination */
+  // click to set destination
   map.on('click', (e) => {
     setDestination(e.latlng.lat, e.latlng.lng)
   })
 
-  /* AUTO load your location immediately */
+  // start live GPS tracking
   useMyLocation()
 
   map.invalidateSize()
+})
+
+/* =========================
+   CLEANUP
+========================= */
+onUnmounted(() => {
+  if (watchId) navigator.geolocation.clearWatch(watchId)
 })
 </script>
 
