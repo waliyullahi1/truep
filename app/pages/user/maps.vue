@@ -22,7 +22,6 @@ const form = ref({
 })
 
 let myLocation = null
-const tracking = ref(false) // control start/stop
 
 /* =========================
    DRAW RECTANGLE ROUTE
@@ -30,6 +29,7 @@ const tracking = ref(false) // control start/stop
 const drawRectangle = () => {
   if (!myLocation || !destMarker) return
 
+  // remove previous polygon
   if (routePolygon) map.removeLayer(routePolygon)
 
   const dest = destMarker.getLatLng()
@@ -38,6 +38,7 @@ const drawRectangle = () => {
   const lat2 = dest.lat
   const lng2 = dest.lng
 
+  // rectangle corners
   const bounds = [
     [lat1, lng1],
     [lat1, lng2],
@@ -58,7 +59,9 @@ const drawRectangle = () => {
 const setDestination = (lat, lng) => {
   if (destMarker) map.removeLayer(destMarker)
 
-  destMarker = L.marker([lat, lng], { draggable: true }).addTo(map)
+  destMarker = L.marker([lat, lng], {
+    draggable: true
+  }).addTo(map)
 
   form.value.lat = lat.toFixed(6)
   form.value.lng = lng.toFixed(6)
@@ -82,6 +85,7 @@ const searchPlace = async () => {
   const res = await fetch(
     `https://nominatim.openstreetmap.org/search?format=json&q=${form.value.address}`
   )
+
   const data = await res.json()
   if (!data.length) return
 
@@ -94,21 +98,15 @@ const searchPlace = async () => {
 /* =========================
    LIVE GPS TRACKING
 ========================= */
-const startTracking = () => {
-  if (!navigator.geolocation) {
-    alert('Your browser does not support GPS')
-    return
-  }
-
-  if (tracking.value) return // already tracking
-
-  tracking.value = true
+const useMyLocation = () => {
+  if (!navigator.geolocation) return
 
   if (watchId) navigator.geolocation.clearWatch(watchId)
 
   watchId = navigator.geolocation.watchPosition(
     (pos) => {
       const { latitude, longitude } = pos.coords
+
       myLocation = { lat: latitude, lng: longitude }
 
       // move map smoothly
@@ -129,11 +127,11 @@ const startTracking = () => {
       // update rectangle live
       drawRectangle()
     },
-    (err) => alert('Enable GPS and allow location permission'),
+    () => alert('Turn on GPS or allow location permission'),
     {
-      enableHighAccuracy: true, // 🔥 high accuracy
+      enableHighAccuracy: true,
       maximumAge: 0,
-      timeout: 20000
+      timeout: 15000
     }
   )
 }
@@ -146,18 +144,27 @@ onMounted(async () => {
 
   await nextTick()
 
+  // dynamic import for SSR safety
   L = (await import('leaflet')).default
   await import('leaflet/dist/leaflet.css')
 
   map = L.map(mapRef.value)
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map)
+  // OpenStreetMap tiles
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution: '© OpenStreetMap contributors'
+    }
+  ).addTo(map)
 
+  // click to set destination
   map.on('click', (e) => {
     setDestination(e.latlng.lat, e.latlng.lng)
   })
+
+  // start live GPS tracking
+  useMyLocation()
 
   map.invalidateSize()
 })
@@ -190,10 +197,10 @@ onUnmounted(() => {
       </button>
 
       <button
-        @click="startTracking"
+        @click="useMyLocation"
         class="bg-green-600 text-white px-4 rounded"
       >
-        🚦 Start Tracking
+        📍 My Location
       </button>
     </div>
 
@@ -205,7 +212,6 @@ onUnmounted(() => {
 
     <!-- COORDINATES -->
     <div class="text-xs text-gray-500">
-      My Location → Lat: {{ myLocation?.lat?.toFixed(6) || '-' }} | Lng: {{ myLocation?.lng?.toFixed(6) || '-' }}<br/>
       Destination → Lat: {{ form.lat }} | Lng: {{ form.lng }}
     </div>
 
