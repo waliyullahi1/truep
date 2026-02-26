@@ -17,29 +17,24 @@ const tracking = ref(false)
    FORM
 ========================= */
 const form = ref({
-  address: '',
-  distance: 0,
-  area: 0
+  distance: 0, // meters
+  area: 0 // m²
 })
 
 /* =========================
-   DRAW TRACK
+   HELPER: SMOOTH COORDINATES
 ========================= */
-const updateTrack = (lat, lng) => {
-  // add new coordinate
-  trackCoordinates.push([lat, lng])
+const smoothCoordinate = (lat, lng, buffer = 3) => {
+  if (!smoothCoordinate.cache) smoothCoordinate.cache = []
+  const cache = smoothCoordinate.cache
 
-  // remove previous polyline
-  if (pathLine) map.removeLayer(pathLine)
+  cache.push([lat, lng])
+  if (cache.length > buffer) cache.shift()
 
-  // draw new polyline
-  pathLine = L.polyline(trackCoordinates, {
-    color: 'red',
-    weight: 3
-  }).addTo(map)
+  const avgLat = cache.reduce((sum, c) => sum + c[0], 0) / cache.length
+  const avgLng = cache.reduce((sum, c) => sum + c[1], 0) / cache.length
 
-  // calculate distance
-  form.value.distance = Math.round(calculateDistance(trackCoordinates))
+  return [avgLat, avgLng]
 }
 
 /* =========================
@@ -48,22 +43,63 @@ const updateTrack = (lat, lng) => {
 const calculateDistance = (coords) => {
   let dist = 0
   for (let i = 1; i < coords.length; i++) {
-    dist += map.distance(coords[i-1], coords[i])
+    dist += map.distance(coords[i - 1], coords[i])
   }
-  return dist // in meters
+  return dist
 }
 
 /* =========================
-   AREA CALCULATION (optional)
+   AREA CALCULATION (Geodesic Polygon)
 ========================= */
-const calculateArea = (coords) => {
+const calculateGeodesicArea = (coords) => {
   if (coords.length < 3) return 0
-  const polygon = L.polygon(coords)
-  return Math.round(L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0])) // m²
+
+  const rad = Math.PI / 180
+  let area = 0
+  const R = 6378137 // radius of Earth in meters
+
+  for (let i = 0; i < coords.length; i++) {
+    const [lat1, lon1] = coords[i]
+    const [lat2, lon2] = coords[(i + 1) % coords.length]
+    area += (lon2 - lon1) * (2 + Math.sin(lat1 * rad) + Math.sin(lat2 * rad))
+  }
+
+  return Math.abs(area * R * R / 2) // m²
 }
 
 /* =========================
-   LIVE GPS TRACKING
+   UPDATE TRACK
+========================= */
+const updateTrack = (lat, lng) => {
+  const [sLat, sLng] = smoothCoordinate(lat, lng)
+
+  const prev = trackCoordinates[trackCoordinates.length - 1]
+  if (prev) {
+    const dist = map.distance(prev, [sLat, sLng])
+    if (dist > 30) return // ignore GPS jumps
+  }
+
+  trackCoordinates.push([sLat, sLng])
+
+  // Remove previous polyline
+  if (pathLine) map.removeLayer(pathLine)
+
+  // Draw polyline (if >2 points, show polygon)
+  if (trackCoordinates.length >= 3) {
+    const polygon = [...trackCoordinates, trackCoordinates[0]] // auto-close
+    pathLine = L.polygon(polygon, { color: 'red', weight: 3, fillOpacity: 0.1 }).addTo(map)
+    form.value.area = Math.round(calculateGeodesicArea(trackCoordinates))
+  } else {
+    pathLine = L.polyline(trackCoordinates, { color: 'red', weight: 3 }).addTo(map)
+    form.value.area = 0
+  }
+
+  // Distance always calculated
+  form.value.distance = Math.round(calculateDistance(trackCoordinates))
+}
+
+/* =========================
+   START TRACKING
 ========================= */
 const startTracking = () => {
   if (!navigator.geolocation) {
@@ -80,7 +116,7 @@ const startTracking = () => {
     (pos) => {
       const { latitude, longitude } = pos.coords
 
-      // update marker
+      // Add/update marker
       if (!myMarker) {
         myMarker = L.circleMarker([latitude, longitude], {
           radius: 7,
@@ -93,14 +129,13 @@ const startTracking = () => {
       }
 
       map.setView([latitude, longitude], 19)
-
       updateTrack(latitude, longitude)
     },
-    (err) => alert('Allow GPS access'),
+    (err) => alert('Allow GPS access and enable high accuracy'),
     {
       enableHighAccuracy: true,
       maximumAge: 0,
-      timeout: 15000
+      timeout: 20000
     }
   )
 }
@@ -111,7 +146,6 @@ const startTracking = () => {
 const stopTracking = () => {
   if (watchId) navigator.geolocation.clearWatch(watchId)
   tracking.value = false
-  form.value.area = Math.round(calculateArea(trackCoordinates))
 }
 
 /* =========================
@@ -119,7 +153,6 @@ const stopTracking = () => {
 ========================= */
 onMounted(async () => {
   if (!process.client) return
-
   await nextTick()
   L = (await import('leaflet')).default
   await import('leaflet/dist/leaflet.css')
@@ -132,9 +165,6 @@ onMounted(async () => {
   map.invalidateSize()
 })
 
-/* =========================
-   CLEANUP
-========================= */
 onUnmounted(() => {
   if (watchId) navigator.geolocation.clearWatch(watchId)
 })
@@ -144,7 +174,6 @@ onUnmounted(() => {
 <ClientOnly>
   <div class="p-4 space-y-4">
 
-    <!-- BUTTONS -->
     <div class="flex gap-2">
       <button
         v-if="!tracking"
@@ -163,13 +192,11 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- MAP -->
     <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
-    <!-- INFO -->
     <div class="text-sm text-gray-600">
       <div>Distance Traveled: {{ form.distance }} meters</div>
-      <div v-if="form.area">Approx. Area: {{ form.area }} m²</div>
+      <div v-if="form.area">Land Area: {{ form.area }} m²</div>
     </div>
 
   </div>
