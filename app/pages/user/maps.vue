@@ -110,7 +110,10 @@ const useMyLocation = () => {
       myLocation = { lat: latitude, lng: longitude }
 
       // move map smoothly
-      map.setView([latitude, longitude], 19)
+     map = L.map(mapRef.value, {
+  maxZoom: 22,
+  zoomControl: true
+})
 
       // blue marker
       if (!myMarker) {
@@ -214,7 +217,9 @@ onUnmounted(() => {
     <div class="text-xs text-gray-500">
       Destination → Lat: {{ form.lat }} | Lng: {{ form.lng }}
     </div>
-
+    <p>
+      
+    </p>
   </div>
 </ClientOnly>
 </template>
