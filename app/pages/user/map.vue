@@ -8,87 +8,58 @@ const mapRef = ref(null)
 let map
 let L
 let myMarker
-let destMarker
-let routePolygon
+let pathLine
+let trackCoordinates = []
 let watchId = null
+const tracking = ref(false)
 
 /* =========================
    FORM
 ========================= */
 const form = ref({
-  lat: '',
-  lng: '',
-  address: ''
+  address: '',
+  distance: 0,
+  area: 0
 })
 
-let myLocation = null
-const tracking = ref(false) // control start/stop
-
 /* =========================
-   DRAW RECTANGLE ROUTE
+   DRAW TRACK
 ========================= */
-const drawRectangle = () => {
-  if (!myLocation || !destMarker) return
+const updateTrack = (lat, lng) => {
+  // add new coordinate
+  trackCoordinates.push([lat, lng])
 
-  if (routePolygon) map.removeLayer(routePolygon)
+  // remove previous polyline
+  if (pathLine) map.removeLayer(pathLine)
 
-  const dest = destMarker.getLatLng()
-  const lat1 = myLocation.lat
-  const lng1 = myLocation.lng
-  const lat2 = dest.lat
-  const lng2 = dest.lng
-
-  const bounds = [
-    [lat1, lng1],
-    [lat1, lng2],
-    [lat2, lng2],
-    [lat2, lng1]
-  ]
-
-  routePolygon = L.polygon(bounds, {
+  // draw new polyline
+  pathLine = L.polyline(trackCoordinates, {
     color: 'red',
-    weight: 2,
-    fillOpacity: 0.1
+    weight: 3
   }).addTo(map)
+
+  // calculate distance
+  form.value.distance = Math.round(calculateDistance(trackCoordinates))
 }
 
 /* =========================
-   SET DESTINATION
+   DISTANCE CALCULATION
 ========================= */
-const setDestination = (lat, lng) => {
-  if (destMarker) map.removeLayer(destMarker)
-
-  destMarker = L.marker([lat, lng], { draggable: true }).addTo(map)
-
-  form.value.lat = lat.toFixed(6)
-  form.value.lng = lng.toFixed(6)
-
-  drawRectangle()
-
-  destMarker.on('dragend', (e) => {
-    const pos = e.target.getLatLng()
-    form.value.lat = pos.lat.toFixed(6)
-    form.value.lng = pos.lng.toFixed(6)
-    drawRectangle()
-  })
+const calculateDistance = (coords) => {
+  let dist = 0
+  for (let i = 1; i < coords.length; i++) {
+    dist += map.distance(coords[i-1], coords[i])
+  }
+  return dist // in meters
 }
 
 /* =========================
-   SEARCH PLACE
+   AREA CALCULATION (optional)
 ========================= */
-const searchPlace = async () => {
-  if (!form.value.address) return
-
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${form.value.address}`
-  )
-  const data = await res.json()
-  if (!data.length) return
-
-  const { lat, lon } = data[0]
-
-  map.setView([lat, lon], 19)
-  setDestination(+lat, +lon)
+const calculateArea = (coords) => {
+  if (coords.length < 3) return 0
+  const polygon = L.polygon(coords)
+  return Math.round(L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0])) // m²
 }
 
 /* =========================
@@ -96,46 +67,51 @@ const searchPlace = async () => {
 ========================= */
 const startTracking = () => {
   if (!navigator.geolocation) {
-    alert('Your browser does not support GPS')
+    alert('GPS not supported')
     return
   }
-
-  if (tracking.value) return // already tracking
-
+  if (tracking.value) return
   tracking.value = true
+  trackCoordinates = []
 
   if (watchId) navigator.geolocation.clearWatch(watchId)
 
   watchId = navigator.geolocation.watchPosition(
     (pos) => {
       const { latitude, longitude } = pos.coords
-      myLocation = { lat: latitude, lng: longitude }
 
-      // move map smoothly
-      map.setView([latitude, longitude], 19)
-
-      // blue marker
+      // update marker
       if (!myMarker) {
         myMarker = L.circleMarker([latitude, longitude], {
-          radius: 10,
+          radius: 7,
           color: 'blue',
           fillColor: 'blue',
-          fillOpacity: 0.8
+          fillOpacity: 0.7
         }).addTo(map)
       } else {
         myMarker.setLatLng([latitude, longitude])
       }
 
-      // update rectangle live
-      drawRectangle()
+      map.setView([latitude, longitude], 19)
+
+      updateTrack(latitude, longitude)
     },
-    (err) => alert('Enable GPS and allow location permission'),
+    (err) => alert('Allow GPS access'),
     {
-      enableHighAccuracy: true, // 🔥 high accuracy
+      enableHighAccuracy: true,
       maximumAge: 0,
-      timeout: 20000
+      timeout: 15000
     }
   )
+}
+
+/* =========================
+   STOP TRACKING
+========================= */
+const stopTracking = () => {
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+  tracking.value = false
+  form.value.area = Math.round(calculateArea(trackCoordinates))
 }
 
 /* =========================
@@ -145,19 +121,13 @@ onMounted(async () => {
   if (!process.client) return
 
   await nextTick()
-
   L = (await import('leaflet')).default
   await import('leaflet/dist/leaflet.css')
 
   map = L.map(mapRef.value)
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(map)
-
-  map.on('click', (e) => {
-    setDestination(e.latlng.lat, e.latlng.lng)
-  })
 
   map.invalidateSize()
 })
@@ -174,39 +144,32 @@ onUnmounted(() => {
 <ClientOnly>
   <div class="p-4 space-y-4">
 
-    <!-- SEARCH -->
+    <!-- BUTTONS -->
     <div class="flex gap-2">
-      <input
-        v-model="form.address"
-        placeholder="Search place (Iwo, Osogbo, Lagos...)"
-        class="flex-1 border rounded px-3 py-2 text-sm"
-      />
-
       <button
-        @click="searchPlace"
-        class="bg-blue-600 text-white px-4 rounded"
+        v-if="!tracking"
+        @click="startTracking"
+        class="bg-green-600 text-white px-4 py-2 rounded"
       >
-        Search
+        🚦 Start Tracking
       </button>
 
       <button
-        @click="startTracking"
-        class="bg-green-600 text-white px-4 rounded"
+        v-if="tracking"
+        @click="stopTracking"
+        class="bg-red-600 text-white px-4 py-2 rounded"
       >
-        🚦 Start Tracking
+        🛑 Stop Tracking
       </button>
     </div>
 
     <!-- MAP -->
-    <div
-      ref="mapRef"
-      class="w-full h-[500px] rounded-xl border shadow"
-    ></div>
+    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
-    <!-- COORDINATES -->
-    <div class="text-xs text-gray-500">
-      My Location → Lat: {{ myLocation?.lat?.toFixed(6) || '-' }} | Lng: {{ myLocation?.lng?.toFixed(6) || '-' }}<br/>
-      Destination → Lat: {{ form.lat }} | Lng: {{ form.lng }}
+    <!-- INFO -->
+    <div class="text-sm text-gray-600">
+      <div>Distance Traveled: {{ form.distance }} meters</div>
+      <div v-if="form.area">Approx. Area: {{ form.area }} m²</div>
     </div>
 
   </div>
