@@ -5,18 +5,17 @@ const mapRef = ref(null)
 let map
 let L
 let myMarker
-const corners = ref([]) // saved corner points
 let polygon = null
+const corners = ref([])
 const watchId = ref(null)
 
 const form = ref({
-  distance: 0,
-  area: 0,
-  plots: 0
+  area: 0,      // land area in m²
+  plots: 0      // land area in plots (1 plot = 450 m²)
 })
 
 /* =========================
-   HIGH-ACCURACY LIVE LOCATION
+   START LIVE GPS
 ========================= */
 const startLivePosition = () => {
   if (!navigator.geolocation) return alert('GPS not supported')
@@ -68,32 +67,37 @@ const drawPolygon = () => {
   if (corners.value.length < 2) return
 
   const polygonPoints = [...corners.value]
-  if (corners.value.length > 2) polygonPoints.push(corners.value[0]) // close polygon
+  if (corners.value.length > 2) polygonPoints.push(corners.value[0])
 
   polygon = L.polygon(polygonPoints, { color: 'red', weight: 3, fillOpacity: 0.1 }).addTo(map)
 
-  // Calculate area in m² using geodesic formula
-  form.value.area = Math.round(geodesicArea(corners.value))
+  // Calculate area using corrected formula
+  form.value.area = Math.round(geodesicAreaMeters(corners.value))
   form.value.plots = Math.round(form.value.area / 450)
 }
 
 /* =========================
-   GEODESIC AREA
+   CORRECT AREA FORMULA FOR SMALL PLOTS
 ========================= */
-const geodesicArea = (coords) => {
+const geodesicAreaMeters = (coords) => {
   if (coords.length < 3) return 0
 
   const rad = Math.PI / 180
-  let area = 0
-  const R = 6378137 // earth radius in meters
+  const latRef = coords[0][0] * rad
+  const meters = coords.map(([lat, lng]) => {
+    const x = lng * 111320 * Math.cos(latRef)
+    const y = lat * 110540
+    return [x, y]
+  })
 
-  for (let i = 0; i < coords.length; i++) {
-    const [lat1, lon1] = coords[i]
-    const [lat2, lon2] = coords[(i + 1) % coords.length]
-    area += (lon2 - lon1) * (2 + Math.sin(lat1 * rad) + Math.sin(lat2 * rad))
+  let area = 0
+  for (let i = 0; i < meters.length; i++) {
+    const [x1, y1] = meters[i]
+    const [x2, y2] = meters[(i + 1) % meters.length]
+    area += (x1 * y2 - x2 * y1)
   }
 
-  return Math.abs(area * R * R / 2)
+  return Math.abs(area / 2)
 }
 
 /* =========================
@@ -135,6 +139,7 @@ onUnmounted(() => {
 <ClientOnly>
   <div class="p-4 space-y-4">
 
+    <!-- BUTTONS -->
     <div class="flex gap-2">
       <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
         ➕ Add Corner
@@ -145,8 +150,10 @@ onUnmounted(() => {
       </button>
     </div>
 
+    <!-- MAP -->
     <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
+    <!-- INFO -->
     <div class="text-sm text-gray-600">
       <div>Number of Corners: {{ corners.length }}</div>
       <div v-if="form.area">Land Area: {{ form.area }} m² (~{{ form.plots }} plots)</div>
