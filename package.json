@@ -1,0 +1,24 @@
+{
+  "name": "truee",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "^4.3.1",
+    "pinia": "^3.0.4",
+    "swiper": "^12.1.2",
+    "vue": "^3.5.28",
+    "vue-router": "^4.6.4",
+    "vue3-carousel-nuxt": "^1.1.6"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "tailwindcss": "^3.4.19"
+  }
+}

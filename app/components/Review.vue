@@ -1,0 +1,180 @@
+
+<template>
+  <div class="relative py-4 group">
+    <!-- Swiper -->
+    <Swiper
+      :modules="[Navigation]"
+      :slides-per-view="1.2"
+      :space-between="20"
+      :breakpoints="{
+        640: { slidesPerView: 2.2 },
+        1024: { slidesPerView: 3.2 }
+      }"
+      :navigation="{
+        prevEl: '.custom-prev',
+        nextEl: '.custom-next'
+      }"
+      class="pb-6 overflow-visible"
+    >
+      <SwiperSlide
+        v-for="(item, index) in reviews"
+        :key="index"
+        class="h-auto"
+      >
+    
+        <!-- CARD -->
+       <div    class=" p-4  shadow-lg bg-white cursor-pointer px-2 py-4 w-full h-full   gap-3 items-center ">
+              <div class=" flex  gap-4 items-center">
+                <!-- <img :src="`/image/icon/${value.image}`" class=" w-7" alt="" srcset=""> -->
+                <UiTypographyP class=" font-semibold">{{item.title}}</UiTypographyP>
+              </div>
+              <UiTypographyP class=" mt-5">
+                {{item.message}}     </UiTypographyP>
+              <div class="flex gap-1 items-center mt-4">
+                <img v-for="i in item.rating" src="/image/icon/star.svg" class=" w-4" alt="">
+              </div>
+
+
+              <div class=" mt-5"> 
+                <div class=" flex items-center justify-between">
+                  <div>
+                    <UiTypographyP class=" font-bold">{{item.name}}</UiTypographyP>
+                   <UiTypographyP class=" text-sm text-gray-500">{{item.role}}</UiTypographyP>
+                  </div>
+                  <div class=" w-20 object-contain  rounded-full overflow-hidden h-20 ">
+                    <img :src="`/images/pic${item.avatar}.jpg`" alt="" class="  -full " srcset="">
+                  </div>
+                  
+                </div>
+              </div>
+              <!-- <UiTypographyP>{{ value.title }}</UiTypographyP> -->
+            </div>
+      </SwiperSlide>
+    </Swiper>
+
+    <!-- LEFT BUTTON -->
+    <button
+      class="custom-prev absolute left-0 top-1/2 -translate-y-1/2 z-10
+             opacity-0 group-hover:opacity-100
+             transition duration-300
+             bg-white shadow-lg rounded-full w-10 h-10
+             flex items-center justify-center text-xl font-bold"
+    >
+      ‹
+    </button>
+
+    <!-- RIGHT BUTTON -->
+    <button
+      class="custom-next absolute right-0 top-1/2 -translate-y-1/2 z-10
+             opacity-0 group-hover:opacity-100
+             transition duration-300
+             bg-white shadow-lg rounded-full w-10 h-10
+             flex items-center justify-center text-xl font-bold"
+    >
+      ›
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Navigation } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/navigation'
+
+
+const reviews = [
+  {
+    title: 'Survey',
+    message:
+      'I listed my flat through the platform and within 48 hours I had serious enquiries and a confirmed tenant. The process was smooth and fully online.',
+    rating: 5,
+    name: 'Jane Doe',
+    role: 'Verified Tenant',
+    avatar: '6',
+  },
+  {
+    title: 'House Rent',
+    message:
+      'Finding a decent apartment used to be stressful, but this made everything easier. Verified listings, clear pricing, and no unnecessary agent drama.',
+    rating: 5,
+    name: 'Ahmed Lawal',
+    role: 'Tenant',
+    avatar: '3',
+  },
+  {
+    title: 'Land Purchase',
+    message:
+      'I was guided properly through the land purchase process. All documents were verified and explained clearly before payment was made.',
+    rating: 4,
+    name: 'Blessing Okeke',
+    role: 'Land Buyer',
+    avatar: '1',
+  },
+  {
+    title: 'Architecture',
+    message:
+      'The architect understood my requirements and delivered a functional design that matched my budget and lifestyle perfectly.',
+    rating: 2,
+    name: 'Tunde Adebayo',
+    role: 'Home Owner',
+    avatar: '2',
+  },
+  {
+    title: 'Property Listing',
+    message:
+      'My property got quality enquiries within days of listing. Communication was clear and I didn’t have to chase anyone.',
+    rating: 4,
+    name: 'Mary Johnson',
+    role: 'Property Owner',
+    avatar: '3',
+  },
+  {
+    title: 'Plumbing Service',
+    message:
+      'I booked a plumber through the platform and the job was done the same day. Clean work, fair pricing, and professional conduct.',
+    rating: 6,
+    name: 'Samuel Peters',
+    role: 'Verified Client',
+    avatar: '4',
+  },
+  {
+    title: 'Renovation',
+    message:
+      'From planning to execution, the renovation process was well coordinated. Timelines were respected and the result exceeded expectations.',
+    rating: 5,
+    name: 'Aisha Bello',
+    role: 'Home Owner',
+    avatar: '2',
+  },
+  {
+    title: 'Land Survey',
+    message:
+      'The survey report was accurate and delivered on time. The team explained everything clearly and answered all my questions.',
+    rating: 4,
+    name: 'Ibrahim Musa',
+    role: 'Land Owner',
+    avatar: '6',
+  },
+  {
+    title: 'Agent Service',
+    message:
+      'Dealing with verified agents gave me confidence. The process felt secure and transparent from start to finish.',
+    rating: 8,
+    name: 'Chinedu Okorie',
+    role: 'Buyer',
+    avatar: '7',
+  },
+  {
+    title: 'House Sale',
+    message:
+      'My duplex was sold faster than expected. Genuine buyers, clear communication, and no unnecessary delays.',
+    rating: 8,
+    name: 'Funke Adeyemi',
+    role: 'Seller',
+    avatar: '8',
+  },
+]
+
+</script>
+

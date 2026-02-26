@@ -1,0 +1,30 @@
+* {
+   font-family: 'Poppins', sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+h1, h2, h3, h4, h5, h6, .marcellus {
+  /* font-family:'Poppins', sans-serif; */
+  font-weight: 700;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  background: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 16px;
+  color: black;
+  font-weight: bold;
+}
+.swiper-wrapper {
+  align-items: stretch;
+}
