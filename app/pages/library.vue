@@ -1,163 +1,235 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 
-definePageMeta({ layout: 'auth' })
+const mapRef = ref(null)
 
-/* ======================
-   SECTION SWITCH (NOT SCROLL)
-====================== */
-const activeSection = ref('location')
+let map
+let L
+let myMarker
+let polygon = null
 
-/* ======================
-   FORM DATA
-====================== */
+const corners = ref([])
+const watchId = ref(null)
+const currentLayer = ref('Hybrid')
+
 const form = ref({
-  state: '',
-  city: '',
-  address: '',
-
-  description: '',
-  fenced: false,
-  roadAccess: false,
-  dry: false,
-
-  size: '',
-  price: '',
-  purpose: 'Sell'
+  area: 0,
+  plots: 0 // 1 plot = 450m²
 })
 
-/* ======================
-   COMPLETION CHECKS
-====================== */
-function isCompleted(section) {
-  if (section === 'location')
-    return form.value.state && form.value.city && form.value.address
+/* =========================
+   GPS TRACKING
+========================= */
+const startLivePosition = () => {
+  if (!navigator.geolocation) {
+    alert('GPS not supported')
+    return
+  }
 
-  if (section === 'features')
-    return (
-      form.value.fenced ||
-      form.value.roadAccess ||
-      form.value.dry ||
-      form.value.description
-    )
+  watchId.value = navigator.geolocation.watchPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords
 
-  if (section === 'size')
-    return form.value.size && form.value.price
+      if (!myMarker) {
+        myMarker = L.circleMarker([latitude, longitude], {
+          radius: 8,
+          color: 'blue',
+          fillColor: 'blue',
+          fillOpacity: 0.8
+        }).addTo(map)
+      } else {
+        myMarker.setLatLng([latitude, longitude])
+      }
 
-  return false
+      // 🔥 roof level zoom
+      map.setView([latitude, longitude], 22)
+    },
+    () => alert('Enable GPS + High accuracy'),
+    { enableHighAccuracy: true }
+  )
 }
+
+/* =========================
+   ADD CORNER
+========================= */
+const addCorner = () => {
+  if (!myMarker) return
+
+  const pos = myMarker.getLatLng()
+  corners.value.push([pos.lat, pos.lng])
+
+  drawPolygon()
+}
+
+/* =========================
+   DRAW POLYGON + AREA
+========================= */
+const drawPolygon = () => {
+  if (polygon) map.removeLayer(polygon)
+
+  if (corners.value.length < 2) return
+
+  polygon = L.polygon(corners.value, {
+    color: 'red',
+    weight: 3,
+    fillOpacity: 0.2
+  }).addTo(map)
+
+  map.fitBounds(polygon.getBounds(), { padding: [40, 40] })
+
+  form.value.area = Math.round(geodesicAreaMeters(corners.value))
+  form.value.plots = Math.round(form.value.area / 450)
+}
+
+/* =========================
+   AREA CALCULATION
+========================= */
+const geodesicAreaMeters = (coords) => {
+  if (coords.length < 3) return 0
+
+  const rad = Math.PI / 180
+  const latRef = coords[0][0] * rad
+
+  const meters = coords.map(([lat, lng]) => {
+    const x = lng * 111320 * Math.cos(latRef)
+    const y = lat * 110540
+    return [x, y]
+  })
+
+  let area = 0
+  for (let i = 0; i < meters.length; i++) {
+    const [x1, y1] = meters[i]
+    const [x2, y2] = meters[(i + 1) % meters.length]
+    area += (x1 * y2 - x2 * y1)
+  }
+
+  return Math.abs(area / 2)
+}
+
+/* =========================
+   RESET
+========================= */
+const resetPlot = () => {
+  corners.value = []
+
+  if (polygon) map.removeLayer(polygon)
+  polygon = null
+
+  form.value.area = 0
+  form.value.plots = 0
+}
+
+/* =========================
+   LAYER SWITCH
+========================= */
+let layers = {}
+
+const changeLayer = (type) => {
+  Object.values(layers).forEach(l => map.removeLayer(l))
+  layers[type].addTo(map)
+  currentLayer.value = type
+}
+
+/* =========================
+   INIT MAP
+========================= */
+onMounted(async () => {
+  if (!process.client) return
+  await nextTick()
+
+  L = (await import('leaflet')).default
+  await import('leaflet/dist/leaflet.css')
+
+  map = L.map(mapRef.value, {
+    zoomControl: true,
+    maxZoom: 23
+  })
+
+  /* ===== GOOGLE TILE TYPES =====
+     s = satellite
+     m = normal map
+     y = hybrid (sat + names)
+  */
+
+  const hybrid = L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    { maxZoom: 23 }
+  )
+
+  const satellite = L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    { maxZoom: 23 }
+  )
+
+  const roadmap = L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    { maxZoom: 23 }
+  )
+
+  layers = {
+    Hybrid: hybrid,
+    Satellite: satellite,
+    Map: roadmap
+  }
+
+  hybrid.addTo(map)
+
+  map.invalidateSize()
+
+  startLivePosition()
+})
+
+onUnmounted(() => {
+  if (watchId.value) navigator.geolocation.clearWatch(watchId.value)
+})
 </script>
 
+
 <template>
-<div class="max-w-5xl mx-auto flex gap-6">
+<ClientOnly>
+  <div class="p-4 space-y-4">
 
-  <!-- Sidebar Tabs -->
-  <div class="w-1/5 bg-gray-100 p-5 space-y-4 rounded shadow">
+    <!-- Controls -->
+    <div class="flex gap-2 flex-wrap">
 
-    <div
-      @click="activeSection='location'"
-      class="tab"
-      :class="{ active: activeSection==='location' }"
-    >
-      Location
-      <span v-if="isCompleted('location')">✅</span>
+      <button @click="addCorner"
+              class="bg-green-600 text-white px-4 py-2 rounded">
+        ➕ Add Corner
+      </button>
+
+      <button @click="resetPlot"
+              class="bg-red-600 text-white px-4 py-2 rounded">
+        🔄 Reset
+      </button>
+
+      <button @click="changeLayer('Hybrid')"
+              class="bg-blue-600 text-white px-3 py-2 rounded">
+        Hybrid
+      </button>
+
+      <button @click="changeLayer('Satellite')"
+              class="bg-gray-700 text-white px-3 py-2 rounded">
+        Satellite
+      </button>
+
+      <button @click="changeLayer('Map')"
+              class="bg-yellow-600 text-white px-3 py-2 rounded">
+        Map
+      </button>
     </div>
 
-    <div
-      @click="activeSection='features'"
-      class="tab"
-      :class="{ active: activeSection==='features' }"
-    >
-      Features
-      <span v-if="isCompleted('features')">✅</span>
+    <!-- Map -->
+    <div ref="mapRef"
+         class="w-full h-[500px] rounded-xl border shadow">
     </div>
 
-    <div
-      @click="activeSection='size'"
-      class="tab"
-      :class="{ active: activeSection==='size' }"
-    >
-      Size
-      <span v-if="isCompleted('size')">✅</span>
-    </div>
-
-  </div>
-
-
-  <!-- RIGHT CONTENT -->
-  <div class="w-4/5">
-
-    <!-- LOCATION -->
-    <div v-if="activeSection==='location'" class="card">
-      <h2 class="section-title">Location</h2>
-
-      <ListStateLGASelector
-        v-model:selectedState="form.state"
-        v-model:selectedLGA="form.city"
-      />
-
-      <input
-        v-model="form.address"
-        placeholder="Land Address / Landmark"
-        class="input mt-3"
-      />
-    </div>
-
-
-    <!-- FEATURES -->
-    <div v-if="activeSection==='features'" class="card">
-      <h2 class="section-title">Land Features</h2>
-
-      <div class="grid grid-cols-2 gap-4">
-        <label><input type="checkbox" v-model="form.fenced"/> Fenced</label>
-        <label><input type="checkbox" v-model="form.roadAccess"/> Road Access</label>
-        <label><input type="checkbox" v-model="form.dry"/> Dry Land</label>
-      </div>
-
-      <textarea
-        v-model="form.description"
-        class="input mt-3 h-28"
-        placeholder="Description..."
-      />
-    </div>
-
-
-    <!-- SIZE -->
-    <div v-if="activeSection==='size'" class="card">
-      <h2 class="section-title">Size & Price</h2>
-
-      <input v-model="form.size" class="input mb-3" placeholder="Land Size"/>
-      <input v-model="form.price" class="input mb-3" placeholder="Price (NGN)"/>
-
-      <select v-model="form.purpose" class="input">
-        <option>Sell Land</option>
-        <option>Sell House</option>
-        <option>Rent House</option>
-      </select>
+    <!-- Info -->
+    <div class="text-sm text-gray-700">
+      Corners: {{ corners.length }} |
+      Area: {{ form.area }} m² (~{{ form.plots }} plots) |
+      Mode: {{ currentLayer }}
     </div>
 
   </div>
-</div>
+</ClientOnly>
 </template>
-
-<style scoped>
-.input {
-  @apply w-full border rounded-lg px-4 py-2 text-sm;
-}
-
-.section-title {
-  @apply text-lg font-semibold mb-3;
-}
-
-.card {
-  @apply bg-white p-5 rounded shadow;
-}
-
-.tab {
-  @apply p-3 cursor-pointer flex justify-between rounded bg-white;
-}
-
-.tab.active {
-  @apply bg-black text-white;
-}
-</style>

@@ -1,245 +1,202 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 
-definePageMeta({
-  layout: 'auth'
+const mapRef = ref(null)
+
+let map
+let L
+let myMarker
+let polygon = null
+let baseLayers = {}
+
+const currentLayer = ref('Hybrid')
+
+const corners = ref([])
+const watchId = ref(null)
+
+const form = ref({
+  area: 0,
+  plots: 0
 })
 
-/* =========================
-   STATE
-========================= */
+/* ================= GPS ================= */
+const startLivePosition = () => {
+  if (!navigator.geolocation) return alert('GPS not supported')
 
-const filter = ref('all')
+  watchId.value = navigator.geolocation.watchPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords
 
-/* =========================
-   PROPERTIES DATA
-========================= */
+      if (!myMarker) {
+        myMarker = L.circleMarker([latitude, longitude], {
+          radius: 8,
+          color: 'blue',
+          fillColor: 'blue',
+          fillOpacity: 0.8
+        }).addTo(map)
+      } else {
+        myMarker.setLatLng([latitude, longitude])
+      }
 
-const properties = ref([
-  {
-    id: 1,
-    title: '3 Bedroom Duplex',
-    purpose: 'Sell',
-    location: 'Abuja/gbajualada',
-    price: 35000000,
-    beds: 3,
-    status: 'Available',
-    image: '/images/agent-land.png'
-  },
-  {
-    id: 2,
-    title: '2 Bedroom Flat',
-    purpose: 'Rent',
-    location: 'Ilorin/Tippa road',
-    price: 12000000,
-    beds: 2,
-    status: 'Rented',
-    image: '/images/agent-land.png'
-  },
-  {
-    id: 3,
-    title: 'Commercial Land',
-    purpose: 'Sell',
-    location: 'Lagos/ikeja',
-    price: 80000000,
-    beds: 0,
-    status: 'Sold',
-    image: '/images/agent-land.png'
-  }
-])
-
-/* =========================
-   COMPUTED
-========================= */
-
-const totalItems = computed(() => properties.value.length)
-
-const filteredList = computed(() => {
-  if (filter.value === 'sell')
-    return properties.value.filter(p => p.purpose === 'Sell')
-
-  if (filter.value === 'rent')
-    return properties.value.filter(p => p.purpose === 'Rent')
-
-  return properties.value
-})
-
-/* =========================
-   METHODS
-========================= */
-
-const removeItem = (id) => {
-  properties.value = properties.value.filter(p => p.id !== id)
+      map.setView([latitude, longitude], 22)
+    },
+    () => alert('Enable GPS + High accuracy'),
+    { enableHighAccuracy: true }
+  )
 }
+
+/* ================= ADD CORNER ================= */
+const addCorner = () => {
+  if (!myMarker) return
+
+  const pos = myMarker.getLatLng()
+  corners.value.push([pos.lat, pos.lng])
+  drawPolygon()
+}
+
+/* ================= POLYGON ================= */
+const drawPolygon = () => {
+  if (polygon) map.removeLayer(polygon)
+
+  if (corners.value.length < 2) return
+
+  polygon = L.polygon(corners.value, {
+    color: 'red',
+    weight: 3,
+    fillOpacity: 0.2
+  }).addTo(map)
+
+  map.fitBounds(polygon.getBounds(), { padding: [40, 40] })
+
+  form.value.area = Math.round(geodesicAreaMeters(corners.value))
+  form.value.plots = Math.round(form.value.area / 450)
+}
+
+/* ================= AREA ================= */
+const geodesicAreaMeters = (coords) => {
+  if (coords.length < 3) return 0
+
+  const rad = Math.PI / 180
+  const latRef = coords[0][0] * rad
+
+  const meters = coords.map(([lat, lng]) => {
+    const x = lng * 111320 * Math.cos(latRef)
+    const y = lat * 110540
+    return [x, y]
+  })
+
+  let area = 0
+  for (let i = 0; i < meters.length; i++) {
+    const [x1, y1] = meters[i]
+    const [x2, y2] = meters[(i + 1) % meters.length]
+    area += x1 * y2 - x2 * y1
+  }
+
+  return Math.abs(area / 2)
+}
+
+/* ================= RESET ================= */
+const resetPlot = () => {
+  corners.value = []
+  if (polygon) map.removeLayer(polygon)
+  polygon = null
+  form.value.area = 0
+  form.value.plots = 0
+}
+
+/* ================= LAYER SWITCH ================= */
+const changeLayer = (type) => {
+  Object.values(baseLayers).forEach(l => map.removeLayer(l))
+  baseLayers[type].addTo(map)
+  currentLayer.value = type
+}
+
+/* ================= INIT MAP ================= */
+onMounted(async () => {
+  if (!process.client) return
+  await nextTick()
+
+  L = (await import('leaflet')).default
+  await import('leaflet/dist/leaflet.css')
+
+  map = L.map(mapRef.value, {
+    zoomControl: true,
+    maxZoom: 22
+  })
+
+  /* ===== ESRI LAYERS ===== */
+
+  const satellite = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+  )
+
+  const labels = L.tileLayer(
+    'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
+  )
+
+  const streets = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  )
+
+  const hybrid = L.layerGroup([satellite, labels])
+
+  baseLayers = {
+    Satellite: satellite,
+    Hybrid: hybrid,
+    Map: streets
+  }
+
+  hybrid.addTo(map)
+
+  map.invalidateSize()
+
+  startLivePosition()
+})
+
+onUnmounted(() => {
+  if (watchId.value) navigator.geolocation.clearWatch(watchId.value)
+})
 </script>
 
-
-
 <template>
-<div class="min-h-screen bg-gray-50 p-8">
-<ContainerUser>
+<ClientOnly>
+  <div class="p-4 space-y-4">
 
-  <!-- ================= HEADER ================= -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-semibold">My Properties</h1>
+    <!-- Buttons -->
+    <div class="flex gap-2 flex-wrap">
 
-    <button
-      class="bg-green-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-green-700"
-    >
-      + Add Property
-    </button>
-  </div>
+      <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
+        ➕ Add Corner
+      </button>
 
+      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
+        🔄 Reset
+      </button>
 
+      <!-- 🔥 Layer Toggle -->
+      <button @click="changeLayer('Hybrid')" class="bg-blue-600 text-white px-3 py-2 rounded">
+        Hybrid
+      </button>
 
-  <!-- ================= STATS ================= -->
-  <div class="grid grid-cols-3 gap-5 mb-8">
+      <button @click="changeLayer('Satellite')" class="bg-gray-700 text-white px-3 py-2 rounded">
+        Satellite
+      </button>
 
-    <div class="bg-white border rounded-lg p-5">
-      <p class="text-gray-500 text-sm">Total Listings</p>
-      <h2 class="text-xl font-bold">{{ totalItems }}</h2>
+      <button @click="changeLayer('Map')" class="bg-yellow-600 text-white px-3 py-2 rounded">
+        Map
+      </button>
     </div>
 
-    <div class="bg-white border rounded-lg p-5">
-      <p class="text-gray-500 text-sm">For Sale</p>
-      <h2 class="text-xl font-bold">
-        {{ properties.filter(p => p.purpose==='Sell').length }}
-      </h2>
-    </div>
+    <!-- Map -->
+    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
-    <div class="bg-white border rounded-lg p-5">
-      <p class="text-gray-500 text-sm">For Rent</p>
-      <h2 class="text-xl font-bold">
-        {{ properties.filter(p => p.purpose==='Rent').length }}
-      </h2>
+    <!-- Info -->
+    <div class="text-sm text-gray-700">
+      Corners: {{ corners.length }} |
+      Area: {{ form.area }} m² (~{{ form.plots }} plots) |
+      Mode: {{ currentLayer }}
     </div>
 
   </div>
-
-
-
-  <!-- ================= FILTER TABS ================= -->
-  <div class="flex gap-6 border-b mb-4 text-sm font-medium">
-
-    <button
-      @click="filter='all'"
-      :class="filter==='all'
-        ? 'border-b-2 border-black pb-2'
-        : 'text-gray-500 pb-2'"
-    >
-      All
-    </button>
-
-    <button
-      @click="filter='sell'"
-      :class="filter==='sell'
-        ? 'border-b-2 border-black pb-2'
-        : 'text-gray-500 pb-2'"
-    >
-      For Sale
-    </button>
-
-    <button
-      @click="filter='rent'"
-      :class="filter==='rent'
-        ? 'border-b-2 border-black pb-2'
-        : 'text-gray-500 pb-2'"
-    >
-      For Rent
-    </button>
-
-  </div>
-
-
-
-  <!-- ================= TABLE ================= -->
-  <div class="bg-white border rounded-xl overflow-hidden">
-
-    <!-- header -->
-    <div class="grid grid-cols-12 gap-4 bg-gray-100 text-sm font-semibold px-5 py-3">
-
-      <div class="col-span-4">Property</div>
-      <div class="col-span-1">Purpose</div>
-      <div class="col-span-2">Location</div>
-      <div class="col-span-2">Price</div>
-      <div class="col-span-1">Status</div>
-      <div class="col-span-1 text-right">Action</div>
-
-    </div>
-
-
-
-    <!-- rows -->
-     <div  v-for="item in filteredList"
-          :key="item.id">
-       <div class="grid grid-cols-12 gap-4 px-5 py-4 border-t text-sm items-center hover:bg-gray-50" >
-
-          <!-- title -->
-          <div class="flex gap-3 items-center col-span-4">
-            <img
-              :src="item.image"
-              class="w-12 h-12 rounded-lg object-cover"
-            />
-            <span class="font-medium">{{ item.title }}</span>
-          </div>
-
-          <!-- purpose -->
-          <div class="col-span-1">
-            <span
-              :class="item.purpose === 'Sell'
-                ? 'text-green-600 font-semibold'
-                : 'text-blue-600 font-semibold'"
-            >
-              {{ item.purpose }}
-            </span>
-          </div>
-
-          <!-- location -->
-          <div class="col-span-2">
-            {{ item.location }}
-          </div>
-
-          <!-- price -->
-          <div class="col-span-2 font-semibold">
-            ₦{{ item.price.toLocaleString() }}
-          </div>
-
-        
-
-          <!-- status -->
-          <div class="col-span-1">
-            <span
-              :class="[
-                'px-2 py-1 rounded text-xs font-medium',
-                item.status==='Available' && 'bg-green-100 text-green-700',
-                item.status==='Sold' && 'bg-red-100 text-red-700',
-                item.status==='Rented' && 'bg-blue-100 text-blue-700'
-              ]"
-            >
-              {{ item.status }}
-            </span>
-          </div>
-
-          <!-- action -->
-          <div class="col-span-1 text-right">
-            <button
-              class="text-red-500 hover:underline"
-              @click="removeItem(item.id)"
-            >
-              Delete
-            </button>
-          </div>
-
-        </div>
-        <div>
-         more information about the property
-        </div>
-
-     </div>
-    
-
-  </div>
-
-</ContainerUser>
-</div>
+</ClientOnly>
 </template>
