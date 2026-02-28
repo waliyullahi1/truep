@@ -12,6 +12,7 @@
   "dependencies": {
     "leaflet": "^1.9.4",
     "leaflet.gridlayer.googlemutant": "^0.16.0",
+    "mapbox-gl": "^3.19.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
     "swiper": "^12.1.2",
