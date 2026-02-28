@@ -1,85 +1,150 @@
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import 'mapbox-gl/dist/mapbox-gl.css'
 
+/* =========================
+   REFS
+========================= */
 const mapRef = ref(null)
 
-let map
-let L
-let myMarker
-let polygon = null
-let baseLayers = {}
-
-const currentLayer = ref('Hybrid')
+let map = null
+let mapboxgl = null
+let myMarker = null
+let watchId = null
 
 const corners = ref([])
-const watchId = ref(null)
 
 const form = ref({
   area: 0,
   plots: 0
 })
 
-/* ================= GPS ================= */
-const startLivePosition = () => {
-  if (!navigator.geolocation) return alert('GPS not supported')
+console.log('🚀 Component loaded')
 
-  watchId.value = navigator.geolocation.watchPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords
+/* =========================
+   START LIVE GPS
+========================= */
+const startLivePosition = () => {
+  console.log('📍 Starting GPS...')
+
+  if (!navigator.geolocation) {
+    alert('GPS not supported')
+    return
+  }
+
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+
+  watchId = navigator.geolocation.watchPosition(
+    ({ coords }) => {
+      const { latitude, longitude } = coords
+
+      console.log('✅ GPS position:', latitude, longitude)
 
       if (!myMarker) {
-        myMarker = L.circleMarker([latitude, longitude], {
-          radius: 8,
-          color: 'blue',
-          fillColor: 'blue',
-          fillOpacity: 0.8
-        }).addTo(map)
+        console.log('🟢 Creating marker')
+
+        myMarker = new mapboxgl.Marker({ color: 'blue' })
+          .setLngLat([longitude, latitude])
+          .addTo(map)
       } else {
-        myMarker.setLatLng([latitude, longitude])
+        myMarker.setLngLat([longitude, latitude])
       }
 
-      map.setView([latitude, longitude], 22)
+      map.flyTo({
+        center: [longitude, latitude],
+        zoom: 19
+      })
     },
-    () => alert('Enable GPS + High accuracy'),
+    (err) => {
+      console.log('❌ GPS error:', err)
+      alert('Enable GPS permission')
+    },
     { enableHighAccuracy: true }
   )
 }
 
-/* ================= ADD CORNER ================= */
+/* =========================
+   ADD CORNER
+========================= */
 const addCorner = () => {
-  if (!myMarker) return
+  if (!myMarker) {
+    alert('Wait for GPS first')
+    return
+  }
 
-  const pos = myMarker.getLatLng()
-  corners.value.push([pos.lat, pos.lng])
+  const { lat, lng } = myMarker.getLngLat()
+
+  console.log('📌 Corner added:', lat, lng)
+
+  corners.value.push([lng, lat])
+
   drawPolygon()
 }
 
-/* ================= POLYGON ================= */
+/* =========================
+   DRAW POLYGON
+========================= */
 const drawPolygon = () => {
-  if (polygon) map.removeLayer(polygon)
-
   if (corners.value.length < 2) return
 
-  polygon = L.polygon(corners.value, {
-    color: 'red',
-    weight: 3,
-    fillOpacity: 0.2
-  }).addTo(map)
+  console.log('🔺 Drawing polygon...')
 
-  map.fitBounds(polygon.getBounds(), { padding: [40, 40] })
+  const coords = [...corners.value]
 
-  form.value.area = Math.round(geodesicAreaMeters(corners.value))
+  if (coords.length > 2) coords.push(coords[0])
+
+  const geojson = {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [coords]
+    }
+  }
+
+  if (map.getSource('plot')) {
+    map.getSource('plot').setData(geojson)
+  } else {
+    console.log('🆕 Creating polygon source')
+
+    map.addSource('plot', { type: 'geojson', data: geojson })
+
+    map.addLayer({
+      id: 'plot-fill',
+      type: 'fill',
+      source: 'plot',
+      paint: {
+        'fill-color': '#ff0000',
+        'fill-opacity': 0.2
+      }
+    })
+
+    map.addLayer({
+      id: 'plot-line',
+      type: 'line',
+      source: 'plot',
+      paint: {
+        'line-color': '#ff0000',
+        'line-width': 3
+      }
+    })
+  }
+
+  form.value.area = Math.round(geodesicAreaMeters(coords))
   form.value.plots = Math.round(form.value.area / 450)
+
+  console.log('📐 Area:', form.value.area, 'm²')
 }
 
-/* ================= AREA ================= */
+/* =========================
+   AREA CALCULATION
+========================= */
 const geodesicAreaMeters = (coords) => {
   if (coords.length < 3) return 0
 
   const rad = Math.PI / 180
-  const latRef = coords[0][0] * rad
+  const latRef = coords[0][1] * rad
 
-  const meters = coords.map(([lat, lng]) => {
+  const meters = coords.map(([lng, lat]) => {
     const x = lng * 111320 * Math.cos(latRef)
     const y = lat * 110540
     return [x, y]
@@ -95,66 +160,66 @@ const geodesicAreaMeters = (coords) => {
   return Math.abs(area / 2)
 }
 
-/* ================= RESET ================= */
+/* =========================
+   RESET
+========================= */
 const resetPlot = () => {
+  console.log('🔄 Resetting plot')
+
   corners.value = []
-  if (polygon) map.removeLayer(polygon)
-  polygon = null
   form.value.area = 0
   form.value.plots = 0
+
+  if (map.getSource('plot')) {
+    map.removeLayer('plot-fill')
+    map.removeLayer('plot-line')
+    map.removeSource('plot')
+  }
 }
 
-/* ================= LAYER SWITCH ================= */
-const changeLayer = (type) => {
-  Object.values(baseLayers).forEach(l => map.removeLayer(l))
-  baseLayers[type].addTo(map)
-  currentLayer.value = type
-}
-
-/* ================= INIT MAP ================= */
+/* =========================
+   INIT MAP
+========================= */
 onMounted(async () => {
+  console.log('🔥 Mounted')
+
   if (!process.client) return
+
   await nextTick()
 
-  L = (await import('leaflet')).default
-  await import('leaflet/dist/leaflet.css')
+  const config = useRuntimeConfig()
 
-  map = L.map(mapRef.value, {
-    zoomControl: true,
-    maxZoom: 22
-  })
+  console.log('🔑 MAPBOX TOKEN =>', config.public.mapboxToken)
 
-  /* ===== ESRI LAYERS ===== */
-
-  const satellite = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-  )
-
-  const labels = L.tileLayer(
-    'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
-  )
-
-  const streets = L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-  )
-
-  const hybrid = L.layerGroup([satellite, labels])
-
-  baseLayers = {
-    Satellite: satellite,
-    Hybrid: hybrid,
-    Map: streets
+  if (!config.public.mapboxToken) {
+    alert('Mapbox token missing in .env')
+    return
   }
 
-  hybrid.addTo(map)
+  mapboxgl = (await import('mapbox-gl')).default
 
-  map.invalidateSize()
+  mapboxgl.accessToken = config.public.mapboxToken
 
-  startLivePosition()
+  console.log('🗺 Creating map...')
+
+  map = new mapboxgl.Map({
+    container: mapRef.value,
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [4.18, 7.88],
+    zoom: 18
+  })
+
+  map.on('load', () => {
+    console.log('✅ Map loaded successfully')
+    startLivePosition()
+  })
 })
 
 onUnmounted(() => {
-  if (watchId.value) navigator.geolocation.clearWatch(watchId.value)
+  console.log('🧹 Cleaning up')
+
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+  if (map) map.remove()
 })
 </script>
 
@@ -162,9 +227,7 @@ onUnmounted(() => {
 <ClientOnly>
   <div class="p-4 space-y-4">
 
-    <!-- Buttons -->
-    <div class="flex gap-2 flex-wrap">
-
+    <div class="flex gap-2">
       <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
         ➕ Add Corner
       </button>
@@ -172,29 +235,15 @@ onUnmounted(() => {
       <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
         🔄 Reset
       </button>
-
-      <!-- 🔥 Layer Toggle -->
-      <button @click="changeLayer('Hybrid')" class="bg-blue-600 text-white px-3 py-2 rounded">
-        Hybrid
-      </button>
-
-      <button @click="changeLayer('Satellite')" class="bg-gray-700 text-white px-3 py-2 rounded">
-        Satellite
-      </button>
-
-      <button @click="changeLayer('Map')" class="bg-yellow-600 text-white px-3 py-2 rounded">
-        Map
-      </button>
     </div>
 
-    <!-- Map -->
     <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
-    <!-- Info -->
-    <div class="text-sm text-gray-700">
-      Corners: {{ corners.length }} |
-      Area: {{ form.area }} m² (~{{ form.plots }} plots) |
-      Mode: {{ currentLayer }}
+    <div class="text-sm text-gray-600">
+      <div>Corners: {{ corners.length }}</div>
+      <div v-if="form.area">
+        Area: {{ form.area }} m² (~{{ form.plots }} plots)
+      </div>
     </div>
 
   </div>

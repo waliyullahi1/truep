@@ -1,310 +1,251 @@
+<script setup>
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import 'mapbox-gl/dist/mapbox-gl.css'
+
+/* =========================
+   REFS
+========================= */
+const mapRef = ref(null)
+
+let map = null
+let mapboxgl = null
+let myMarker = null
+let watchId = null
+
+const corners = ref([])
+
+const form = ref({
+  area: 0,
+  plots: 0
+})
+
+console.log('🚀 Component loaded')
+
+/* =========================
+   START LIVE GPS
+========================= */
+const startLivePosition = () => {
+  console.log('📍 Starting GPS...')
+
+  if (!navigator.geolocation) {
+    alert('GPS not supported')
+    return
+  }
+
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+
+  watchId = navigator.geolocation.watchPosition(
+    ({ coords }) => {
+      const { latitude, longitude } = coords
+
+      console.log('✅ GPS position:', latitude, longitude)
+
+      if (!myMarker) {
+        console.log('🟢 Creating marker')
+
+        myMarker = new mapboxgl.Marker({ color: 'blue' })
+          .setLngLat([longitude, latitude])
+          .addTo(map)
+      } else {
+        myMarker.setLngLat([longitude, latitude])
+      }
+
+      map.flyTo({
+        center: [longitude, latitude],
+        zoom: 19
+      })
+    },
+    (err) => {
+      console.log('❌ GPS error:', err)
+      alert('Enable GPS permission')
+    },
+    { enableHighAccuracy: true }
+  )
+}
+
+/* =========================
+   ADD CORNER
+========================= */
+const addCorner = () => {
+  if (!myMarker) {
+    alert('Wait for GPS first')
+    return
+  }
+
+  const { lat, lng } = myMarker.getLngLat()
+
+  console.log('📌 Corner added:', lat, lng)
+
+  corners.value.push([lng, lat])
+
+  drawPolygon()
+}
+
+/* =========================
+   DRAW POLYGON
+========================= */
+const drawPolygon = () => {
+  if (corners.value.length < 2) return
+
+  console.log('🔺 Drawing polygon...')
+
+  const coords = [...corners.value]
+
+  if (coords.length > 2) coords.push(coords[0])
+
+  const geojson = {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [coords]
+    }
+  }
+
+  if (map.getSource('plot')) {
+    map.getSource('plot').setData(geojson)
+  } else {
+    console.log('🆕 Creating polygon source')
+
+    map.addSource('plot', { type: 'geojson', data: geojson })
+
+    map.addLayer({
+      id: 'plot-fill',
+      type: 'fill',
+      source: 'plot',
+      paint: {
+        'fill-color': '#ff0000',
+        'fill-opacity': 0.2
+      }
+    })
+
+    map.addLayer({
+      id: 'plot-line',
+      type: 'line',
+      source: 'plot',
+      paint: {
+        'line-color': '#ff0000',
+        'line-width': 3
+      }
+    })
+  }
+
+  form.value.area = Math.round(geodesicAreaMeters(coords))
+  form.value.plots = Math.round(form.value.area / 450)
+
+  console.log('📐 Area:', form.value.area, 'm²')
+}
+
+/* =========================
+   AREA CALCULATION
+========================= */
+const geodesicAreaMeters = (coords) => {
+  if (coords.length < 3) return 0
+
+  const rad = Math.PI / 180
+  const latRef = coords[0][1] * rad
+
+  const meters = coords.map(([lng, lat]) => {
+    const x = lng * 111320 * Math.cos(latRef)
+    const y = lat * 110540
+    return [x, y]
+  })
+
+  let area = 0
+  for (let i = 0; i < meters.length; i++) {
+    const [x1, y1] = meters[i]
+    const [x2, y2] = meters[(i + 1) % meters.length]
+    area += x1 * y2 - x2 * y1
+  }
+
+  return Math.abs(area / 2)
+}
+
+/* =========================
+   RESET
+========================= */
+const resetPlot = () => {
+  console.log('🔄 Resetting plot')
+
+  corners.value = []
+  form.value.area = 0
+  form.value.plots = 0
+
+  if (map.getSource('plot')) {
+    map.removeLayer('plot-fill')
+    map.removeLayer('plot-line')
+    map.removeSource('plot')
+  }
+}
+
+/* =========================
+   INIT MAP
+========================= */
+onMounted(async () => {
+  console.log('🔥 Mounted')
+
+  if (!process.client) return
+
+  await nextTick()
+
+  const config = useRuntimeConfig()
+
+  console.log('🔑 MAPBOX TOKEN =>', config.public.mapboxToken)
+
+  if (!config.public.mapboxToken) {
+    alert('Mapbox token missing in .env')
+    return
+  }
+
+  mapboxgl = (await import('mapbox-gl')).default
+
+  mapboxgl.accessToken = config.public.mapboxToken
+
+  console.log('🗺 Creating map...')
+
+  map = new mapboxgl.Map({
+    container: mapRef.value,
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [4.18, 7.88],
+    zoom: 18
+  })
+
+  map.on('load', () => {
+    console.log('✅ Map loaded successfully')
+    startLivePosition()
+  })
+})
+
+onUnmounted(() => {
+  console.log('🧹 Cleaning up')
+
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+  if (map) map.remove()
+})
+</script>
+
 <template>
-  <div class="pt-24 bg-gray-50 min-h-screen">
+<ClientOnly>
+  <div class="p-4 space-y-4">
 
-    <Container>
-      <div class="flex flex-col lg:flex-row gap-10">
+    <div class="flex gap-2">
+      <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
+        ➕ Add Corner
+      </button>
 
-        <!-- ================================================= -->
-        <!-- LEFT SIDE -->
-        <!-- ================================================= -->
-        <div class="lg:w-3/5 space-y-8">
+      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
+        🔄 Reset
+      </button>
+    </div>
 
-          <!-- ================= TITLE + ACTIONS ================= -->
-          <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-semibold">
-              {{ property.title }}
-            </h1>
+    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
-            <div class="flex gap-4 text-xl">
-              <button @click="toggleWishlist">
-                {{ isWishlisted ? '❤️' : '🤍' }}
-              </button>
-              <button @click="shareProperty">🔗</button>
-            </div>
-          </div>
-
-
-          <!-- PROFILE -->
-          <div class="flex items-center gap-3">
-            <img
-              src="/images/4T2A1567.png"
-              class="w-14 h-14 rounded-full object-cover"
-            />
-
-            <div>
-              <p class="font-semibold">Abdul Sammad</p>
-
-              <div class="flex items-center gap-1 text-sm">
-                ⭐⭐⭐⭐⭐
-                <span class="text-gray-500">4.7 (300 reviews)</span>
-              </div>
-
-              <p class="text-xs text-gray-500">
-                Surveyor
-                <span class="bg-green-600 text-white px-2 py-0.5 rounded ml-2 text-[11px]">
-                  Verified
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <!-- ================= IMAGE SLIDER ================= -->
-          <Images_slides />
-
-
-          <!-- ================= HIGHLIGHTS ================= -->
-          <div
-            class="grid grid-cols-3 gap-4 bg-white rounded-xl shadow p-5 text-center"
-          >
-            <div
-              v-for="item in highlights"
-              :key="item.label"
-              class="flex flex-col items-center"
-            >
-              <span class="text-2xl">{{ item.icon }}</span>
-              <span class="font-semibold">{{ item.value }}</span>
-              <span class="text-sm text-gray-500">{{ item.label }}</span>
-            </div>
-          </div>
-
-
-          <!-- ================= DESCRIPTION + READ MORE ================= -->
-          <div class="bg-white rounded-xl shadow p-6">
-            <h3 class="font-semibold mb-2">Description</h3>
-
-            <p class="text-gray-600">
-              {{ showFull ? property.description : shortText }}
-            </p>
-
-            <button
-              class="text-blue-600 mt-2"
-              @click="showFull = !showFull"
-            >
-              {{ showFull ? 'Show less' : 'Read more' }}
-            </button>
-          </div>
-
-
-          <!-- ================= AMENITIES ================= -->
-          <div class="bg-white rounded-xl shadow p-6">
-            <h3 class="font-semibold mb-4">Amenities</h3>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-
-              <div
-                v-for="(item,i) in amenities"
-                :key="i"
-                class="p-4 rounded-xl border hover:shadow-lg transition hover:-translate-y-1 flex items-center gap-3"
-              >
-                <span class="text-xl">{{ item.icon }}</span>
-                <span>{{ item.name }}</span>
-              </div>
-
-            </div>
-          </div>
-
-
-          <!-- ================= GOOGLE MAP ================= -->
-          <div class="bg-white rounded-xl shadow p-4">
-            <h3 class="font-semibold mb-3">Location</h3>
-
-            <iframe
-              class="w-full h-64 rounded"
-              loading="lazy"
-              src="https://maps.google.com/maps?q=Lekki%20Lagos&t=&z=13&ie=UTF8&iwloc=&output=embed"
-            ></iframe>
-          </div>
-
-
-          <!-- ================= SIMILAR PROPERTIES ================= -->
-          <div>
-            <h3 class="font-semibold mb-3">Similar Properties</h3>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-
-              <div
-                v-for="(item,i) in similarProperties"
-                :key="i"
-                class="bg-white rounded-lg shadow hover:shadow-xl transition cursor-pointer"
-              >
-                <img :src="item.image" class="h-32 w-full object-cover" />
-                <div class="p-3 text-sm font-medium">
-                  {{ item.price }}
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-
-
-
-        <!-- ================================================= -->
-        <!-- RIGHT SIDEBAR -->
-        <!-- ================================================= -->
-        <div class="lg:w-2/5">
-
-          <div class="sticky top-24 bg-white rounded-xl shadow-lg p-6 space-y-4">
-
-            <h2 class="text-2xl font-bold text-green-600">
-              {{ property.price }}
-            </h2>
-
-            <button
-              @click="openChat"
-              class="w-full bg-black text-white py-3 rounded-lg"
-            >
-              Chat Agent
-            </button>
-
-            <a
-              :href="whatsappLink"
-              target="_blank"
-              class="block text-center w-full bg-green-600 text-white py-3 rounded-lg"
-            >
-              WhatsApp
-            </a>
-
-            <button
-              @click="showBooking = true"
-              class="w-full border py-3 rounded-lg"
-            >
-              Book Inspection
-            </button>
-
-          </div>
-        </div>
-
-      </div>
-    </Container>
-
-
-
-    <!-- ================================================= -->
-    <!-- BOOKING MODAL -->
-    <!-- ================================================= -->
-    <div
-      v-if="showBooking"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    >
-      <div class="bg-white w-96 rounded-xl p-6 space-y-4">
-
-        <h3 class="font-semibold text-lg">Schedule Visit</h3>
-
-        <input v-model="booking.name" placeholder="Name" class="input"/>
-        <input v-model="booking.phone" placeholder="Phone" class="input"/>
-        <input type="date" v-model="booking.date" class="input"/>
-
-        <div class="flex gap-3">
-          <button @click="submitBooking" class="btn-primary flex-1">
-            Submit
-          </button>
-          <button @click="showBooking=false" class="btn-border flex-1">
-            Cancel
-          </button>
-        </div>
+    <div class="text-sm text-gray-600">
+      <div>Corners: {{ corners.length }}</div>
+      <div v-if="form.area">
+        Area: {{ form.area }} m² (~{{ form.plots }} plots)
       </div>
     </div>
 
   </div>
+</ClientOnly>
 </template>
-
-
-
-<script setup>
-import { ref, computed } from 'vue'
-
-/* ================= PROPERTY DATA ================= */
-const property = {
-  title: '5 Bedroom Detached Duplex for Sale',
-  price: '₦750,000,000',
-  description:
-    `State-of-Art 5Bed Detached Duplex with swimming pool, rooftop & cinema room located in Chevron Lekki. 
-     Well finished contemporary design with modern fittings and 4 car parking space.`
-}
-
-
-/* ================= HIGHLIGHTS ================= */
-const highlights = [
-  { icon: '🛏️', value: 5, label: 'Bedrooms' },
-  { icon: '🛁', value: 6, label: 'Bathrooms' },
-  { icon: '🚗', value: 4, label: 'Parking' }
-]
-
-
-/* ================= AMENITIES ================= */
-const amenities = [
-  { icon: '🏊', name: 'Swimming Pool' },
-  { icon: '🎬', name: 'Cinema Room' },
-  { icon: '🏠', name: 'Rooftop' },
-  { icon: '🔥', name: 'Water Heater' },
-  { icon: '🔊', name: 'In-built Speakers' },
-  { icon: '🚿', name: 'Walk-in Shower' },
-  { icon: '🍳', name: 'Microwave & Oven' },
-  { icon: '👕', name: 'Walk-in Closet' }
-]
-
-
-/* ================= DESCRIPTION ================= */
-const showFull = ref(false)
-const shortText = computed(() =>
-  property.description.slice(0, 120) + '...'
-)
-
-
-/* ================= WISHLIST ================= */
-const isWishlisted = ref(false)
-const toggleWishlist = () =>
-  (isWishlisted.value = !isWishlisted.value)
-
-
-/* ================= SHARE ================= */
-const shareProperty = () =>
-  navigator.clipboard.writeText(window.location.href)
-
-
-/* ================= WHATSAPP ================= */
-const whatsappLink =
-  `https://wa.me/2348000000000?text=Hi I am interested in this property`
-
-
-/* ================= BOOKING ================= */
-const showBooking = ref(false)
-
-const booking = ref({
-  name: '',
-  phone: '',
-  date: ''
-})
-
-const submitBooking = () => {
-  alert('Visit scheduled!')
-  showBooking.value = false
-}
-
-
-/* ================= SIMILAR ================= */
-const similarProperties = [
-  { image: '/images/land1.jpg', price: '₦500M' },
-  { image: '/images/land2.jpg', price: '₦420M' },
-  { image: '/images/land1.jpg', price: '₦390M' }
-]
-</script>
-
-
-
-<style scoped>
-.input{
-  @apply border w-full p-2 rounded;
-}
-
-.btn-primary{
-  @apply bg-black text-white py-2 rounded;
-}
-
-.btn-border{
-  @apply border py-2 rounded;
-}
-</style>
-  
