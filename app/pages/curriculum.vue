@@ -23,7 +23,7 @@ const form = ref({
    🔥 NEW: ACCURACY STATE
 ========================= */
 const accuracy = ref(9999)
-const REQUIRED_ACCURACY = 2
+const REQUIRED_ACCURACY = 5
 
 
 
