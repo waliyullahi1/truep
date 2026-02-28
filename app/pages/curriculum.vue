@@ -20,13 +20,14 @@ const form = ref({
 })
 
 /* =========================
-   GPS ACCURACY SETTINGS
+   🔥 NEW: ACCURACY STATE
 ========================= */
 const accuracy = ref(9999)
-const gpsReady = ref(false)
+const REQUIRED_ACCURACY = 2
 
-// 🔥 change to 3 or 5 if too strict
-const REQUIRED_ACCURACY = 3
+
+
+console.log('🚀 Component loaded')
 
 
 
@@ -34,6 +35,8 @@ const REQUIRED_ACCURACY = 3
    START LIVE GPS
 ========================= */
 const startLivePosition = () => {
+  console.log('📍 Starting GPS...')
+
   if (!navigator.geolocation) {
     alert('GPS not supported')
     return
@@ -45,26 +48,19 @@ const startLivePosition = () => {
     ({ coords }) => {
       const { latitude, longitude, accuracy: acc } = coords
 
+      // ✅ SAVE ACCURACY
       accuracy.value = Number(acc.toFixed(1))
 
-      // ❌ Ignore terrible accuracy (cell tower)
-      if (accuracy.value > 50) {
-        gpsReady.value = false
-        return
-      }
+      console.log('📡 Accuracy:', accuracy.value)
 
-      // ✅ Only allow when very accurate
-      gpsReady.value = accuracy.value <= REQUIRED_ACCURACY
-
-      const color = gpsReady.value ? 'green' : 'orange'
+      console.log('✅ GPS position:', latitude, longitude)
 
       if (!myMarker) {
-        myMarker = new mapboxgl.Marker({ color })
+        myMarker = new mapboxgl.Marker({ color: 'blue' })
           .setLngLat([longitude, latitude])
           .addTo(map)
       } else {
         myMarker.setLngLat([longitude, latitude])
-        myMarker.getElement().style.backgroundColor = color
       }
 
       map.flyTo({
@@ -72,7 +68,10 @@ const startLivePosition = () => {
         zoom: 19
       })
     },
-    console.error,
+    (err) => {
+      console.log('❌ GPS error:', err)
+      alert('Enable GPS permission')
+    },
     {
       enableHighAccuracy: true,
       maximumAge: 0,
@@ -88,22 +87,21 @@ const startLivePosition = () => {
 ========================= */
 const addCorner = () => {
   if (!myMarker) {
-    alert('Wait for GPS...')
+    alert('Wait for GPS first')
     return
   }
 
-  if (!gpsReady.value) {
-    alert(`Accuracy too low (${accuracy.value}m). Wait ≤ ${REQUIRED_ACCURACY}m`)
+  /* ❌ BLOCK IF ACCURACY BAD */
+  if (accuracy.value > REQUIRED_ACCURACY) {
+    alert(`Hold on ❌ Accuracy ${accuracy.value}m\nWait until ≤ ${REQUIRED_ACCURACY}m`)
     return
   }
 
   const { lat, lng } = myMarker.getLngLat()
 
-  corners.value.push([lng, lat])
+  console.log('📌 Corner added:', lat, lng)
 
-  new mapboxgl.Marker({ color: 'red' })
-    .setLngLat([lng, lat])
-    .addTo(map)
+  corners.value.push([lng, lat])
 
   drawPolygon()
 }
@@ -138,8 +136,8 @@ const drawPolygon = () => {
       type: 'fill',
       source: 'plot',
       paint: {
-        'fill-color': '#00ff00',
-        'fill-opacity': 0.25
+        'fill-color': '#ff0000',
+        'fill-opacity': 0.2
       }
     })
 
@@ -148,16 +146,14 @@ const drawPolygon = () => {
       type: 'line',
       source: 'plot',
       paint: {
-        'line-color': '#008000',
+        'line-color': '#ff0000',
         'line-width': 3
       }
     })
   }
 
   form.value.area = Math.round(geodesicAreaMeters(coords))
-
-  // 1 plot ≈ 506 m²
-  form.value.plots = (form.value.area / 506).toFixed(2)
+  form.value.plots = Math.round(form.value.area / 450)
 }
 
 
@@ -222,14 +218,12 @@ onMounted(async () => {
 
   map = new mapboxgl.Map({
     container: mapRef.value,
-    style: 'mapbox://styles/mapbox/satellite-streets-v12',
+    style: 'mapbox://styles/mapbox/streets-v12',
     center: [4.18, 7.88],
     zoom: 18
   })
 
-  map.on('load', () => {
-    startLivePosition()
-  })
+  map.on('load', startLivePosition)
 })
 
 onUnmounted(() => {
@@ -244,42 +238,45 @@ onUnmounted(() => {
 <ClientOnly>
   <div class="p-4 space-y-4">
 
-    <div class="flex gap-3">
-      <button
-        @click="addCorner"
-        class="bg-green-600 text-white px-4 py-2 rounded"
-      >
+    <!-- ✅ NEW ACCURACY DISPLAY -->
+    <div class="text-lg font-bold">
+      Accuracy: {{ accuracy }} m
+    </div>
+
+    <div
+      v-if="accuracy > REQUIRED_ACCURACY"
+      class="text-red-600 font-semibold"
+    >
+      Hold on… wait until accuracy ≤ 2m
+    </div>
+
+    <div
+      v-else
+      class="text-green-600 font-semibold"
+    >
+      GPS Ready ✓
+    </div>
+
+
+
+    <div class="flex gap-2">
+      <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
         ➕ Add Corner
       </button>
 
-      <button
-        @click="resetPlot"
-        class="bg-red-600 text-white px-4 py-2 rounded"
-      >
+      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
         🔄 Reset
       </button>
     </div>
 
     <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
 
-    <div class="text-sm space-y-1">
-
-      <div>📡 Accuracy: {{ accuracy }} m</div>
-
-      <div v-if="!gpsReady" class="text-red-600">
-        Waiting for strong GPS… go outside
-      </div>
-
-      <div v-else class="text-green-600">
-        GPS locked ✓ Ready
-      </div>
-
+    <div class="text-sm text-gray-600">
       <div>Corners: {{ corners.length }}</div>
 
       <div v-if="form.area">
-        Area: {{ form.area }} m² (~ {{ form.plots }} plots)
+        Area: {{ form.area }} m² (~{{ form.plots }} plots)
       </div>
-
     </div>
 
   </div>
