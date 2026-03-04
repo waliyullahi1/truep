@@ -277,13 +277,13 @@ function submit() {
                <div>
                 Location complete? {{ isCompleted('location') ? '✅' : '❌' }}
             </div>
-                <ListLandMap v-model="form"  @update="updateLocation"/>
+                <!-- <ListLandMap v-model="form"  @update="updateLocation"/> -->
               </div> 
 
 
                <div v-if="type==='house'" >
                 
-                <ListHouseLocationPicker/>
+                <!-- <ListHouseLocationPicker/> -->
               </div> 
                
                 <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
