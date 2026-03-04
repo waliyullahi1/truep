@@ -35,11 +35,11 @@ const form = ref({
   },
   /* ================= LOCATION ================= */
   location: {
-    country: "Nigeria",
-    state: "Osun",
-    lga: "Iwo",
-    city: "Oluponna",
-    address: "Behind New Market Road",
+    country: "",
+    state: "",
+    lga: "",
+    city: "",
+    address: "",
 
     source: "gps", // "gps" | "manual"
 
@@ -264,46 +264,45 @@ const firstcanSubmit = computed(() => {
             </div>
 
           </div>
-          <div class="w-full h-full">
+          <div class="w-full mt-7 h-full">
             <div :class="activeSection==='location'? 'block':'hidden'">
-              <div v-if="type==='land'" >
-                
-                <ListLandMap  v-model="form.location"/>
-              </div> 
-               <div v-if="type==='house'" >
-                <ListHouseLocationPicker/>
-              </div> 
-               <!-- <div v-if="type===''" class=" bg-gray-50 border rounded-xl p-8 text-center text-gray-500"  >
+               <div v-if="type===''" class=" bg-gray-50 border rounded-xl p-8 text-center text-gray-500"  >
                  <p class="text-lg font-medium">No property selected</p>
                 <p class="text-sm mt-1">Please select a listing purpose and property type to continue.</p>
              
-              </div>  -->
+              </div> 
+              <div v-if="type==='land'" >
+               {{ form.location }}
+                <ListLandMap v-model="form" />
+              </div> 
+
+
+               <div v-if="type==='house'" >
+                
+                <ListHouseLocationPicker/>
+              </div> 
+               
                 <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
             </div>
              <div  :class="activeSection==='features'? 'block':'hidden'" >
-                <ListFeature :type="type" v-model="form.features" />
+                 {{ form.location }}<ListFeature :type="type"  v-model="form.features" />
                 {{ form.features }}
                  {{ isCompleted('features')  }}
             </div>
            
-             <div class=""  :class="activeSection==='others'? 'block':'hidden'" >
-              
+             <div  :class="activeSection==='others'? 'block':'hidden'" >
+               {{ form.location }}
               <div v-if="type==='land'">
                  <ListLandother></ListLandother>
               </div>
               <div v-if="type==='house'">
                  <ListHouseother  :purpose="form.purpose.split(' ')[0]"></ListHouseother>
               </div>
-              <div v-if="type===''" class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500">
-                <p class="text-lg font-medium">No property selected</p>
-                <p class="text-sm mt-1">Please select a listing purpose and property type to continue.</p>
-              </div>
-               <!-- <ListHouseother></ListHouseother> -->
-                
-            </div> 
-            <div>
               
+                
             </div>
+           
+           
           </div>
             
         </div>
