@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 /* ======================
@@ -32,11 +32,10 @@ STATE
 ====================== */
 const accuracy = ref(9999)
 const REQUIRED_ACCURACY = 5
-
 const corners = ref([])
 
 /* ======================
-MAIN FORM (ONE OBJECT)
+FORM
 ====================== */
 const form = ref({
   location: {
@@ -45,14 +44,13 @@ const form = ref({
     lga: '',
     city: '',
     address: '',
+    fullAddress: '',
     source: 'gps',
-
     geometry: {
       type: props.type === 'house' ? 'Point' : 'Polygon',
       coordinates: []
     }
   },
-
   landDetails: {
     size: 0,
     unit: 'sqm',
@@ -63,7 +61,7 @@ const form = ref({
 })
 
 /* ======================
-EMIT
+EMIT TO PARENT
 ====================== */
 const emitData = () => {
   emit('update:modelValue', form.value)
@@ -74,45 +72,51 @@ REVERSE GEOCODE
 ====================== */
 const reverseGeocode = async (lng, lat) => {
   const config = useRuntimeConfig()
+  try {
+    const res = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.public.mapboxToken}`
+    )
+    const data = await res.json()
 
-  const res = await fetch(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.public.mapboxToken}`
-  )
+    let state = '', lga = '', city = '', country = '', road = '', full = ''
 
-  const data = await res.json()
+    data.features.forEach(f => {
+      const t = f.place_type
+      if (!road && t.includes('address')) road = f.text
+      if (!city && t.includes('place')) city = f.text
+      if (!lga && t.includes('district')) lga = f.text
+      if (!state && t.includes('region')) state = f.text
+      if (!country && t.includes('country')) country = f.text
+    })
 
-  let state = '', lga = '', city = '', country = '', road = ''
+    full = `${road || ''}, ${city || lga || ''}, ${state || ''}, ${country || ''}`
 
-  data.features.forEach(f => {
-    const t = f.place_type
+    form.value.location = {
+      ...form.value.location,
+      state,
+      lga,
+      city,
+      country,
+      address: road,
+      fullAddress: full
+    }
 
-    if (!road && t.includes('address')) road = f.text
-    if (!city && t.includes('place')) city = f.text
-    if (!lga && t.includes('district')) lga = f.text
-    if (!state && t.includes('region')) state = f.text
-    if (!country && t.includes('country')) country = f.text
-  })
-
-  form.value.location = {
-    ...form.value.location,
-    state,
-    lga,
-    city,
-    country,
-    address: road
+    emitData()
+  } catch (err) {
+    console.error('Reverse geocode error:', err)
   }
-
-  emitData()
 }
 
 /* ======================
-GPS
+GPS LIVE
 ====================== */
 const startLivePosition = () => {
+  if (!navigator.geolocation) return alert('GPS not supported')
+
   watchId = navigator.geolocation.watchPosition(
     ({ coords }) => {
       const { latitude, longitude, accuracy: acc } = coords
-      accuracy.value = acc
+      accuracy.value = Number(acc.toFixed(1))
 
       if (!marker) {
         marker = new mapboxgl.Marker({ color: 'blue' })
@@ -124,19 +128,16 @@ const startLivePosition = () => {
 
       map.flyTo({ center: [longitude, latitude], zoom: 19 })
 
-      /* HOUSE = POINT */
+      // House = Point
       if (props.type === 'house') {
-        form.value.location.geometry = {
-          type: 'Point',
-          coordinates: [longitude, latitude]
-        }
+        form.value.location.geometry = { type: 'Point', coordinates: [longitude, latitude] }
       }
 
       reverseGeocode(longitude, latitude)
       emitData()
     },
     () => alert('Enable GPS'),
-    { enableHighAccuracy: true }
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
   )
 }
 
@@ -145,10 +146,10 @@ ADD CORNER (LAND)
 ====================== */
 const addCorner = () => {
   if (props.type === 'house') return
-  if (accuracy.value > REQUIRED_ACCURACY) return
+  if (!marker) return alert('Waiting for GPS...')
+  if (accuracy.value > REQUIRED_ACCURACY) return alert(`Wait for accuracy ${accuracy.value} m`)
 
   const { lng, lat } = marker.getLngLat()
-
   corners.value.push([lng, lat])
 
   drawPolygon()
@@ -160,73 +161,46 @@ DRAW POLYGON
 const drawPolygon = () => {
   if (corners.value.length < 3) return
 
-  const coords = [...corners.value, corners.value[0]]
-
-  form.value.location.geometry = {
-    type: 'Polygon',
-    coordinates: [coords]
-  }
+  const coords = [...corners.value, corners.value[0]] // close polygon
+  form.value.location.geometry = { type: 'Polygon', coordinates: [coords] }
 
   const area = geodesicArea(coords)
-
   form.value.landDetails.size = Math.round(area)
 
   emitData()
 
+  // Draw on map
   if (map.getSource('plot')) {
-    map.getSource('plot').setData({
-      type: 'Feature',
-      geometry: form.value.location.geometry
-    })
+    map.getSource('plot').setData({ type: 'Feature', geometry: form.value.location.geometry })
   } else {
-    map.addSource('plot', {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: form.value.location.geometry
-      }
-    })
-
-    map.addLayer({
-      id: 'plot-fill',
-      type: 'fill',
-      source: 'plot',
-      paint: { 'fill-color': '#00ff00', 'fill-opacity': 0.25 }
-    })
+    map.addSource('plot', { type: 'geojson', data: { type: 'Feature', geometry: form.value.location.geometry } })
+    map.addLayer({ id: 'plot-fill', type: 'fill', source: 'plot', paint: { 'fill-color': '#00ff00', 'fill-opacity': 0.25 } })
+    map.addLayer({ id: 'plot-line', type: 'line', source: 'plot', paint: { 'line-color': '#00aa00', 'line-width': 2 } })
   }
 }
 
 /* ======================
-AREA
+GEODESIC AREA
 ====================== */
 const geodesicArea = (coords) => {
   const rad = Math.PI / 180
   const latRef = coords[0][1] * rad
-
-  const meters = coords.map(([lng, lat]) => [
-    lng * 111320 * Math.cos(latRef),
-    lat * 110540
-  ])
-
+  const meters = coords.map(([lng, lat]) => [lng * 111320 * Math.cos(latRef), lat * 110540])
   let area = 0
-
   for (let i = 0; i < meters.length - 1; i++) {
     const [x1, y1] = meters[i]
     const [x2, y2] = meters[i + 1]
     area += x1 * y2 - x2 * y1
   }
-
   return Math.abs(area / 2)
 }
 
 /* ======================
-INIT
+INIT MAP
 ====================== */
 onMounted(async () => {
   await nextTick()
-
   const config = useRuntimeConfig()
-
   mapboxgl = (await import('mapbox-gl')).default
   mapboxgl.accessToken = config.public.mapboxToken
 
@@ -242,13 +216,13 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (watchId) navigator.geolocation.clearWatch(watchId)
+  if (map) map.remove()
 })
 </script>
 
 <template>
 <ClientOnly>
   <div class="space-y-4">
-
     <div>Accuracy: {{ accuracy.toFixed(1) }} m</div>
 
     <button
@@ -259,7 +233,6 @@ onUnmounted(() => {
     </button>
 
     <div ref="mapRef" class="w-full h-[500px] border rounded"></div>
-
   </div>
 </ClientOnly>
 </template>

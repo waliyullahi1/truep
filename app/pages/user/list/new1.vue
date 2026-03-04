@@ -130,6 +130,7 @@ const back = () => { if (step.value > 1) step.value-- }
 function isCompleted(section) {
   if (section === 'location'){
     
+    console.log(form.value.location, 'asdasdas');
     
     return form.value.location.address && form.value.location.state  && form.value.location.lga  && form.value.location.city && form.value.location.address
     }
@@ -160,6 +161,15 @@ const options = computed(() => {
    return houseType 
   } 
 })
+
+watch(
+  () => form.value.location,
+  (newVal) => {
+    isCompleted('location')
+  },
+  { deep: true }
+)
+
 /* ======================
    SUBMIT
 ====================== */
