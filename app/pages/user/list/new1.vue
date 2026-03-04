@@ -162,13 +162,7 @@ const options = computed(() => {
   } 
 })
 
-watch(
-  () => form.value.location,
-  (newVal) => {
-    isCompleted('location')
-  },
-  { deep: true }
-)
+
 
 /* ======================
    SUBMIT
@@ -181,13 +175,7 @@ function submit() {
  
 
 
-const updateLocation = (data) => {
-  form.value.location = {
-    ...form.value.location,
-    ...data
-  }
-  console.log('Parent form updated:', form.value.location)
-}
+
 </script>
 
 <template>
