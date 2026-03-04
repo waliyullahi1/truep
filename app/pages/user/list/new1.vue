@@ -175,6 +175,14 @@ const firstcanSubmit = computed(() => {
     form.value.purpose.trim().length > 0
   )
 })
+
+const updateLocation = (data) => {
+  form.value.location = {
+    ...form.value.location,
+    ...data
+  }
+  console.log('Parent form updated:', form.value.location)
+}
 </script>
 
 <template>
@@ -273,7 +281,10 @@ const firstcanSubmit = computed(() => {
               </div> 
               <div v-if="type==='land'" >
                {{ form.location }}
-                <ListLandMap v-model="form" />
+               <div>
+                Location complete? {{ isCompleted('location') ? '✅' : '❌' }}
+            </div>
+                <ListLandMap v-model="form"  @update="updateLocation"/>
               </div> 
 
 
