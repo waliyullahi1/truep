@@ -130,7 +130,7 @@ const back = () => { if (step.value > 1) step.value-- }
 function isCompleted(section) {
   if (section === 'location'){
     
-    console.log(form.value.location, 'asdasdas');
+  
     
     return form.value.location.address && form.value.location.state  && form.value.location.lga  && form.value.location.city && form.value.location.address
     }
@@ -181,12 +181,7 @@ function submit() {
 <template>
 <div class="min-h-screen py-10 px-4">
   <Container>
-   <button
-      :disabled="!firstcanSubmit"
-      @click="submitForm"
-    >
-      Submit
-    </button>
+  
     <!-- STEP 1: Land Details -->
     <div v-if="step === 1" class="max-w-4xl mx-auto space-y-4">
       <div class="bg-white gap-2 p-5 rounded shadow">
