@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import loadstates from '@/data/nigeria-states.js'
+import Feature from '~/components/List/Feature.vue'
 
 definePageMeta({
   layout: 'auth'
@@ -13,21 +14,72 @@ const step = ref(1)
 
 const activeSection = ref('location')
 const form = ref({
-  title: '',
-  purpose: 'Sell',
-  price: '',
-  size: '',
-  state: '',
-  city: '',
-  address: '',
+
   description: '',
-  fenced: false,
-  roadAccess: false,
-  dry: false,
-  documents: null, // survey or title doc file
-  phone: '',
-  whatsapp: '',
-  images: []
+  title: '',
+  type: "land",         
+  purpose: "sell",     
+  pricing: {
+    price: 5000000,
+    currency: "NGN",
+
+    rentDuration: null,      // "monthly" | "yearly" (only for rent)
+    installment: false,
+
+    installmentPlan: null
+    // example:
+    // {
+    //   months: 12,
+    //   monthlyAmount: 500000
+    // }
+  },
+  /* ================= LOCATION ================= */
+  location: {
+    country: "Nigeria",
+    state: "Osun",
+    lga: "Iwo",
+    city: "Oluponna",
+    address: "Behind New Market Road",
+
+    source: "gps", // "gps" | "manual"
+
+    // ⭐ GEOJSON (important)
+    geometry: {
+      type: "Polygon",   // "Point" for house | "Polygon" for land
+      coordinates: []
+    }
+  },
+  landDetails: {
+    size: 600,
+    unit: "sqm",
+    fenced: true,
+    dry: true,
+    roadAccess: true
+  },
+  houseDetails: null,
+  media: {
+    images: [],
+    video: null
+  },
+  documents: {
+    surveyPlan: null,
+    titleDocument: null
+  },
+  features:[
+   
+    
+    
+  ],
+  /* ================= CONTACT ================= */
+  contact: {
+    name: "",
+    phone: "",
+    whatsapp: ""
+  },
+
+
+  createdAt: new Date(),
+  updatedAt: new Date()
 })
 const type = ref('')
 /* ======================
@@ -36,6 +88,8 @@ const type = ref('')
 
 const loadingStates = ref(false)
 const loadingLgas = ref(false)
+
+
 
 
 const houseType = [
@@ -74,17 +128,18 @@ const back = () => { if (step.value > 1) step.value-- }
    COMPLETION CHECKS
 ====================== */
 function isCompleted(section) {
-  if (section === 'location')
-    return form.value.state && form.value.city && form.value.address
+  if (section === 'location'){
+    
+    
+    return form.value.location.address && form.value.location.state  && form.value.location.lga  && form.value.location.city && form.value.location.address
+    }
+ if (section === 'features') {
+  const count = Object.keys(form.value.features || {}).length
 
-  if (section === 'features')
-    return (
-      form.value.fenced ||
-      form.value.roadAccess ||
-      form.value.dry ||
-      form.value.description
-    )
+  console.log(count > 2)
 
+  return count > 2
+}
   if (section === 'size')
     return form.value.size && form.value.price
 
@@ -112,11 +167,25 @@ function submit() {
   console.log('Form Data:', form.value)
   alert('Land submitted successfully ✅')
 }
+
+//  
+const firstcanSubmit = computed(() => {
+  return (
+    form.value.description.trim().length > 0 &&
+    form.value.purpose.trim().length > 0
+  )
+})
 </script>
 
 <template>
 <div class="min-h-screen py-10 px-4">
   <Container>
+   <button
+      :disabled="!firstcanSubmit"
+      @click="submitForm"
+    >
+      Submit
+    </button>
     <!-- STEP 1: Land Details -->
     <div v-if="step === 1" class="max-w-4xl mx-auto space-y-4">
       <div class="bg-white gap-2 p-5 rounded shadow">
@@ -160,23 +229,25 @@ function submit() {
         
 
         <!-- Location -->
-        <div class="mt-7   w-full p-2 min-h-96 border flex gap-2">
+        <div class=" mt-20  w-full p-2 min-h-96 border  gap-2">
 
           
-           <div class="w-64 overflow-hidden rounded-md   h-fit  space-y- shadow-md">
+           <div class=" flex  overflow-hidden rounded-md bg-slate-50 border   h-fit  space-y- shadow-sm">
 
             <div
               @click="activeSection='location'"
-              class="tab"
+              class="tab flex-1"
               :class="{ active: activeSection==='location' }"
             >
               Location
               <span v-if="isCompleted('location')">✅</span>
             </div>
 
+              
+
             <div
               @click="activeSection='features'"
-              class="tab"
+              class="tab flex-1"
               :class="{ active: activeSection==='features' }"
             >
               Features
@@ -185,7 +256,7 @@ function submit() {
 
             <div
               @click="activeSection='others'"
-              class="tab"
+              class="tab flex-1"
               :class="{ active: activeSection==='others' }"
             >
               Others
@@ -193,23 +264,37 @@ function submit() {
             </div>
 
           </div>
-          <div class="w-4/5 h-full">
-            <div v-if="activeSection==='location'" >
-                <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/>
-            </div>
-             <div v-if="activeSection==='features'" >
-                <ListFeature :type="type" v-model="form.features" />
-            </div>
-             <div v-if="activeSection==='others'" >
-              <h2>  </h2>
+          <div class="w-full h-full">
+            <div :class="activeSection==='location'? 'block':'hidden'">
+              <div v-if="type==='land'" >
+                
+                <ListLandMap  v-model="form.location"/>
+              </div> 
+               <div v-if="type==='house'" >
+                <ListHouseLocationPicker/>
+              </div> 
+               <!-- <div v-if="type===''" class=" bg-gray-50 border rounded-xl p-8 text-center text-gray-500"  >
+                 <p class="text-lg font-medium">No property selected</p>
+                <p class="text-sm mt-1">Please select a listing purpose and property type to continue.</p>
              
+              </div>  -->
+                <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
+            </div>
+             <div  :class="activeSection==='features'? 'block':'hidden'" >
+                <ListFeature :type="type" v-model="form.features" />
+                {{ form.features }}
+                 {{ isCompleted('features')  }}
+            </div>
+           
+             <div class=""  :class="activeSection==='others'? 'block':'hidden'" >
+              
               <div v-if="type==='land'">
                  <ListLandother></ListLandother>
               </div>
               <div v-if="type==='house'">
                  <ListHouseother  :purpose="form.purpose.split(' ')[0]"></ListHouseother>
               </div>
-              <div v-else class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500">
+              <div v-if="type===''" class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500">
                 <p class="text-lg font-medium">No property selected</p>
                 <p class="text-sm mt-1">Please select a listing purpose and property type to continue.</p>
               </div>
@@ -227,19 +312,16 @@ function submit() {
 
     <!-- STEP 2: Upload Images & Documents -->
     <div v-if="step === 2" class="space-y-10">
-      <ListUpload v-model="form"/>
+       
+                <ListDescription v-model="form.description" />
+          
+      
     </div>
 
     <!-- STEP 3: Land Features -->
     <div v-if="step === 3" class="space-y-4">
-      <h2 class="section-title">Land Features</h2>
-      <textarea v-model="form.description" placeholder="Describe the land..." class="input h-28"/>
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <label><input type="checkbox" v-model="form.fenced"/> Fenced</label>
-        <label><input type="checkbox" v-model="form.roadAccess"/> Road Access</label>
-        <label><input type="checkbox" v-model="form.dry"/> Dry Land</label>
-      </div>
-      <input v-model="form.documents" placeholder="Documents (C of O, Survey, etc)" class="input" />
+      
+      <ListUpload v-model="form"/>
     </div>
 
     <!-- STEP 4: Contact Info -->

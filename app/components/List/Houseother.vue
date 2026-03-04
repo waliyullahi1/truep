@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue'
 
 /* ======================
-   PROPS
+   PROPSs
 ====================== */
 const props = defineProps({
   purpose:{

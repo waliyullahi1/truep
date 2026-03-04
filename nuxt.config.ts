@@ -10,7 +10,7 @@ export default defineNuxtConfig({
 
   pages: true,
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', '@vueup/vue-quill/dist/vue-quill.snow.css'],
 
   app: {
     pageTransition: {
