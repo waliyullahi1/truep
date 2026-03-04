@@ -1,25 +1,19 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 /* ======================
-PROPS + MODEL
+PROPS
 ====================== */
 const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => ({})
-  },
-  type: {
-    type: String,
-    default: 'land' // land | house
-  }
+  modelValue: Object,
+  type: { type: String, default: 'land' }
 })
 
 const emit = defineEmits(['update:modelValue'])
 
 /* ======================
-MAP REFS
+MAP
 ====================== */
 const mapRef = ref(null)
 let map = null
@@ -32,7 +26,10 @@ STATE
 ====================== */
 const accuracy = ref(9999)
 const REQUIRED_ACCURACY = 5
+
 const corners = ref([])
+let lastEmitTime = 0
+let lastGeoTime = 0
 
 /* ======================
 FORM
@@ -46,112 +43,105 @@ const form = ref({
     address: '',
     fullAddress: '',
     source: 'gps',
-    geometry: {
-      type: props.type === 'house' ? 'Point' : 'Polygon',
-      coordinates: []
-    }
+    geometry: { type: 'Point', coordinates: [] }
   },
   landDetails: {
     size: 0,
-    unit: 'sqm',
-    fenced: false,
-    dry: true,
-    roadAccess: false
+    unit: 'sqm'
   }
 })
 
 /* ======================
-EMIT TO PARENT
+AUTO CALC PLOTS
+400sqm = 1 plot (Nigeria standard)
+====================== */
+const plots = computed(() =>
+  Math.round(form.value.landDetails.size / 400)
+)
+
+/* ======================
+SAFE EMIT (THROTTLED)
 ====================== */
 const emitData = () => {
+  const now = Date.now()
+  if (now - lastEmitTime < 1500) return
+  lastEmitTime = now
   emit('update:modelValue', form.value)
 }
 
 /* ======================
-REVERSE GEOCODE
+REVERSE GEOCODE (THROTTLED)
 ====================== */
 const reverseGeocode = async (lng, lat) => {
+  const now = Date.now()
+  if (now - lastGeoTime < 5000) return
+  lastGeoTime = now
+
   const config = useRuntimeConfig()
+
   try {
     const res = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.public.mapboxToken}`
     )
     const data = await res.json()
 
-    let state = '', lga = '', city = '', country = '', road = '', full = ''
+    const place = data.features[0]?.place_name || ''
 
-    data.features.forEach(f => {
-      const t = f.place_type
-      if (!road && t.includes('address')) road = f.text
-      if (!city && t.includes('place')) city = f.text
-      if (!lga && t.includes('district')) lga = f.text
-      if (!state && t.includes('region')) state = f.text
-      if (!country && t.includes('country')) country = f.text
-    })
-
-    full = `${road || ''}, ${city || lga || ''}, ${state || ''}, ${country || ''}`
-
-    form.value.location = {
-      ...form.value.location,
-      state,
-      lga,
-      city,
-      country,
-      address: road,
-      fullAddress: full
-    }
-
+    form.value.location.fullAddress = place
     emitData()
-  } catch (err) {
-    console.error('Reverse geocode error:', err)
-  }
+  } catch {}
 }
 
 /* ======================
 GPS LIVE
 ====================== */
 const startLivePosition = () => {
-  if (!navigator.geolocation) return alert('GPS not supported')
-
   watchId = navigator.geolocation.watchPosition(
     ({ coords }) => {
       const { latitude, longitude, accuracy: acc } = coords
-      accuracy.value = Number(acc.toFixed(1))
+
+      accuracy.value = acc
 
       if (!marker) {
-        marker = new mapboxgl.Marker({ color: 'blue' })
-          .setLngLat([longitude, latitude])
-          .addTo(map)
+        marker = new mapboxgl.Marker().setLngLat([longitude, latitude]).addTo(map)
       } else {
         marker.setLngLat([longitude, latitude])
       }
 
-      map.flyTo({ center: [longitude, latitude], zoom: 19 })
+      map.setCenter([longitude, latitude])
 
-      // House = Point
       if (props.type === 'house') {
-        form.value.location.geometry = { type: 'Point', coordinates: [longitude, latitude] }
+        form.value.location.geometry = {
+          type: 'Point',
+          coordinates: [longitude, latitude]
+        }
+        emitData()
       }
 
       reverseGeocode(longitude, latitude)
-      emitData()
     },
     () => alert('Enable GPS'),
-    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+    { enableHighAccuracy: true }
   )
 }
 
 /* ======================
-ADD CORNER (LAND)
+ADD CORNER
 ====================== */
 const addCorner = () => {
-  if (props.type === 'house') return
-  if (!marker) return alert('Waiting for GPS...')
-  if (accuracy.value > REQUIRED_ACCURACY) return alert(`Wait for accuracy ${accuracy.value} m`)
+  if (accuracy.value > REQUIRED_ACCURACY) return alert('Wait for better accuracy')
 
   const { lng, lat } = marker.getLngLat()
   corners.value.push([lng, lat])
 
+  drawPolygon()
+}
+
+/* ======================
+UNDO LAST POINT
+====================== */
+const undoCorner = () => {
+  corners.value.pop()
   drawPolygon()
 }
 
@@ -161,38 +151,80 @@ DRAW POLYGON
 const drawPolygon = () => {
   if (corners.value.length < 3) return
 
-  const coords = [...corners.value, corners.value[0]] // close polygon
-  form.value.location.geometry = { type: 'Polygon', coordinates: [coords] }
+  const coords = [...corners.value, corners.value[0]]
 
-  const area = geodesicArea(coords)
-  form.value.landDetails.size = Math.round(area)
+  form.value.location.geometry = {
+    type: 'Polygon',
+    coordinates: [coords]
+  }
+
+  form.value.landDetails.size = Math.round(geodesicArea(coords))
 
   emitData()
 
-  // Draw on map
+  const geo = {
+    type: 'Feature',
+    geometry: form.value.location.geometry
+  }
+
   if (map.getSource('plot')) {
-    map.getSource('plot').setData({ type: 'Feature', geometry: form.value.location.geometry })
+    map.getSource('plot').setData(geo)
   } else {
-    map.addSource('plot', { type: 'geojson', data: { type: 'Feature', geometry: form.value.location.geometry } })
-    map.addLayer({ id: 'plot-fill', type: 'fill', source: 'plot', paint: { 'fill-color': '#00ff00', 'fill-opacity': 0.25 } })
-    map.addLayer({ id: 'plot-line', type: 'line', source: 'plot', paint: { 'line-color': '#00aa00', 'line-width': 2 } })
+    map.addSource('plot', { type: 'geojson', data: geo })
+
+    map.addLayer({
+      id: 'plot-fill',
+      type: 'fill',
+      source: 'plot',
+      paint: { 'fill-color': '#00ff00', 'fill-opacity': 0.25 }
+    })
+
+    map.addLayer({
+      id: 'plot-line',
+      type: 'line',
+      source: 'plot',
+      paint: { 'line-color': '#00aa00', 'line-width': 2 }
+    })
   }
 }
 
 /* ======================
-GEODESIC AREA
+AREA
 ====================== */
 const geodesicArea = (coords) => {
   const rad = Math.PI / 180
   const latRef = coords[0][1] * rad
-  const meters = coords.map(([lng, lat]) => [lng * 111320 * Math.cos(latRef), lat * 110540])
+
+  const meters = coords.map(([lng, lat]) => [
+    lng * 111320 * Math.cos(latRef),
+    lat * 110540
+  ])
+
   let area = 0
+
   for (let i = 0; i < meters.length - 1; i++) {
     const [x1, y1] = meters[i]
     const [x2, y2] = meters[i + 1]
     area += x1 * y2 - x2 * y1
   }
+
   return Math.abs(area / 2)
+}
+
+/* ======================
+EXPORT GEOJSON
+====================== */
+const exportGeoJSON = () => {
+  const blob = new Blob(
+    [JSON.stringify(form.value.location.geometry, null, 2)],
+    { type: 'application/json' }
+  )
+
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'land.geojson'
+  a.click()
 }
 
 /* ======================
@@ -201,12 +233,8 @@ INIT MAP
 onMounted(async () => {
   await nextTick()
 
-  if (!mapRef.value) return   // ← important for mobile
-
-  const config = useRuntimeConfig()
-
   mapboxgl = (await import('mapbox-gl')).default
-  mapboxgl.accessToken = config.public.mapboxToken
+  mapboxgl.accessToken = useRuntimeConfig().public.mapboxToken
 
   map = new mapboxgl.Map({
     container: mapRef.value,
@@ -215,10 +243,7 @@ onMounted(async () => {
     zoom: 18
   })
 
-  map.on('load', () => {
-    console.log('Map loaded')
-    startLivePosition()
-  })
+  map.on('load', startLivePosition)
 })
 
 onUnmounted(() => {
@@ -229,17 +254,28 @@ onUnmounted(() => {
 
 <template>
 <ClientOnly>
-  <div class="space-y-4">
-    <div>Accuracy: {{ accuracy.toFixed(1) }} m</div>
+  <div class="space-y-3">
 
-    <button
-      v-if="type==='land'"
-      @click="addCorner"
-      class="bg-green-600 text-white px-4 py-2 rounded">
-      Add Corner
-    </button>
+    <div>Accuracy: {{ accuracy.toFixed(1) }}m</div>
+    <div>Corners: {{ corners.length }}</div>
+    <div>Area: {{ form.landDetails.size }} sqm</div>
+    <div>Plots: {{ plots }}</div>
 
-    <div ref="mapRef" class="w-full h-[500px] border rounded"></div>
+    <div class="flex gap-2">
+      <button @click="addCorner" class="bg-green-600 text-white px-3 py-2 rounded">
+        Add Corner
+      </button>
+
+      <button @click="undoCorner" class="bg-yellow-500 text-white px-3 py-2 rounded">
+        Undo
+      </button>
+
+      <button @click="exportGeoJSON" class="bg-blue-600 text-white px-3 py-2 rounded">
+        Export
+      </button>
+    </div>
+
+    <div ref="mapRef" class="w-full h-[500px] rounded border"></div>
   </div>
 </ClientOnly>
 </template>
