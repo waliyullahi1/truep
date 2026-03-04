@@ -200,7 +200,11 @@ INIT MAP
 ====================== */
 onMounted(async () => {
   await nextTick()
+
+  if (!mapRef.value) return   // ← important for mobile
+
   const config = useRuntimeConfig()
+
   mapboxgl = (await import('mapbox-gl')).default
   mapboxgl.accessToken = config.public.mapboxToken
 
@@ -211,7 +215,10 @@ onMounted(async () => {
     zoom: 18
   })
 
-  map.on('load', startLivePosition)
+  map.on('load', () => {
+    console.log('Map loaded')
+    startLivePosition()
+  })
 })
 
 onUnmounted(() => {
