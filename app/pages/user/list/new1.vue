@@ -178,13 +178,8 @@ function submit() {
   alert('Land submitted successfully ✅')
 }
 
-//  
-const firstcanSubmit = computed(() => {
-  return (
-    form.value.description.trim().length > 0 &&
-    form.value.purpose.trim().length > 0
-  )
-})
+ 
+
 
 const updateLocation = (data) => {
   form.value.location = {
