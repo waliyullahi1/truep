@@ -5,9 +5,14 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    'vue3-carousel-nuxt'
+    'vue3-carousel-nuxt',
+    '@pinia/nuxt',
+    '@pinia/nuxt'
   ],
 
+  //   plugins: [
+  //   '~/plugins/pinia.js'
+  // ],
   pages: true,
 
   css: ['~/assets/css/main.css', '@vueup/vue-quill/dist/vue-quill.snow.css'],

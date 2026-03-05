@@ -3,8 +3,19 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 /* =========================
+PROPS & EMIT
+========================= */
+
+const props = defineProps({
+  modelValue: Object
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+/* =========================
 REFS
 ========================= */
+
 const mapRef = ref(null)
 
 let map = null
@@ -15,6 +26,7 @@ let watchId = null
 /* =========================
 DATA
 ========================= */
+
 const corners = ref([])
 
 const form = ref({
@@ -25,13 +37,30 @@ const form = ref({
 /* =========================
 ACCURACY
 ========================= */
+
 const accuracy = ref(9999)
 const REQUIRED_ACCURACY = 5
 
 /* =========================
+EMIT DATA
+========================= */
+
+const emitData = () => {
+
+  emit('update:modelValue', {
+    corners: corners.value,
+    area: form.value.area,
+    plots: form.value.plots
+  })
+
+}
+
+/* =========================
 REVERSE GEOCODE
 ========================= */
+
 const reverseGeocode = async (lng, lat) => {
+
   try {
 
     const config = useRuntimeConfig()
@@ -76,12 +105,15 @@ const reverseGeocode = async (lng, lat) => {
     console.log('Geocode error', err)
 
     return null
+
   }
+
 }
 
 /* =========================
 START GPS
 ========================= */
+
 const startLivePosition = () => {
 
   if (!navigator.geolocation) {
@@ -124,7 +156,6 @@ const startLivePosition = () => {
     (err) => {
 
       console.log('GPS error', err)
-
       alert('Enable GPS permission')
 
     },
@@ -136,25 +167,27 @@ const startLivePosition = () => {
     }
 
   )
+
 }
 
 /* =========================
 ADD CORNER
 ========================= */
+
 const addCorner = async () => {
 
   if (!myMarker) {
 
     alert('Wait for GPS')
-
     return
+
   }
 
   if (accuracy.value > REQUIRED_ACCURACY) {
 
     alert(`Accuracy too low ${accuracy.value}m`)
-
     return
+
   }
 
   const { lat, lng } = myMarker.getLngLat()
@@ -176,14 +209,16 @@ const addCorner = async () => {
 
   corners.value.push(corner)
 
-  console.log('Corner Added:', corner)
-
   drawPolygon()
+
+  emitData()
+
 }
 
 /* =========================
 DRAW POLYGON
 ========================= */
+
 const drawPolygon = () => {
 
   if (corners.value.length < 2)
@@ -220,9 +255,7 @@ const drawPolygon = () => {
     map.addLayer({
 
       id: 'plot-fill',
-
       type: 'fill',
-
       source: 'plot',
 
       paint: {
@@ -235,9 +268,7 @@ const drawPolygon = () => {
     map.addLayer({
 
       id: 'plot-line',
-
       type: 'line',
-
       source: 'plot',
 
       paint: {
@@ -246,6 +277,7 @@ const drawPolygon = () => {
       }
 
     })
+
   }
 
   form.value.area =
@@ -253,18 +285,19 @@ const drawPolygon = () => {
 
   form.value.plots =
     Math.round(form.value.area / 450)
+
 }
 
 /* =========================
 AREA CALCULATION
 ========================= */
+
 const geodesicAreaMeters = (coords) => {
 
   if (coords.length < 3)
     return 0
 
   const rad = Math.PI / 180
-
   const latRef = coords[0][1] * rad
 
   const meters = coords.map(([lng, lat]) => {
@@ -289,14 +322,17 @@ const geodesicAreaMeters = (coords) => {
       meters[(i + 1) % meters.length]
 
     area += x1 * y2 - x2 * y1
+
   }
 
   return Math.abs(area / 2)
+
 }
 
 /* =========================
 RESET
 ========================= */
+
 const resetPlot = () => {
 
   corners.value = []
@@ -308,14 +344,18 @@ const resetPlot = () => {
 
     map.removeLayer('plot-fill')
     map.removeLayer('plot-line')
-
     map.removeSource('plot')
+
   }
+
+  emitData()
+
 }
 
 /* =========================
 INIT MAP
 ========================= */
+
 onMounted(async () => {
 
   if (!process.client)
@@ -346,6 +386,7 @@ onMounted(async () => {
     })
 
   map.on('load', startLivePosition)
+
 })
 
 onUnmounted(() => {
@@ -358,7 +399,6 @@ onUnmounted(() => {
 
 })
 </script>
-
 
 
 <template>
@@ -375,7 +415,7 @@ Accuracy: {{ accuracy }} m
 v-if="accuracy > REQUIRED_ACCURACY"
 class="text-red-600 font-semibold">
 
-Waiting for better GPS accuracy
+Waiting for better GPS accuracy...
 
 </div>
 
@@ -388,7 +428,6 @@ GPS Ready ✓
 </div>
 
 
-
 <div class="flex gap-2">
 
 <button
@@ -398,7 +437,6 @@ class="bg-green-600 text-white px-4 py-2 rounded">
 Add Corner
 
 </button>
-
 
 <button
 @click="resetPlot"
@@ -411,12 +449,10 @@ Reset
 </div>
 
 
-
 <div
 ref="mapRef"
 class="w-full h-[500px] rounded-xl border shadow">
 </div>
-
 
 
 <div class="text-sm text-gray-600">
@@ -427,8 +463,7 @@ Corners: {{ corners.length }}
 
 <div v-if="form.area">
 
-Area: {{ form.area }} m²
-
+Area: {{ form.area }} m²  
 (~{{ form.plots }} plots)
 
 </div>
