@@ -272,7 +272,7 @@ function submit() {
                <div>
                 Location complete? {{ isCompleted('location') ? '✅' : '❌' }}
             </div>
-                <ListLandsMap v-model="form"  @update="updateLocation"/>
+                <ListLandMap v-model="form" />
               </div> 
 
 
