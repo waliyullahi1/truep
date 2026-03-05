@@ -97,6 +97,7 @@ const reverseGeocode = async (lng, lat) => {
         place.address = f.text
 
     })
+     console.log('Geocode error', place)
 
     return place
 
