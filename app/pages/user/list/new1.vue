@@ -268,11 +268,12 @@ function submit() {
              
               </div> 
               <div v-if="type==='land'" >
-               {{ form.location }}
+              
                <div>
                 Location complete? {{ isCompleted('location') ? '✅' : '❌' }}
             </div>
-                <ListLandMap modelValue="form" />
+                <ListLandMap v-model="form" />
+                 {{ form.location }}
               </div> 
 
 
@@ -298,7 +299,7 @@ function submit() {
                  <ListHouseother  :purpose="form.purpose.split(' ')[0]"></ListHouseother>
               </div>
               
-                
+                 {{ form }}
             </div>
            
            
