@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { computed } from 'vue'
 
 /* ======================
    PROPS
@@ -7,15 +7,13 @@ import { ref, watch, computed } from 'vue'
 const props = defineProps({
   type: {
     type: String,
-    default: 'land' // land | house
+    default: 'land'
   },
   modelValue: {
     type: Object,
     default: () => ({})
   }
 })
-
-const emit = defineEmits(['update:modelValue'])
 
 
 /* ======================
@@ -43,6 +41,7 @@ const landFeatures = [
   { key: 'rocky', label: 'Rocky Soil' }
 ]
 
+
 /* HOUSE FEATURES (numbers) */
 const houseFeatures = [
   { key: 'bedroom', label: 'Bedroom Count', type: 'number' },
@@ -53,7 +52,8 @@ const houseFeatures = [
   { key: 'swimmingPool', label: 'Swimming Pool Count', type: 'number' }
 ]
 
-/* HOUSE FEATURES (boolean) */
+
+/* HOUSE BOOLEAN FEATURES */
 const otherHouseFeatures = [
   { key: 'airConditioning', label: 'Air Conditioning' },
   { key: 'borehole', label: 'Borehole Water' },
@@ -77,49 +77,38 @@ const otherHouseFeatures = [
 /* ======================
    COMPUTED
 ====================== */
-const features = computed(() => props.type === 'house' ? houseFeatures : landFeatures)
-
-
-/* ======================
-   LOCAL STATE
-====================== */
-const local = ref({ ...props.modelValue })
+const features = computed(() =>
+  props.type === 'house' ? houseFeatures : landFeatures
+)
 
 
 /* ======================
    METHODS
 ====================== */
 
-// toggle boolean features
 const toggleFeature = (key) => {
-  if (local.value[key]) {
-    delete local.value[key]   // remove feature if active
+
+  if (props.modelValue[key]) {
+    delete props.modelValue[key]
   } else {
-    local.value[key] = true   // add feature if inactive
+    props.modelValue[key] = true
   }
+
 }
 
-// remove number feature if zero
 const handleNumberInput = (key) => {
-  if (local.value[key] === 0 || local.value[key] === null || local.value[key] === '') {
-    delete local.value[key]
+
+  if (
+    props.modelValue[key] === 0 ||
+    props.modelValue[key] === '' ||
+    props.modelValue[key] === null
+  ) {
+    delete props.modelValue[key]
   }
+
 }
-
-/* ======================
-   WATCHERS
-====================== */
-
-// Emit to parent whenever local changes
-watch(local, () => {
-  emit('update:modelValue', { ...local.value })
-}, { deep: true })
-
-// Sync local if parent changes
-watch(() => props.modelValue, (v) => {
-  local.value = { ...v }
-})
 </script>
+
 
 
 <template>
@@ -136,13 +125,14 @@ watch(() => props.modelValue, (v) => {
       v-for="f in features"
       :key="f.key"
       class="feature-card"
-      :class="{ active: local[f.key] }"
+      :class="{ active: modelValue[f.key] }"
       @click="toggleFeature(f.key)"
     >
       <span class="text-sm">{{ f.label }}</span>
-      <span v-if="local[f.key]">✓</span>
+      <span v-if="modelValue[f.key]">✓</span>
     </div>
   </div>
+
 
   <!-- HOUSE FEATURES -->
   <div v-if="type === 'house'" class="space-y-6">
@@ -151,43 +141,53 @@ watch(() => props.modelValue, (v) => {
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div v-for="f in features" :key="f.key">
         <label class="text-sm text-gray-500">{{ f.label }}</label>
+
         <input
           type="number"
           min="0"
-          v-model.number="local[f.key]"
+          v-model.number="modelValue[f.key]"
           @input="handleNumberInput(f.key)"
           class="input mt-1"
         />
       </div>
     </div>
 
-    <!-- other boolean features -->
+
+    <!-- boolean features -->
     <div>
       <h3 class="font-semibold mb-3">Other Features</h3>
+
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div
           v-for="f in otherHouseFeatures"
           :key="f.key"
           class="feature-card"
-          :class="{ active: local[f.key] }"
+          :class="{ active: modelValue[f.key] }"
           @click="toggleFeature(f.key)"
         >
           <span class="text-xs">{{ f.label }}</span>
-          <span v-if="local[f.key]">✓</span>
+          <span v-if="modelValue[f.key]">✓</span>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- NO TYPE SELECTED -->
-  <div v-if="type === ''" class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500">
+
+  <!-- NO TYPE -->
+  <div
+    v-if="type === ''"
+    class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500"
+  >
     <p class="text-lg font-medium">No property selected</p>
-    <p class="text-sm mt-1">Please select a listing purpose and property type to continue.</p>
+    <p class="text-sm mt-1">
+      Please select property type first.
+    </p>
   </div>
 
 </div>
 </template>
+
 
 
 <style scoped>

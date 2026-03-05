@@ -284,7 +284,7 @@ function submit() {
                 <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
             </div>
              <div  :class="activeSection==='features'? 'block':'hidden'" >
-                 {{ form.location }}<ListFeature :type="type"  v-model="form.features" />
+                 {{ form.location }}<ListFeature :type="type"  :modelValue="form.features" />
                 {{ form.features }}
                  {{ isCompleted('features')  }}
             </div>
