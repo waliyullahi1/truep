@@ -132,7 +132,7 @@ function isCompleted(section) {
     
   
     
-    return form.value.location.address && form.value.location.state  && form.value.location.lga  && form.value.location.city && form.value.location.address
+    return form.value.location.address && form.value.location.state   && form.value.location.city && form.value.location.address
     }
  if (section === 'features') {
   const count = Object.keys(form.value.features || {}).length
@@ -270,7 +270,7 @@ function submit() {
               <div v-if="type==='land'" >
               
                <div>
-                Location complete? {{ isCompleted('location') ? '✅' : '❌' }}
+              
             </div>
                 <ListLandMap v-model="form" />
                  {{ form.location }}
@@ -279,7 +279,7 @@ function submit() {
 
                <div v-if="type==='house'" >
                 
-                <!-- <ListHouseLocationPicker/> -->
+                <ListHouseLocationPicker/>
               </div> 
                
                 <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
