@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue"
 import "mapbox-gl/dist/mapbox-gl.css"
+import Location from "../Ui/Icons/Location.vue"
 
 const props = defineProps({
   modelValue: Object
@@ -217,13 +218,17 @@ GPS Accuracy: {{ accuracy }} m
 ref="mapRef"
 class="w-full h-[500px] rounded-xl border shadow">
 </div>
-
+<input v-model="Location.address" placeholder="Address" class="input"/>
 <div class="text-sm text-gray-600">
 Drag the marker to the house location.
 </div>
+
 
 </div>
 
 </ClientOnly>
 
 </template>
+<style scoped>
+.input { @apply w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black; }
+</style>

@@ -20,7 +20,7 @@ const form = ref({
   type: "land",         
   purpose: "sell",     
   pricing: {
-    price: 5000000,
+    price: Number,
     currency: "NGN",
 
     rentDuration: null,      // "monthly" | "yearly" (only for rent)
@@ -49,13 +49,19 @@ const form = ref({
       coordinates: []
     }
   },
-  landDetails: {
-    size: 600,
-    unit: "sqm",
-    fenced: true,
-    dry: true,
-    roadAccess: true
-  },
+landDetails: {
+  unit: "plot",        // plot | acre | hectare | sqm
+
+  size: 450,           // size of ONE unit (e.g. 450 sqm per plot)
+
+  quantity: 2,         // number of units (2 plots)
+
+  totalSqm: 900,       // calculated total area in square meters
+
+  fenced: true,
+  dry: true,
+  roadAccess: true
+},
   houseDetails: null,
   media: {
     images: [],
@@ -279,7 +285,7 @@ function submit() {
 
                <div v-if="type==='house'" >
                 
-                <ListHouseLocationPicker/>
+                <ListHouseLocationPicker v-model="form" />
               </div> 
                
                 <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
@@ -291,12 +297,12 @@ function submit() {
             </div>
            
              <div  :class="activeSection==='others'? 'block':'hidden'" >
-               {{ form.location }}
+               {{ type }}
               <div v-if="type==='land'">
-                 <ListLandother></ListLandother>
+                 <ListLandother v-model="form"></ListLandother> fffffff
               </div>
               <div v-if="type==='house'">
-                 <ListHouseother  :purpose="form.purpose.split(' ')[0]"></ListHouseother>
+                 <ListHouseother  v-model="form" :purpose="form.purpose.split(' ')[0]"></ListHouseother>
               </div>
               
                  {{ form }}
