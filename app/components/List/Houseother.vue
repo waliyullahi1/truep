@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from "vue"
+import { computed } from "vue"
 
 /* ================= PROPS ================= */
 
@@ -10,38 +10,36 @@ const props = defineProps({
   },
   modelValue: {
     type: Object,
-    default: () => ({
-      price: 0,
-      currency: "NGN",
-      rentDuration: null
-    })
+    required: true
   }
 })
 
 const emit = defineEmits(["update:modelValue"])
 
-/* ================= LOCAL STATE ================= */
+/* ================= PRICING MODEL ================= */
 
-const pricing = ref({ ...props.modelValue })
-
-watch(pricing, () => {
-  emit("update:modelValue", pricing.value)
-}, { deep: true })
-
-watch(() => props.modelValue, (v) => {
-  pricing.value = { ...v }
+const pricing = computed({
+  get() {
+    return props.modelValue.pricing
+  },
+  set(val) {
+    emit("update:modelValue", {
+      ...props.modelValue,
+      pricing: val
+    })
+  }
 })
 
 /* ================= COMPUTED ================= */
 
 const rentLabel = computed(() =>
-  pricing.value.rentDuration === "monthly"
+  pricing.value?.rentDuration === "monthly"
     ? "Price per Month (₦)"
     : "Price per Year (₦)"
 )
 
 const totalRentLabel = computed(() =>
-  pricing.value.rentDuration === "monthly"
+  pricing.value?.rentDuration === "monthly"
     ? "Monthly Rent"
     : "Yearly Rent"
 )
@@ -50,20 +48,18 @@ const money = (v) =>
   "₦ " + Number(v || 0).toLocaleString()
 
 </script>
-
 <template>
 
 <div class="border w-full p-5 rounded-xl shadow space-y-6">
 
-<!-- TITLE -->
-
 <h2 class="section-title">
-{{ purpose === "sell" ? "House Price" : "Rent Price" }}
+
+{{ purpose === "Sell" ? "House Price" : "Rent Price" }}
 </h2>
 
-<!-- SELL PRICE -->
+<!-- SELL -->
 
-<div v-if="purpose === 'sell'" class="space-y-2">
+<div v-if="purpose === 'Sell'" class="space-y-2">
 
 <label class="text-sm text-gray-500">
 Selling Price (₦)
@@ -75,6 +71,8 @@ v-model.number="pricing.price"
 class="input w-full"
 placeholder="Enter selling price"
 />
+<p class=" mt-7"> <span  class="  font-semibold -6">Total :</span>
+{{ money(pricing.price) }}</p>
 
 </div>
 
@@ -127,7 +125,6 @@ placeholder="Enter rent price"
 </div>
 
 </template>
-
 <style scoped>
 
 .section-title{
