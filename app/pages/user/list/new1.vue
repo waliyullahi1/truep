@@ -1,357 +1,260 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import loadstates from '@/data/nigeria-states.js'
-import Feature from '~/components/List/Feature.vue'
+import { ref, computed } from "vue"
 
-definePageMeta({
-  layout: 'auth'
+/* ================= PROPS ================= */
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    required: true
+  }
 })
 
-/* ======================
-   STATE
-====================== */
-const step = ref(1)
+const emit = defineEmits(["update:modelValue"])
 
-const activeSection = ref('location')
-const form = ref({
-
-  description: '',
-  title: '',
-  type: "land",         
-  purpose: "sell",     
-  pricing: {
-    price: Number,
-    currency: "NGN",
-
-    rentDuration: null,      // "monthly" | "yearly" (only for rent)
-    installment: false,
-
-    installmentPlan: null
-    // example:
-    // {
-    //   months: 12,
-    //   monthlyAmount: 500000
-    // }
+/* ================= SYNC WITH PARENT ================= */
+const form = computed({
+  get() {
+    return props.modelValue
   },
-  /* ================= LOCATION ================= */
-  location: {
-    country: "",
-    state: "",
-    lga: "",
-    city: "",
-    address: "",
+  set(val) {
+    emit("update:modelValue", val)
+  }
+})
 
-    source: "gps", // "gps" | "manual"
+/* ================= IMAGE PREVIEWS ================= */
+const previews = ref([null, null, null, null, null, null])
+const surveyPreview = ref(null)
+const titlePreview = ref(null)
 
-    // ⭐ GEOJSON (important)
-    geometry: {
-      type: "Polygon",   // "Point" for house | "Polygon" for land
-      coordinates: []
+/* ================= IMAGE / FILE UPLOAD ================= */
+function handleUpload(e, index, target = "images") {
+  const file = e.target.files[0]
+  if (!file) return
+
+  const reader = new FileReader()
+
+  reader.onload = () => {
+    if (target === "images") {
+      previews.value[index] = reader.result
+
+      const images = [...(form.value.media.images || [])]
+      images[index] = file
+
+      form.value = {
+        ...form.value,
+        media: {
+          ...form.value.media,
+          images
+        }
+      }
     }
-  },
-landDetails: {
-  unit: "plot",        // plot | acre | hectare | sqm
 
-  size: 450,           // size of ONE unit (e.g. 450 sqm per plot)
+    if (target === "survey") {
+      surveyPreview.value = reader.result
 
-  quantity: 2,         // number of units (2 plots)
-
-  totalSqm: 900,       // calculated total area in square meters
-
-  fenced: true,
-  dry: true,
-  roadAccess: true
-},
-  houseDetails: null,
-  media: {
-    images: [],
-    video: null
-  },
-  documents: {
-    surveyPlan: null,
-    titleDocument: null
-  },
-  features:[
-   
-    
-    
-  ],
-  /* ================= CONTACT ================= */
-  contact: {
-    name: "",
-    phone: "",
-    whatsapp: ""
-  },
-
-
-  createdAt: new Date(),
-  updatedAt: new Date()
-})
-const type = ref('')
-/* ======================
-   LOCATION DATA
-====================== */
-
-const loadingStates = ref(false)
-const loadingLgas = ref(false)
-
-
-
-
-const houseType = [
-  { key: 'self_contain', label: 'Self Contain' },
-  { key: 'duplex', label: 'Duplex' },
-  { key: 'flat', label: 'Flat' },
-  { key: 'mansion', label: 'Mansion' },
-  { key: 'bungalow', label: 'Bungalow' },
-  { key: 'villa', label: 'Villa' },
-  { key: 'shop', label: 'Shop' },
-  { key: 'office_space', label: 'Office Space' }
-]
-
-
-const landType = [
-  { key: 'commercial_land', label: 'Commercial Land' },
-  { key: 'residential_land', label: 'Residential Land' },
-  { key: 'industrial_land', label: 'Industrial Land' },
-  { key: 'mixed_use_land', label: 'Mixed-use Land' },
-  { key: 'family_land', label: 'Family Land' },
-  { key: 'other_land', label: 'Other Land' }
-]
-
-/* ======================
-   STEP NAVIGATION
-====================== */
-const next = () => { if (step.value < 5) step.value++ }
-const back = () => { if (step.value > 1) step.value-- }
-
-/* ======================
-   IMAGE / FILE UPLOAD
-====================== */
-
-
-/* ======================
-   COMPLETION CHECKS
-====================== */
-function isCompleted(section) {
-  if (section === 'location'){
-    
-  
-    
-    return form.value.location.address && form.value.location.state   && form.value.location.city && form.value.location.address
+      form.value = {
+        ...form.value,
+        documents: {
+          ...form.value.documents,
+          surveyPlan: file
+        }
+      }
     }
- if (section === 'features') {
-  const count = Object.keys(form.value.features || {}).length
 
-  console.log(count > 2)
+    if (target === "titleDocs") {
+      titlePreview.value = reader.result
 
-  return count > 2
-}
-  if (section === 'size')
-    return form.value.size && form.value.price
+      form.value = {
+        ...form.value,
+        documents: {
+          ...form.value.documents,
+          titleDocument: file
+        }
+      }
+    }
+  }
 
-  return false
-}
-
-const options = computed(() => {
-  if (form.value.purpose === 'Sell Land'){
-    type.value= 'land'
-   return landType 
-  } 
-  if (form.value.purpose === 'Sell House') {
-    type.value= 'house'
-   return houseType 
-  } 
-  if (form.value.purpose === 'Rent House') {
-    type.value= 'house'
-   return houseType 
-  } 
-})
-
-
-
-/* ======================
-   SUBMIT
-====================== */
-function submit() {
-  console.log('Form Data:', form.value)
-  alert('Land submitted successfully ✅')
+  reader.readAsDataURL(file)
 }
 
- 
+/* ================= REMOVE FILE ================= */
+function removeImage(index, target = "images") {
+  if (target === "images") {
+    previews.value[index] = null
 
+    const images = [...(form.value.media.images || [])]
+    images[index] = null
 
+    form.value = {
+      ...form.value,
+      media: {
+        ...form.value.media,
+        images
+      }
+    }
+  }
 
+  if (target === "survey") {
+    surveyPreview.value = null
+
+    form.value = {
+      ...form.value,
+      documents: {
+        ...form.value.documents,
+        surveyPlan: null
+      }
+    }
+  }
+
+  if (target === "titleDocs") {
+    titlePreview.value = null
+
+    form.value = {
+      ...form.value,
+      documents: {
+        ...form.value.documents,
+        titleDocument: null
+      }
+    }
+  }
+}
 </script>
 
 <template>
 <div class="min-h-screen py-10 px-4">
-  <Container>
-  
-    <!-- STEP 1: Land Details -->
-    <div v-if="step === 1" class="max-w-4xl mx-auto space-y-4">
-      <div class="bg-white gap-2 p-5 rounded shadow">
-        <div class="flex gap-5">
-          <div class="w-1/3">
-            <h2 class="section-title">Land Title</h2>
-            <p class="text-gray-500 text-sm mb-3">
-              A clear, concise title attracts more buyers. Include size, location, and key features.
-            </p>
-          </div>
-          <div class="w-2/3">
-            <textarea v-model="form.title" placeholder="Land Title (e.g. 2 Acres in Lekki)" class="input w-full h-20" />
-          </div>
-        </div>
 
-        <div class=" flex gap-5 w-full">
-          <div class=" flex-1">
-          <h2 class="section-title mt-4">Purpose</h2>
-          <p class="text-gray-500 text-sm mb-3">Select the purpose of your listing.</p>
-          <select v-model="form.purpose" class="input w-full">
-            <option>Sell Land</option>
-            <option>Sell House</option>
-            <option>Rent House</option>
-          </select>
-        </div>
+<Container>
 
-        <div class=" flex-1 ">
-          <h2 class="section-title mt-4">Type</h2>
-          <p class="text-gray-500 text-sm mb-3">Select the type of your listing.</p>
-          <select v-model="form.type" class="input w-full">
-              <option
-                v-for="item in options"
-                :key="item.key"
-                :value="item.key"
-              >
-                {{ item.label }}
-              </option>
-          </select>
-        </div>
-        </div>
-        
+<!-- ================= LAND IMAGES ================= -->
+<div>
+<h2 class="section-title">Land Images (max 6)</h2>
+<p class="text-gray-500 mb-6">Visual examples attract buyers.</p>
 
-        <!-- Location -->
-        <div class=" mt-20  w-full p-2 min-h-96 border  gap-2">
+<div class="flex flex-wrap gap-6">
 
-          
-           <div class=" flex  overflow-hidden rounded-md bg-slate-50 border   h-fit  space-y- shadow-sm">
+<div
+v-for="(img,index) in previews"
+:key="index"
+class="relative w-60 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center hover:border-black transition"
+>
 
-            <div
-              @click="activeSection='location'"
-              class="tab flex-1"
-              :class="{ active: activeSection==='location' }"
-            >
-              Location
-              <span v-if="isCompleted('location')">✅</span>
-            </div>
+<img v-if="img" :src="img" class="w-full h-full object-cover"/>
 
-              
+<div v-else class="text-center">
+<img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
 
-            <div
-              @click="activeSection='features'"
-              class="tab flex-1"
-              :class="{ active: activeSection==='features' }"
-            >
-              Features
-              <span v-if="isCompleted('features')">✅</span>
-            </div>
+<p class="text-xs mt-2 text-gray-500">
+Drag & drop or
+<label
+:for="'upload-'+index"
+class="text-blue-600 underline cursor-pointer"
+>
+Browse
+</label>
+</p>
+</div>
 
-            <div
-              @click="activeSection='others'"
-              class="tab flex-1"
-              :class="{ active: activeSection==='others' }"
-            >
-              Others
-              <span v-if="isCompleted('others')">✅</span>
-            </div>
+<input
+type="file"
+accept="image/*"
+:hidden="true"
+:id="'upload-'+index"
+@change="handleUpload($event,index,'images')"
+/>
 
-          </div>
-          <div class="w-full mt-7 h-full">
-            <div :class="activeSection==='location'? 'block':'hidden'">
-               <div v-if="type===''" class=" bg-gray-50 border rounded-xl p-8 text-center text-gray-500"  >
-                 <p class="text-lg font-medium">No property selected</p>
-                <p class="text-sm mt-1">Please select a listing purpose and property type to continue.</p>
-             
-              </div> 
-              <div v-if="type==='land'" >
-              
-               <div>
-              
-            </div>
-                <ListLandMap v-model="form" />
-                 {{ form.location }}
-              </div> 
+<button
+v-if="img"
+@click="removeImage(index,'images')"
+class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs"
+>
+✕
+</button>
 
+</div>
+</div>
+</div>
 
-               <div v-if="type==='house'" >
-                
-                <ListHouseLocationPicker v-model="form" />
-              </div> 
-               
-                <!-- <ListStateLGASelector v-model:selectedState="form.state"  v-model:selectedLGA="form.city"/> -->
-            </div>
-             <div  :class="activeSection==='features'? 'block':'hidden'" >
-                 {{ form.location }}<ListFeature :type="type"  v-model="form.features" />
-                {{ form.features }}
-                 {{ isCompleted('features')  }}
-            </div>
-           
-             <div  :class="activeSection==='others'? 'block':'hidden'" >
-               {{ type }}
-              <div v-if="type==='land'">
-                 <ListLandother v-model="form"></ListLandother> fffffff
-              </div>
-              <div v-if="type==='house'">
-                 <ListHouseother  v-model="form" :purpose="form.purpose.split(' ')[0]"></ListHouseother>
-              </div>
-              
-                 {{ form }}
-            </div>
-           
-           
-          </div>
-            
-        </div>
-      </div>
-    </div>
+<!-- ================= SURVEY PLAN ================= -->
+<div class="border-t pt-10">
 
-    <!-- STEP 2: Upload Images & Documents -->
-    <div v-if="step === 2" class="space-y-10">
-       
-                <ListDescription v-model="form.description" />
-          
-      
-    </div>
+<h2 class="section-title">Survey Plan</h2>
 
-    <!-- STEP 3: Land Features -->
-    <div v-if="step === 3" class="space-y-4">
-      
-      <ListUpload v-model="form"/>
-    </div>
+<div class="relative w-60 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center">
 
-    <!-- STEP 4: Contact Info -->
-    <div v-if="step === 4" class="space-y-4">
-      <h2 class="section-title">Contact Info</h2>
-      <input v-model="form.phone" placeholder="Phone Number" class="input"/>
-      <input v-model="form.whatsapp" placeholder="WhatsApp Number" class="input"/>
-    </div>
+<img v-if="surveyPreview" :src="surveyPreview" class="w-full h-full object-cover"/>
 
-    <!-- STEP 5: Review & Submit -->
-    <div v-if="step === 5" class="space-y-4 text-center">
-      <h2 class="section-title">Review & Submit</h2>
-      <p class="text-gray-500">Click submit to finish.</p>
-    </div>
+<div v-else class="text-center">
+<img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
 
-    <!-- STEP NAVIGATION -->
-    <div class="flex justify-between mt-8">
-      <button v-if="step > 1" @click="back" class="btn-secondary">Back</button>
-      <button v-if="step < 5" @click="next" class="btn-primary ml-auto">Next</button>
-      <button v-if="step === 5" @click="submit" class="btn-primary ml-auto">Submit</button>
-    </div>
-  </Container>
+<label
+for="upload-survey"
+class="text-blue-600 underline cursor-pointer text-xs"
+>
+Upload Survey
+</label>
+</div>
+
+<input
+type="file"
+accept="image/*"
+id="upload-survey"
+class="hidden"
+@change="handleUpload($event,0,'survey')"
+/>
+
+<button
+v-if="surveyPreview"
+@click="removeImage(0,'survey')"
+class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs"
+>
+✕
+</button>
+
+</div>
+</div>
+
+<!-- ================= TITLE DOCUMENT ================= -->
+<div class="border-t pt-10">
+
+<h2 class="section-title">Title Document</h2>
+
+<div class="relative w-60 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center">
+
+<img v-if="titlePreview" :src="titlePreview" class="w-full h-full object-cover"/>
+
+<div v-else class="text-center">
+<img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
+
+<label
+for="upload-title"
+class="text-blue-600 underline cursor-pointer text-xs"
+>
+Upload Title Doc
+</label>
+</div>
+
+<input
+type="file"
+accept="image/*"
+id="upload-title"
+class="hidden"
+@change="handleUpload($event,0,'titleDocs')"
+/>
+
+<button
+v-if="titlePreview"
+@click="removeImage(0,'titleDocs')"
+class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs"
+>
+✕
+</button>
+
+</div>
+</div>
+
+</Container>
 </div>
 </template>
-
 <style scoped>
 .input { @apply w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black; }
 .section-title { @apply text-lg font-semibold; }

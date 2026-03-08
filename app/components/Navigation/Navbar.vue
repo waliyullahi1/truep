@@ -56,17 +56,17 @@
           </div> -->
           
 
-          <NuxtLink to="/careers" activeClass="active-link">
+          <NuxtLink to="/auth?type=register-page" >
             <p class=" text-md hover:text-primary cursor-pointer"> Career </p>
           </NuxtLink>
-          <NuxtLink to="/careers" activeClass="active-link">
+          <NuxtLink to="/auth" >
             <p class=" text-md hover:text-primary cursor-pointer"> Become Member </p>
           </NuxtLink>
 
 
            <div class="hidden md:flex gap-8 flex-shrink-0">
           <UiButtonsPrimary >
-            Join
+              <NuxtLink to="/auth" >Join</NuxtLink>
           </UiButtonsPrimary>
         </div>
 
@@ -215,10 +215,5 @@ onUnmounted(() => {
 
 
 <style>
-.active-link p {
-  color: #b78d46;
-  border-bottom: 2px solid #b78d46;
-  padding-bottom: 3px;
-  font-weight: 600;
-}
+
 </style>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed } from "vue";
 
 /* ================= PROPS ================= */
 const props = defineProps({
@@ -7,139 +7,101 @@ const props = defineProps({
     type: Object,
     required: true
   }
-})
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
-/* ================= LOCAL STATE ================= */
-const local = ref({
-  mode: 'plot', // plot | acre | hectare | sqm
-  sellByPlot: false,
-
-  plotSize: 450,
-  plots: 1,
-
-  acres: 1,
-  hectares: 1,
-
-  sqm: 600,
-
-  price: 0
-})
-
-/* ================= TOTAL SQM ================= */
-const totalSqm = computed(() => {
-
-  if (local.value.mode === 'plot')
-    return local.value.plotSize * local.value.plots
-
-  if (
-    (local.value.mode === 'acre' || local.value.mode === 'hectare')
-    && local.value.sellByPlot
-  )
-    return local.value.plotSize * local.value.plots
-
-  if (local.value.mode === 'acre')
-    return local.value.acres * 4047
-
-  if (local.value.mode === 'hectare')
-    return local.value.hectares * 10000
-
-  return Number(local.value.sqm || 0)
-})
-
-/* ================= QUANTITY ================= */
-const quantity = computed(() => {
-
-  if (local.value.mode === 'plot')
-    return local.value.plots
-
-  if (local.value.sellByPlot)
-    return local.value.plots
-
-  if (local.value.mode === 'acre')
-    return local.value.acres
-
-  if (local.value.mode === 'hectare')
-    return local.value.hectares
-
-  return 1
-})
-
-/* ================= UNIT SIZE ================= */
-const unitSize = computed(() => {
-
-  if (local.value.mode === 'plot')
-    return local.value.plotSize
-
-  if (local.value.sellByPlot)
-    return local.value.plotSize
-
-  if (local.value.mode === 'acre')
-    return 4047
-
-  if (local.value.mode === 'hectare')
-    return 10000
-
-  return totalSqm.value
-})
-
-/* ================= TOTAL PRICE ================= */
-const totalPrice = computed(() => {
-
-  const p = Number(local.value.price || 0)
-
-  if (local.value.mode === 'plot' || local.value.sellByPlot)
-    return local.value.plots * p
-
-  if (local.value.mode === 'acre')
-    return local.value.acres * p
-
-  if (local.value.mode === 'hectare')
-    return local.value.hectares * p
-
-  return totalSqm.value * p
-})
-
-/* ================= UPDATE PARENT ================= */
-watch(
-  [local, totalSqm, totalPrice, quantity, unitSize],
-  () => {
-
-    const updatedForm = {
-
-      ...props.modelValue,
-
-      landDetails: {
-        ...(props.modelValue.landDetails || {}),
-
-        size: totalSqm.value,
-        quantity: quantity.value,
-        unitSize: unitSize.value,
-        unit: local.value.mode,
-
-        fenced: props.modelValue.landDetails?.fenced ?? false,
-        dry: props.modelValue.landDetails?.dry ?? false,
-        roadAccess: props.modelValue.landDetails?.roadAccess ?? false
-      },
-
-      pricing: {
-        ...(props.modelValue.pricing || {}),
-        price: totalPrice.value,
-        currency: "NGN"
-      }
-
-    }
-
-    emit('update:modelValue', updatedForm)
-
+/* ================= LAND DETAILS (SYNC WITH PARENT) ================= */
+const landDetails = computed({
+  get() {
+    return props.modelValue.landDetails || {
+      unit: "plot",
+      size: 450,
+      quantity: 1,
+      acres: 1,
+      hectares: 1,
+      sqm: 600,
+      price: 0,
+      sellByPlot: false
+    };
   },
-  { deep: true }
-)
+  set(val) {
+    emit("update:modelValue", { ...props.modelValue, landDetails: val });
+  }
+});
+
+/* ================= COMPUTED FIELDS ================= */
+const mode = computed({
+  get: () => landDetails.value.unit,
+  set(val) {
+    landDetails.value = { ...landDetails.value, unit: val };
+  }
+});
+
+const plotSize = computed({
+  get: () => landDetails.value.size,
+  set(val) { landDetails.value = { ...landDetails.value, size: val }; }
+});
+
+const plots = computed({
+  get: () => landDetails.value.quantity,
+  set(val) { landDetails.value = { ...landDetails.value, quantity: val }; }
+});
+
+const acres = computed({
+  get: () => landDetails.value.acres,
+  set(val) { landDetails.value = { ...landDetails.value, acres: val }; }
+});
+
+const hectares = computed({
+  get: () => landDetails.value.hectares,
+  set(val) { landDetails.value = { ...landDetails.value, hectares: val }; }
+});
+
+const sqm = computed({
+  get: () => landDetails.value.sqm,
+  set(val) { landDetails.value = { ...landDetails.value, sqm: val }; }
+});
+
+const price = computed({
+  get: () => landDetails.value.price,
+  set(val) { landDetails.value = { ...landDetails.value, price: val }; }
+});
+
+const sellByPlot = computed({
+  get: () => landDetails.value.sellByPlot,
+  set(val) { landDetails.value = { ...landDetails.value, sellByPlot: val }; }
+});
+
+/* ================= TOTAL COMPUTED ================= */
+const totalSqm = computed(() => {
+  if (mode.value === "plot" || (["acre","hectare"].includes(mode.value) && sellByPlot.value))
+    return plotSize.value * plots.value;
+  
+  if (mode.value === "acre")
+    return acres.value * 4047;
+  
+  if (mode.value === "hectare")
+    return hectares.value * 10000;
+  
+  return sqm.value;
+});
+
+const totalPrice = computed(() => {
+  if (mode.value === "plot" || sellByPlot.value)
+    return plots.value * price.value;
+
+  if (mode.value === "acre")
+    return acres.value * price.value;
+
+  if (mode.value === "hectare")
+    return hectares.value * price.value;
+
+  return sqm.value * price.value;
+});
 
 /* ================= MONEY FORMAT ================= */
-const money = (v) => '₦ ' + Number(v || 0).toLocaleString()
-
+const money = (v) => '₦ ' + Number(v || 0).toLocaleString();
 </script>
 <template>
 <div class="card">
@@ -148,115 +110,91 @@ const money = (v) => '₦ ' + Number(v || 0).toLocaleString()
 
   <!-- MODE SELECT -->
   <div class="mode-wrap mt-4">
-    <button :class="['mode', local.mode==='plot' && 'active']" @click="local.mode='plot'">
-      Sell by Plot
-    </button>
-
-    <button :class="['mode', local.mode==='acre' && 'active']" @click="local.mode='acre'">
-      Sell by Acre
-    </button>
-
-    <button :class="['mode', local.mode==='hectare' && 'active']" @click="local.mode='hectare'">
-      Sell by Hectare
-    </button>
-
-    <button :class="['mode', local.mode==='sqm' && 'active']" @click="local.mode='sqm'">
-      Custom Square Meters
-    </button>
+    <button :class="['mode', mode==='plot' && 'active']" @click="mode='plot'">Sell by Plot</button>
+    <button :class="['mode', mode==='acre' && 'active']" @click="mode='acre'">Sell by Acre</button>
+    <button :class="['mode', mode==='hectare' && 'active']" @click="mode='hectare'">Sell by Hectare</button>
+    <button :class="['mode', mode==='sqm' && 'active']" @click="mode='sqm'">Custom SQM</button>
   </div>
 
   <!-- PLOT MODE -->
-  <div v-if="local.mode==='plot'" class="grid gap-4 mt-6">
-
+  <div v-if="mode==='plot'" class="grid gap-4 mt-6">
     <div>
       <label>Plot Size (sqm)</label>
-      <select v-model.number="local.plotSize" class="input">
+      <select v-model.number="plotSize" class="input">
         <option :value="300">Half Plot (300 sqm)</option>
         <option :value="450">Standard Plot (450 sqm)</option>
         <option :value="600">Full Plot (600 sqm)</option>
         <option :value="900">Double Plot (900 sqm)</option>
       </select>
     </div>
-
     <div>
       <label>Number of Plots</label>
-      <input type="number" v-model.number="local.plots" class="input" min="1"/>
+      <input type="number" v-model.number="plots" class="input" min="1"/>
     </div>
-
     <div>
       <label>Price per Plot (₦)</label>
-      <input type="number" v-model.number="local.price" class="input" min="0"/>
+      <input type="number" v-model.number="price" class="input" min="0"/>
     </div>
-
   </div>
 
-  <!-- ACRE / HECTARE MODE -->
-  <div v-if="local.mode==='acre' || local.mode==='hectare'" class="grid gap-4 mt-6">
+  <!-- ACRE / HECTARE -->
+  <div v-if="mode==='acre' || mode==='hectare'" class="grid gap-4 mt-6">
 
-    <div v-if="local.mode==='acre' && !local.sellByPlot">
+    <div v-if="mode==='acre' && !sellByPlot">
       <label>Total Land Area (Acres)</label>
-      <input type="number" v-model.number="local.acres" class="input" min="1"/>
+      <input type="number" v-model.number="acres" class="input" min="1"/>
     </div>
 
-    <div v-if="local.mode==='hectare' && !local.sellByPlot">
+    <div v-if="mode==='hectare' && !sellByPlot">
       <label>Total Land Area (Hectares)</label>
-      <input type="number" v-model.number="local.hectares" class="input" min="1"/>
+      <input type="number" v-model.number="hectares" class="input" min="1"/>
     </div>
 
     <div>
-      <label>Price per {{ local.mode==='acre' ? 'Acre' : 'Hectare' }} (₦)</label>
-      <input type="number" v-model.number="local.price" class="input" min="0"/>
+      <label>Price per {{ mode==='acre' ? 'Acre' : 'Hectare' }} (₦)</label>
+      <input type="number" v-model.number="price" class="input" min="0"/>
     </div>
 
     <div class="flex items-center gap-2 mt-2">
-      <input type="checkbox" v-model="local.sellByPlot" id="sellByPlot"/>
+      <input type="checkbox" v-model="sellByPlot" id="sellByPlot"/>
       <label for="sellByPlot">Sell Land in Plots</label>
     </div>
 
-    <div v-if="local.sellByPlot" class="grid gap-4 mt-4">
-
+    <div v-if="sellByPlot" class="grid gap-4 mt-4">
       <div>
         <label>Size of Each Plot (sqm)</label>
-        <input type="number" v-model.number="local.plotSize" class="input" min="1"/>
+        <input type="number" v-model.number="plotSize" class="input" min="1"/>
       </div>
-
       <div>
         <label>Number of Plots</label>
-        <input type="number" v-model.number="local.plots" class="input" min="1"/>
+        <input type="number" v-model.number="plots" class="input" min="1"/>
       </div>
-
       <div>
         <label>Price per Plot (₦)</label>
-        <input type="number" v-model.number="local.price" class="input" min="0"/>
+        <input type="number" v-model.number="price" class="input" min="0"/>
       </div>
-
     </div>
   </div>
 
   <!-- CUSTOM SQM -->
-  <div v-if="local.mode==='sqm'" class="grid gap-4 mt-6">
-
+  <div v-if="mode==='sqm'" class="grid gap-4 mt-6">
     <div>
       <label>Total Land Area (sqm)</label>
-      <input type="number" v-model.number="local.sqm" class="input" min="1"/>
+      <input type="number" v-model.number="sqm" class="input" min="1"/>
     </div>
-
     <div>
       <label>Price per Square Meter (₦)</label>
-      <input type="number" v-model.number="local.price" class="input" min="0"/>
+      <input type="number" v-model.number="price" class="input" min="0"/>
     </div>
-
   </div>
 
   <!-- RESULT -->
   <div class="summary mt-6 text-center">
-
     <p class="text-sm text-gray-500">Total Land Area</p>
     <h3 class="font-semibold text-lg">{{ totalSqm.toLocaleString() }} sqm</h3>
 
     <p class="text-sm text-gray-500 mt-2">Total Price</p>
     <h1 class="text-2xl font-bold">{{ money(totalPrice) }}</h1>
-
   </div>
 
 </div>

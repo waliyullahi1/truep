@@ -7,15 +7,15 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'vue3-carousel-nuxt',
     '@pinia/nuxt',
-    '@pinia/nuxt'
+  
   ],
 
-  //   plugins: [
-  //   '~/plugins/pinia.js'
-  // ],
   pages: true,
 
-  css: ['~/assets/css/main.css', '@vueup/vue-quill/dist/vue-quill.snow.css'],
+  css: [
+    '~/assets/css/main.css',
+    '@vueup/vue-quill/dist/vue-quill.snow.css'
+  ],
 
   app: {
     pageTransition: {
@@ -49,7 +49,6 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
         },
 
-        // favicon (use leading slash so it works in production)
         {
           rel: 'icon',
           type: 'image/png',
@@ -59,19 +58,15 @@ export default defineNuxtConfig({
     }
   },
 
-  /* =========================
-     Runtime Config (SAFE KEYS)
-  ========================= */
   runtimeConfig: {
-    // server-only secrets go here (not exposed)
     mapboxSecret: process.env.MAPBOX_SECRET || '',
+    api_url: process.env.BASE_URL || 'http://localhost:5000',
 
-    // exposed to browser
     public: {
-      projectName: 'UNILORIN Nursery And Primary School',
+      projectName: 'true people buy property and sell it',
+      mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || '',
+        api_url: process.env.BASE_URL || 'http://localhost:5000',
 
-      // must start with NUXT_PUBLIC_
-      mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || ''
     }
   }
 })

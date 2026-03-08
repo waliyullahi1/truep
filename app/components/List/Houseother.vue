@@ -20,7 +20,11 @@ const emit = defineEmits(["update:modelValue"])
 
 const pricing = computed({
   get() {
-    return props.modelValue.pricing
+    return props.modelValue.pricing || {
+      price: 0,
+      currency: "NGN",
+      rentDuration: "monthly"
+    }
   },
   set(val) {
     emit("update:modelValue", {
@@ -30,36 +34,58 @@ const pricing = computed({
   }
 })
 
-/* ================= COMPUTED ================= */
+/* ================= EDITABLE FIELDS ================= */
+
+const price = computed({
+  get: () => pricing.value.price,
+  set: (val) => {
+    pricing.value = {
+      ...pricing.value,
+      price: val
+    }
+  }
+})
+
+const rentDuration = computed({
+  get: () => pricing.value.rentDuration,
+  set: (val) => {
+    pricing.value = {
+      ...pricing.value,
+      rentDuration: val
+    }
+  }
+})
+
+/* ================= LABELS ================= */
 
 const rentLabel = computed(() =>
-  pricing.value?.rentDuration === "monthly"
+  rentDuration.value === "monthly"
     ? "Price per Month (₦)"
     : "Price per Year (₦)"
 )
 
 const totalRentLabel = computed(() =>
-  pricing.value?.rentDuration === "monthly"
+  rentDuration.value === "monthly"
     ? "Monthly Rent"
     : "Yearly Rent"
 )
 
+/* ================= MONEY FORMAT ================= */
+
 const money = (v) =>
   "₦ " + Number(v || 0).toLocaleString()
-
 </script>
 <template>
 
 <div class="border w-full p-5 rounded-xl shadow space-y-6">
 
 <h2 class="section-title">
-
-{{ purpose === "Sell" ? "House Price" : "Rent Price" }}
+{{ purpose.toLowerCase() === "sell" ? "House Price" : "Rent Price" }}
 </h2>
 
 <!-- SELL -->
 
-<div v-if="purpose === 'Sell'" class="space-y-2">
+<div v-if="purpose.toLowerCase() === 'sell'" class="space-y-2">
 
 <label class="text-sm text-gray-500">
 Selling Price (₦)
@@ -67,12 +93,15 @@ Selling Price (₦)
 
 <input
 type="number"
-v-model.number="pricing.price"
+v-model.number="price"
 class="input w-full"
 placeholder="Enter selling price"
 />
-<p class=" mt-7"> <span  class="  font-semibold -6">Total :</span>
-{{ money(pricing.price) }}</p>
+
+<p class="mt-4">
+<span class="font-semibold">Total :</span>
+{{ money(price) }}
+</p>
 
 </div>
 
@@ -85,18 +114,11 @@ Rent Duration
 </label>
 
 <select
-v-model="pricing.rentDuration"
+v-model="rentDuration"
 class="input w-full"
 >
-
-<option value="monthly">
-Per Month
-</option>
-
-<option value="yearly">
-Per Year
-</option>
-
+<option value="monthly">Per Month</option>
+<option value="yearly">Per Year</option>
 </select>
 
 <label class="text-sm text-gray-500">
@@ -105,7 +127,7 @@ Per Year
 
 <input
 type="number"
-v-model.number="pricing.price"
+v-model.number="price"
 class="input w-full"
 placeholder="Enter rent price"
 />
@@ -115,7 +137,7 @@ placeholder="Enter rent price"
 <span>Total {{ totalRentLabel }}:</span>
 
 <strong>
-{{ money(pricing.price) }}
+{{ money(price) }}
 </strong>
 
 </div>

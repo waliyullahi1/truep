@@ -12,23 +12,15 @@ const previews = ref([null, null, null, null, null, null]) // land images
 const survey = ref([null]) // survey plan
 const titleDocs = ref([null]) // title document
 
-const form = ref({
-  title: '',
-  purpose: 'Sell',
-  price: '',
-  size: '',
-  state: '',
-  city: '',
-  address: '',
-  description: '',
-  fenced: false,
-  roadAccess: false,
-  dry: false,
-  documents: null, // survey or title doc
-  phone: '',
-  whatsapp: '',
-  images: []
-})
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    required: true
+  }
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
 
 /* ======================
    STEP NAVIGATION
