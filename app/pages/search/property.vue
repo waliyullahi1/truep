@@ -31,23 +31,73 @@ const results = ref([
     id: 1,
     title: '3 Bedroom Fully Furnished Maisonette',
     category: 'Flat / Apartment',
-    location: 'Victoria Island, Lagos',
-    price: '₦30,000,000 / year',
+    location: {
+      country: "Nigeria",
+      state: "Lagos",
+      lga: "Eti-Osa",
+      city: "Victoria Island",
+      address: "Victoria Island, Lagos",
+      source: "manual",
+      geometry: {
+        type: "Polygon",
+        coordinates: []
+      }
+    },
+    pricing: {
+      price: 30000000,
+      currency: "NGN",
+      rentDuration: "year",
+      installment: false,
+      installmentPlan: {
+        months: null,
+        monthlyAmount: null
+      }
+    },
+    features: [{ 'Bedrooms': 3, 'Bathrooms': 4, 'Living Room': 1, 'Kitchen': 1, 'Bowlroom': true }],
+    user: {
+      name: "Walheed Khinde",
+      phone: "",
+      location: "Lagos"
+    },
     beds: 3,
     baths: 4,
     toilets: 4,
     purpose: 'Rent',
-    images: ['/images/land1.jpg','/images/land2.jpg']
+    images: ['/images/land1.jpg', '/images/land2.jpg']
   },
   {
     id: 2,
     title: '4 Bedroom Terrace Duplex With BQ',
     category: 'Duplex',
-    location: 'Lekki Right, Lagos',
-    price: '₦28,000,000 / year',
-    beds: 4,
-    baths: 5,
-    toilets: 5,
+    location: {
+    country: "Nigeria",
+    state: "",
+    lga: "",
+    city: "",
+    address: "",
+    source: "gps",
+
+    geometry: {
+      type: "Polygon",
+      coordinates: []
+    }
+  },
+     pricing: {
+    price: null,
+    currency: "NGN",
+    rentDuration: null,
+    installment: false,
+    installmentPlan: {
+      months: null,
+      monthlyAmount: null
+    }
+  },
+    features: [{' Bedrooms':4, ' Bathrooms':4, 'Living Room':4, '1 Kitchen':1, 'Bowlroom':true}],
+    user: {
+      name: "",
+      phone: "",
+      location: ""
+    },
     purpose: 'Rent',
     images: ['/images/land2.jpg','/images/land3.jpg']
   },
@@ -106,6 +156,216 @@ const results = ref([
   },
 
   /* =============================
+     GENERATED LISTINGS (LAND & HOUSE)
+  ============================= */
+
+  {
+    id: 10,
+    title: "2 Plot of Land For Sale",
+    description: "<p>Industrial land containing many mineral resources</p>",
+    type: "industrial_land",
+    category: "Land",
+    purpose: "Sell Land",
+    pricing: {
+      price: 8000000,
+      currency: "NGN",
+      rentDuration: null,
+      installment: false,
+      installmentPlan: { months: null, monthlyAmount: null }
+    },
+    location: {
+      country: "Nigeria",
+      state: "Ogun",
+      lga: "Sagamu",
+      city: "Sagamu",
+      address: "Sagamu, Ogun State",
+      source: "gps",
+      geometry: { type: "Polygon", coordinates: [] }
+    },
+    landDetails: {
+      unit: "plot",
+      size: 450,
+      quantity: 2,
+      totalSqm: 900,
+      fenced: false,
+      dry: true,
+      roadAccess: true,
+      price: 4000000
+    },
+    houseDetails: null,
+    media: { images: ['/images/land1.jpg', '/images/land2.jpg'], video: null },
+    documents: { surveyPlan: null, titleDocument: null },
+    features: [],
+    user: { name: "Naheem Jinde", phone: "08031234567", location: "Lagos" },
+    beds: 0, baths: 0, toilets: 0,
+    images: ['/images/land1.jpg', '/images/land2.jpg']
+  },
+
+  {
+    id: 11,
+    title: "4 Plots of Land For Rent – Industrial Zone",
+    description: "<p>Spacious industrial land available for long-term lease</p>",
+    type: "industrial_land",
+    category: "Land",
+    purpose: "Rent Land",
+    pricing: {
+      price: 1200000,
+      currency: "NGN",
+      rentDuration: "year",
+      installment: false,
+      installmentPlan: { months: null, monthlyAmount: null }
+    },
+    location: {
+      country: "Nigeria",
+      state: "Lagos",
+      lga: "Ikorodu",
+      city: "Ikorodu",
+      address: "Ikorodu Industrial Layout, Lagos",
+      source: "gps",
+      geometry: { type: "Polygon", coordinates: [] }
+    },
+    landDetails: {
+      unit: "plot",
+      size: 450,
+      quantity: 4,
+      totalSqm: 1800,
+      fenced: true,
+      dry: true,
+      roadAccess: true,
+      price: 300000
+    },
+    houseDetails: null,
+    media: { images: ['/images/land2.jpg', '/images/land3.jpg'], video: null },
+    documents: { surveyPlan: null, titleDocument: null },
+    features: [],
+    user: { name: "Naheem Jinde", phone: "08031234567", location: "Lagos" },
+    beds: 0, baths: 0, toilets: 0,
+    images: ['/images/land2.jpg', '/images/land3.jpg']
+  },
+
+  {
+    id: 12,
+    title: "Modern 3 Bedroom Flat For Sale",
+    description: "<p>Beautifully finished modern flat in a serene environment</p>",
+    type: "flat",
+    category: "Flat / Apartment",
+    purpose: "Sell House",
+    pricing: {
+      price: 45000000,
+      currency: "NGN",
+      rentDuration: null,
+      installment: true,
+      installmentPlan: { months: 12, monthlyAmount: 3750000 }
+    },
+    location: {
+      country: "Nigeria",
+      state: "Osun",
+      lga: "Ife Central",
+      city: "Ile-Ife",
+      address: "Ife Central, Osun State",
+      source: "gps",
+      geometry: { type: "Point", coordinates: [4.520657, 7.519191] }
+    },
+    landDetails: null,
+    houseDetails: {
+      beds: 3,
+      baths: 3,
+      toilets: 4,
+      floors: 1,
+      parking: true,
+      furnished: false
+    },
+    media: { images: ['/images/land3.jpg', '/images/land1.jpg'], video: null },
+    documents: { surveyPlan: null, titleDocument: null },
+    features: ["POP Ceiling", "Tiled Floors", "Pre-paid Meter"],
+    user: { name: "Naheem Jinde", phone: "08031234567", location: "Osun" },
+    beds: 3, baths: 3, toilets: 4,
+    images: ['/images/land3.jpg', '/images/land1.jpg']
+  },
+
+  {
+    id: 13,
+    title: "3 Bedroom Flat For Rent – Ife Central",
+    description: "<p>Well-maintained 3 bedroom flat available for annual rent</p>",
+    type: "flat",
+    category: "Flat / Apartment",
+    purpose: "Rent House",
+    pricing: {
+      price: 600000,
+      currency: "NGN",
+      rentDuration: "year",
+      installment: false,
+      installmentPlan: { months: null, monthlyAmount: null }
+    },
+    location: {
+      country: "Nigeria",
+      state: "Osun",
+      lga: "Ife Central",
+      city: "Ile-Ife",
+      address: "Mayfair Estate, Ife Central, Osun",
+      source: "gps",
+      geometry: { type: "Point", coordinates: [4.521000, 7.520000] }
+    },
+    landDetails: null,
+    houseDetails: {
+      beds: 3,
+      baths: 2,
+      toilets: 3,
+      floors: 1,
+      parking: false,
+      furnished: false
+    },
+    media: { images: ['/images/land1.jpg', '/images/land3.jpg'], video: null },
+    documents: { surveyPlan: null, titleDocument: null },
+    features: ["Running Water", "Pre-paid Meter", "Security"],
+    user: { name: "Naheem Jinde", phone: "08031234567", location: "Osun" },
+    beds: 3, baths: 2, toilets: 3,
+    images: ['/images/land1.jpg', '/images/land3.jpg']
+  },
+
+  {
+    id: 14,
+    title: "Commercial Land For Sale – Abuja",
+    description: "<p>Prime commercial land in a high traffic business district</p>",
+    type: "commercial_land",
+    category: "Land",
+    purpose: "Sell Land",
+    pricing: {
+      price: 120000000,
+      currency: "NGN",
+      rentDuration: null,
+      installment: false,
+      installmentPlan: { months: null, monthlyAmount: null }
+    },
+    location: {
+      country: "Nigeria",
+      state: "FCT",
+      lga: "Abuja Municipal",
+      city: "Wuse 2",
+      address: "Wuse 2, Abuja FCT",
+      source: "gps",
+      geometry: { type: "Polygon", coordinates: [] }
+    },
+    landDetails: {
+      unit: "sqm",
+      size: 1200,
+      quantity: 1,
+      totalSqm: 1200,
+      fenced: true,
+      dry: true,
+      roadAccess: true,
+      price: 120000000
+    },
+    houseDetails: null,
+    media: { images: ['/images/land2.jpg', '/images/land1.jpg'], video: null },
+    documents: { surveyPlan: null, titleDocument: null },
+    features: ["C of O", "Road Frontage", "Corner Piece"],
+    user: { name: "Naheem Jinde", phone: "08031234567", location: "Abuja" },
+    beds: 0, baths: 0, toilets: 0,
+    images: ['/images/land2.jpg', '/images/land1.jpg']
+  },
+
+  /* =============================
      AUTO GENERATE MANY
   ============================= */
 
@@ -141,7 +401,13 @@ const categories = [
 ]
 
 const locationOptions = computed(() =>
-  [...new Set(results.value.map(r => r.location))]
+  [...new Set(results.value.map(r => {
+    // Handle both string and object location formats
+    if (typeof r.location === 'object') {
+      return r.location.address || r.location.city || r.location.state || ''
+    }
+    return r.location
+  }).filter(Boolean))]
 )
 
 /* =================================
@@ -150,15 +416,38 @@ const locationOptions = computed(() =>
 
 const filteredResults = computed(() =>
   results.value.filter(item => {
-    const text = `${item.title} ${item.location}`.toLowerCase()
+    // Normalize location for filtering
+    const locationStr = typeof item.location === 'object'
+      ? (item.location.address || item.location.city || '')
+      : item.location
+
+    const text = `${item.title} ${locationStr}`.toLowerCase()
 
     return (
       (!search.value || text.includes(search.value.toLowerCase())) &&
-      (!location.value || item.location === location.value) &&
+      (!location.value || locationStr === location.value) &&
       (category.value === 'All' || item.category === category.value)
     )
   })
 )
+
+// Helper to display location as a string in the template
+function getLocationLabel(loc) {
+  if (typeof loc === 'object') {
+    return loc.address || loc.city || loc.state || 'Unknown'
+  }
+  return loc
+}
+
+// Helper to display price from either flat price string or pricing object
+function getPriceLabel(item) {
+  if (item.pricing?.price) {
+    const formatted = item.pricing.price.toLocaleString('en-NG')
+    const duration = item.pricing.rentDuration ? ` / ${item.pricing.rentDuration}` : ''
+    return `₦${formatted}${duration}`
+  }
+  return item.price || 'Price on request'
+}
 
 const displayedResults = computed(() =>
   filteredResults.value.slice(0, visibleCount.value)
@@ -177,21 +466,61 @@ watch([search, location, category], () => {
 <div>
 
   <!-- HERO -->
-  <section class="mt-20 bg-primary py-10 text-white text-center">
-    <Container>
-       <h1 class="text-3xl font-bold">Find Properties Across Nigeria</h1>
-    <p class="mt-2 text-sm">Buy • Rent • Lease • Invest</p>
-    </Container>
-   
-  </section>
+<section class="relative  h-screen-80 flex items-center justify-center text-center">
+
+  <img
+    src="/images/hero.jpg"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+
+  <div class="absolute inset-0 bg-black/60"></div>
+
+  <div class="relative z-10 max-w-3xl px-6 text-white">
+
+    <h1 class="text-2xl md:text-4xl font-semibold leading-tight">
+      Find Your Perfect Property in Nigeria
+    </h1>
+
+    <p class="mt-1 text-lg text-gray-200">
+      Buy land • Sell houses • Rent apartments • Discover great deals
+    </p>
+
+    <!-- SEARCH -->
+
+    <div class="mt-8 bg-white rounded-lg shadow-xl p-2 flex flex-col md:flex-row gap-3">
+
+      <input
+        v-model="search"
+        placeholder="Search land, houses, agents..."
+        class="flex-1 px-2 py-1 outline-none text-gray-700"
+      />
+
+      <button
+        class=" bg-secondary text-white px-6 h-fit  py-2 rounded-lg font-medium hover:bg-secondary/80"
+      >
+        Search
+      </button>
+
+    </div>
+    <div class="flex gap-3  mt-7">
+      <button
+      v-for="c in categories"
+      :key="c"
+      @click="category = c"
+      class="px-4 py-2 rounded text-sm"
+      :class="category === c ? 'bg-secondary text-white' : ' bg-white/40 text'"
+    >
+      {{ c }}
+    </button>
+    </div>
+        
+
+  </div>
+
+</section>
 
   <!-- FILTERS -->
   <section class="p-6 flex flex-wrap gap-3">
-    <input
-      v-model="search"
-      placeholder="Search property..."
-      class="px-4 h-11 border rounded"
-    />
 
     <select v-model="location" class="px-4 h-11 border rounded">
       <option value="">All Locations</option>
@@ -200,15 +529,6 @@ watch([search, location, category], () => {
       </option>
     </select>
 
-    <button
-      v-for="c in categories"
-      :key="c"
-      @click="category = c"
-      class="px-4 py-2 rounded text-sm"
-      :class="category === c ? 'bg-primary text-white' : 'bg-gray-200'"
-    >
-      {{ c }}
-    </button>
   </section>
 
   <!-- CARDS -->
@@ -256,8 +576,8 @@ watch([search, location, category], () => {
               />
 
               <div class=" text-xs ">
-                <h2 class="font-semibold">Walheed Khinde</h2>
-                <p class="text-xs text-gray-500">Survey • Lagos</p>
+                <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
+                <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
                 
               </div>
 
@@ -268,11 +588,11 @@ watch([search, location, category], () => {
           </h2>
 
           <p class="text-gray-500">
-            {{ item.location }}
+            {{ getLocationLabel(item.location) }}
           </p>
 
           <p class="text-primary font-bold mt-1">
-            {{ item.price }}
+            {{ getPriceLabel(item) }}
           </p>
 
           <!-- hide for land -->

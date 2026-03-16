@@ -3,40 +3,42 @@
     <ContainerUser>
       <div class=" gap-8">
         <div class=" bg-white fle flex-col justify-center w-full h-full py-7  rounded-2xl">
-            <UiTypographyH3 class=" text-center">Review your new profile</UiTypographyH3>
+            <UiTypographyH3 class=" text-center">Update Your Information Profile</UiTypographyH3>
             <UiTypographyP class=" text-center mt-2">Add missing details to complete your profile. You can update it at any time.</UiTypographyP>
 
             <div class="  flex justify-center  shadow-md w-full h-full py-10  bg-white">
                <div class=" bg-950  mt-9 w-[70%]">
-                <div class=" w-full g flex items-center ">
+                <div class=" w-full gap-4 flex items-center ">
+                
                     <div class=" flex items-end ">
-                         <img src="/image/icon/avatar.svg" alt="">
-                         <div class=" w-8 h-8  rounded-full relative flex justify-center items-center  right-9 bg-white border">
-                            <img src="/image/icon/cameral.svg" class=" # " alt="">
-                         </div>
+                          <ProfileImage v-model="user.profile_image" />
                          
                     </div>
-                    <div class=" relative right-3 space-y-1">
-                        <div class=" flex items-center  gap-1">
-                            <h3 class="font-semibold text-lg">Habeeb Waliyullahi </h3>
-                            <button class=" w-6 h-5 "><img src="/image/icon/edit.svg" class=" w-3" alt=""></button>
-                        </div>
-                        <div class=" flex items-center  gap-1">
-                            <h4 class=" text-md font-medium ">Software Engineer </h4>
-                            <button class=" w-6 h-5 "><img src="/image/icon/edit.svg" class=" w-3" alt=""></button>
-                        </div>
+                    <div class=" relative right- space-y-1">
+                        <ProfileEditText v-model="user.name"  placeholder="Add Full Name"/>
+                        
+                        <ProfileSelectText
+                              v-model="user.title"
+                              placeholder="Add role"
+                              :options="[
+                                'Software Engineer',
+                                'Surveyor',
+                                'Mechanic',
+                                'Architect',
+                                'Bricklayer',
+                                'Agent',
+                                'Land Seller'
+                              ]"
+                            />
+                        
 
                         <div class=" pt-3 flex items-center  gap-4 ">
                             <div class=" flex gap-1">
                                 <img src="/image/icon/location2.svg"/>
                                 <h4 class=" text-sm  font-medium ">Nigeria</h4>
                             </div>
-                             <div class="  flex gap-1">
-                                <img src="/image/icon/message1.svg"/>
-                                <h4 class=" text-sm  font-medium ">Speaks English, French, Yoruba</h4>
-                                <img src="/image/icon/edit.svg" class=" w-3" alt="">
-                            </div>
-                            
+                            <ProfileLanguage v-model="user.languages"/>
+                                                        
                             
                         </div>
                       
@@ -48,55 +50,19 @@
 
 
 
-                <div class=" mt-12  p-5 rounded-xl border border-gray-300 ">
-                    <h3 class="font-semibold text-xl">About  </h3> 
-                    <p class=" text- mt-3">I am a Software Engineer with over six years of experience in full-stack development and leading product cycle from conception to completion. I guided a team of 5–15 members through 5+ product launches at a recent experience in a high growth technology startup.</p> 
-                </div>
-
-                <!-- <div class=" mt-12  p-5 rounded-xl border border-gray-300 ">
-                    <h3 class="font-semibold text-xl">Skills and expertise  </h3> 
-                    <div class=" mt-4">
-                        <button class=" flex gap-3 border rounded-lg text-sm  font-medium  px-4 py-2 ">
-                           <img src="/image/icon/plus.svg"/> Add new
-                        </button>
-                    </div>
-
-                     <div class="  grid grid-cols-3 gap-5 mt-4">
-                        <div v-for="item in 7" class=" justify-between items-center flex gap-3 border border-gray-300 rounded-lg text-sm  font-medium  px-4 py-2 ">
-                           <div class=" space-y-3">
-                              <h3>CSS</h3>
-                               <p>Intermidiary</p>
-                           </div>
-
-                           <button class=" flex  gap-0.5"> 
-                            <div v-for="item in 3" class=" bg-black  w-1 h-1  rounded-full "></div>
-                           </button>
-                        </div>
-                    </div>
-                 </div> -->
-                 <ProfileSkills/>
-                 <!-- <div class=" mt-12 flex justify-between   p-5 rounded-xl border border-gray-300 ">
-                    <div>
-                      <h3 class="font-semibold text-xl">Work experience  </h3> 
-                       <p class=" text-sm te text-gray-600 m3">Add your job history and achievements to give clients insight into your expertise.</p> 
-                        <button class=" mt-5 flex gap-3 border rounded-lg text-sm  font-medium  px-4 py-2 ">
-                           <img src="/image/icon/plus.svg"/> Add new
-                        </button> 
-
-                    </div>
-                    <div>
-                        <img  src="/image/icon/work_experience_entry.svg"/>
-                    </div>
-                    
-                </div> -->
-                <ProfileWorkexperience/>
-                <div class=" flex gap-4">
+                <ProfileAbout v-model="user.about" />
+                 <ProfileSkills v-model="user.skills"/>
+                
+                <ProfileWorkexperience v-model="user.workExperience"/>
+                <div class="  gap-4">
                        
-                    <ProfileEducation/>
-                   <profileCertificate/>
+                    <ProfileEducation  v-model="user.education"/>
+                   <profileCertificate v-model="user.certificates"/> 
                 </div>
                 
-
+                   <button @click="saveProfile" class=" px-6 py-2 bg-black text-white rounded-lg">
+                          Save
+                      </button>
                 
 
 
@@ -116,11 +82,98 @@ definePageMeta({
   layout: 'auth'
 })
 
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRuntimeConfig } from '#app'
 
+const config = useRuntimeConfig()
+const { $toast } = useNuxtApp()
 
+const loading = ref(false)
 
+const user = ref({
+  name: '',
+  profile_image: '',
+  title: null,
+  location: {
+    country: 'Nigeria',
+    state: '',
+    city: '',
+    address: ''
+  },
+  languages: [],
+  about: '',
+  skills: [],
+  workExperience: [],
+  education: [],
+  certificates: []
+})
 
+/* =========================
+LOAD EXISTING PROFILE
+========================= */
 
+onMounted(async () => {
+  try {
+    const res = await fetch(`${config.public.api_url}/profile/me`, {
+      credentials: 'include'
+    })
 
+    const data = await res.json()
+  console.log(data);
+  
+    if (data.success) {
+      user.value = data.data
+      console.log('user', user.value);
+      user.name = `${data.firstName} ${data.lastName}`
+    }
+
+  } catch (err) {
+    console.error(err)
+  }
+})
+
+/* =========================
+SAVE PROFILE
+========================= */
+
+async function saveProfile() {
+  loading.value = true
+  // if(user.value.tittle === null){
+  //   user.value.title.remove('tittle') ''
+  // }
+   if(user.name){
+    user.lastName = user.value.name.split(' ')[0]
+    user.firstName = user.value.name.split(' ')[1]
+    user.middleName = user.value.name.split(' ')[2] || ''
+   }
+   console.log(user.value.languages, 'sssss');
+   
+  try {
+
+    const res = await fetch(`${config.public.api_url}/profile/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+       details: user.value
+      })
+    })
+
+    const data = await res.json()
+
+    if (data.success) {
+      $toast.success("Profile updated successfully")
+    } else {
+      $toast.error(data.message)
+    }
+
+  } catch (error) {
+    console.error(error)
+    $toast.error("Something went wrong")
+  }
+
+  loading.value = false
+}
 </script>

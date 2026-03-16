@@ -1,11 +1,10 @@
 <template>
   <div class="mt-12 p-5 rounded-xl border border-gray-300">
 
-    <!-- ================= HEADER ================= -->
+    <!-- HEADER -->
     <h3 class="font-semibold text-xl">Skills and expertise</h3>
 
-
-    <!-- ================= ADD BUTTON ================= -->
+    <!-- ADD BUTTON -->
     <button
       v-if="!showSkillForm"
       @click="openSkillForm"
@@ -15,8 +14,7 @@
       Add new
     </button>
 
-
-    <!-- ================= FORM ================= -->
+    <!-- FORM -->
     <div
       v-if="showSkillForm"
       class="bg-white border mt-4 p-6 rounded-xl space-y-3"
@@ -42,7 +40,6 @@
         <option>Expert</option>
       </select>
 
-
       <div class="flex gap-2 justify-end pt-2">
         <button
           @click="closeSkillForm"
@@ -60,12 +57,11 @@
       </div>
     </div>
 
-
-    <!-- ================= LIST ================= -->
+    <!-- LIST -->
     <div class="grid grid-cols-3 gap-5 mt-6">
 
       <div
-        v-for="(skill, i) in skills"
+        v-for="(skill, i) in modelValue"
         :key="i"
         class="flex justify-between items-center border border-gray-300 rounded-lg px-4 py-3"
       >
@@ -74,19 +70,19 @@
           <p class="text-sm text-gray-500">{{ skill.level }}</p>
         </div>
 
-        <!-- remove -->
         <button
           @click="removeSkill(i)"
           class="text-red-500 font-bold"
         >
-         <img src="@/assets/images/icons/delete.svg" alt="" srcset="" />
+          <img src="@/assets/images/icons/delete.svg" />
         </button>
+
       </div>
 
     </div>
 
     <p
-      v-if="skills.length === 0"
+      v-if="modelValue.length === 0"
       class="text-gray-400 text-sm mt-4"
     >
       No skills added yet
@@ -94,16 +90,29 @@
 
   </div>
 </template>
+
 <script setup>
 import { ref } from 'vue'
 
-/* =========================
-   SKILLS
-========================= */
+/* ========================
+PROPS
+======================== */
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+
+/* ========================
+STATE
+======================== */
 
 const showSkillForm = ref(false)
-
-const skills = ref([])
 
 const skillForm = ref({
   name: '',
@@ -111,9 +120,9 @@ const skillForm = ref({
 })
 
 
-/* =========================
-   FUNCTIONS
-========================= */
+/* ========================
+FUNCTIONS
+======================== */
 
 const openSkillForm = () => {
   showSkillForm.value = true
@@ -124,18 +133,31 @@ const closeSkillForm = () => {
 }
 
 const saveSkill = () => {
+
   if (!skillForm.value.name || !skillForm.value.level) return
 
-  skills.value.push({ ...skillForm.value })
+  const updatedSkills = [
+    ...props.modelValue,
+    { ...skillForm.value }
+  ]
+
+  emit('update:modelValue', updatedSkills)
 
   resetSkillForm()
 }
 
 const removeSkill = (index) => {
-  skills.value.splice(index, 1)
+
+  const updatedSkills = [...props.modelValue]
+
+  updatedSkills.splice(index, 1)
+
+  emit('update:modelValue', updatedSkills)
+
 }
 
 const resetSkillForm = () => {
+
   skillForm.value = {
     name: '',
     level: ''

@@ -4,12 +4,50 @@
 
 import { ref } from 'vue'
 
+
+const { $toast } = useNuxtApp()
+const config = useRuntimeConfig()
+
+
+
 const email = ref('')
 const loading = ref(false)
 const emit = defineEmits(['close'])
 
+
 const cancelPage = () => {
   emit('close')
+}
+
+const submitForm = async () => {
+  if (!email.value) {
+    $toast.error('Please enter your email address')
+    return
+  }
+
+  loading.value = true
+
+  try {
+    const response = await fetch(`${config.public.api_url}/auth/request-password-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      $toast.error(data.message || 'Failed to send reset link')
+      return
+    }
+
+    $toast.success(data.message || 'Reset link sent successfully')
+    cancelPage()
+  } catch (err) {
+    $toast.error(err.message || 'An error occurred')
+  } finally {
+    loading.value = false
+  }
 }
 
 
@@ -35,11 +73,11 @@ const cancelPage = () => {
         </P>
 
         <!-- Form -->
-        <form  class="space-y-7">
+        <form  @submit.prevent="submitForm"  class="space-y-7">
 
           <!-- Email -->
           <div >
-            <FormInput type="email"  :usePlaceholder=true  label="Email">
+            <FormInput type="email"  v-model:inputValue="email"  :usePlaceholder=true  label="Email">
                 <template #prefix>
                 <img src="/image/icon/person.svg" alt="" srcset="">
                 </template>

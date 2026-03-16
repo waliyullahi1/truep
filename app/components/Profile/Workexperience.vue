@@ -1,15 +1,14 @@
 <template>
   <div class="mt-12 p-5 rounded-xl border border-gray-300">
 
-    <!-- ================= HEADER ================= -->
+    <!-- HEADER -->
     <h3 class="font-semibold text-xl">Work Experience</h3>
 
     <p class="text-sm text-gray-600">
       Add your job history and achievements to give clients insight into your expertise.
     </p>
 
-
-    <!-- ================= ADD BUTTON ================= -->
+    <!-- ADD BUTTON -->
     <button
       v-if="!showWorkForm"
       @click="openWorkForm"
@@ -19,7 +18,7 @@
     </button>
 
 
-    <!-- ================= FORM ================= -->
+    <!-- FORM -->
     <div
       v-if="showWorkForm"
       class="bg-white border mt-4 p-6 rounded-xl space-y-3"
@@ -59,7 +58,6 @@
         class="border w-full p-2 rounded"
       />
 
-
       <div class="flex gap-2 justify-end pt-2">
         <button
           @click="closeWorkForm"
@@ -78,11 +76,11 @@
     </div>
 
 
-    <!-- ================= LIST ================= -->
+    <!-- LIST -->
     <div class="mt-6 space-y-4">
 
       <div
-        v-for="(item, i) in workExperience"
+        v-for="(item, i) in modelValue"
         :key="i"
         class="border rounded-lg p-4 flex justify-between"
       >
@@ -101,14 +99,14 @@
 
         <button
           @click="removeWork(i)"
-          class="text-red-500 font-bold"
+          class="text-red-500"
         >
-         <img src="@/assets/images/icons/delete.svg" alt="" srcset="" />
+          <img src="@/assets/images/icons/delete.svg" />
         </button>
       </div>
 
       <p
-        v-if="workExperience.length === 0"
+        v-if="modelValue.length === 0"
         class="text-gray-400 text-sm"
       >
         No work experience added yet
@@ -125,12 +123,24 @@
 import { ref } from 'vue'
 
 /* =========================
-   STATE
+PROPS
+========================= */
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+
+/* =========================
+STATE
 ========================= */
 
 const showWorkForm = ref(false)
-
-const workExperience = ref([])
 
 const workForm = ref({
   company: '',
@@ -142,7 +152,7 @@ const workForm = ref({
 
 
 /* =========================
-   FUNCTIONS
+FUNCTIONS
 ========================= */
 
 const openWorkForm = () => {
@@ -154,18 +164,30 @@ const closeWorkForm = () => {
 }
 
 const saveWork = () => {
+
   if (!workForm.value.company || !workForm.value.role) return
 
-  workExperience.value.push({ ...workForm.value })
+  const updated = [
+    ...props.modelValue,
+    { ...workForm.value }
+  ]
+
+  emit('update:modelValue', updated)
 
   resetWorkForm()
 }
 
 const removeWork = (index) => {
-  workExperience.value.splice(index, 1)
+
+  const updated = [...props.modelValue]
+
+  updated.splice(index, 1)
+
+  emit('update:modelValue', updated)
 }
 
 const resetWorkForm = () => {
+
   workForm.value = {
     company: '',
     role: '',

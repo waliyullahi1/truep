@@ -10,6 +10,8 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/face_mesh": "^0.4.1633559619",
     "@meforma/vue-toaster": "^1.3.0",
     "@nuxt/ui": "^4.5.1",
     "@pinia/nuxt": "^0.11.3",

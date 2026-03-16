@@ -23,7 +23,7 @@ const otpverify = ref(false)
 
 const loading = ref(false)
 const registerloading = ref(false)
-
+const loginloading = ref(false)
 const resetpassword = ref(false)
 const isregisterpage = ref(false)
 
@@ -33,6 +33,11 @@ const registerData = reactive({
   password: '',
   confirm_pwd: '',
   phone: ''
+})
+
+const loginData = reactive({
+  email: '',
+  password: ''
 })
 
 /* =========================
@@ -161,6 +166,59 @@ const handleregister = async () => {
 }
 
 /* =========================
+   Login USER
+========================= */
+
+const handlelogin = async () => {
+
+  loginloading.value = true
+  try {
+    const response = await fetch(`${config.public.api_url}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        emaillOrPhone: loginData.email,
+        pwd: loginData.password,
+        
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      $toast.error(data.message || 'Login failed')
+      
+      
+      if (response.status === 403) {
+         otpverify.value = true
+      }
+        loginloading.value = false
+        
+
+      return
+    }
+
+    /* SUCCESS */
+
+    $toast.success(data.message || 'Login successful')
+    
+    
+    setTimeout(() => {
+      console.log('otp processed');
+       router.push('/search')
+    }, 800)
+
+  } catch (err) {
+    
+    loginloading.value = false
+    $toast.error(err.message || 'An error occurred')
+  } finally {
+    loginloading.value = false
+  }
+}
+
+/* =========================
    WATCH QUERY CHANGES
 ========================= */
 
@@ -181,94 +239,98 @@ watch(
     
       <div class=" pt-14 flex justify-center ">
       <div v-if="!isregisterpage" class=" sm:max-w-md w-full px3   bg-white rounded-sm shadow-lg p-2 sm:p-8">
-
-        <!-- Title -->
-        <p class="text-xl font-semibold   ">
-        Sign in to your account
-        </p>
-        <p class=" mb-8 text-gray-600 text-sm">
-          Don’t have an account?  
-          
-          <button @click="handlechangepage" class=" text-left  underline cursor-pointer  hover:text-primary text-sm ">
-                Join here
-              </button>
-        </p>
-
-        <!-- Form -->
-        <form  class="space-y-7">
-
-          <!-- Email -->
-          <div >
-            <FormInput type="email" :usePlaceholder=true  label="username or email">
-                <template #prefix>
-                <img src="/image/icon/person.svg" alt="" srcset="">
-                </template>
-            </FormInput>
-          </div>
-
-          <!-- passwords -->
-          <div  class="">
-            <FormInput type="password"  class=" "  label="Password"></FormInput>
-          </div>
-          
-
-          <!-- Password -->
-          
-
-          <!-- Button -->
-          <div >
-            <div class="">
-              <button :disabled="loading" @click="SubmiteEmail" class="w-full bg-slate-800 text-white py-2  text-sm  font-medium hover:bg-slate-600 rounded-sm transition disabled:opacity-60" >
-                {{ loading ? 'Logging in...' : 'Continue' }}
-              </button>
-            </div>
-
-          
-            
+          <div  v-if="!otpverify" >
+        
+            <p class="text-xl font-semibold   ">
+            Sign in to your account
+            </p>
+            <p class=" mb-8 text-gray-600 text-sm">
+              Don’t have an account?  
               
-                  <div class=" flex justify-end w-full ">
-                    <button type="button" @click="showforgetPage" class=" text-left text-sm text-blue-600">
-                      Forgot password?
-                    </button>
+              <button @click="handlechangepage" class=" text-left  underline cursor-pointer  hover:text-primary text-sm ">
+                    Join here
+                  </button>
+            </p>
+
+            <!-- Form -->
+            <form @submit.prevent="handlelogin"  class="space-y-7">
+
+              <!-- Email -->
+              <div >
+                <FormInput type="email"  v-model:inputValue="loginData.email" :usePlaceholder=true  label="username or email">
+                    <template #prefix>
+                    <img src="/image/icon/person.svg" alt="" srcset="">
+                    </template>
+                </FormInput>
+              </div>
+
+              <!-- passwords -->
+              <div  class="">
+                <FormInput type="password" v-model:inputValue="loginData.password"  class=" "  label="Password"></FormInput>
+              </div>
+              
+
+              <!-- Password -->
+              
+
+              <!-- Button -->
+              <div >
+                <div class="">
+                  <button :disabled="loading" @click="SubmiteEmail" class="w-full bg-slate-800 text-white py-2  text-sm  font-medium hover:bg-slate-600 rounded-sm transition disabled:opacity-60" >
+                    {{ loading ? 'Logging in...' : 'Continue' }}
+                  </button>
+                </div>
+
+              
+                
+                  
+                      <div class=" flex justify-end w-full ">
+                        <button type="button" @click="showforgetPage" class=" text-left text-sm text-blue-600">
+                          Forgot password?
+                        </button>
+                      </div>
+                </div> 
+              <div>
+
+              
+              <div class=" p">
+                  <div class=" w-full flex justify-center -top-1.5 relative">
+                      <UiTypographyP class=" text-center h-1 px-3 w-fit bg-white r">  <span class=" bg-white h-6 w-20 "> or</span> </UiTypographyP>
                   </div>
-            </div> 
-          <div>
+                  <div class=" w-full  h-[1px] bg-slate-300"></div>
+              </div>
+                <button
+                
+                  class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-4 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
+                >
+                  <img src="/image/icon/gmail.svg" class=" w-6" alt="">
+                  <p class=" text-sm">Google</p>
+                </button>
+              </div>  
+            </form>
 
           
-          <div class=" p">
-              <div class=" w-full flex justify-center -top-1.5 relative">
-                  <UiTypographyP class=" text-center h-1 px-3 w-fit bg-white r">  <span class=" bg-white h-6 w-20 "> or</span> </UiTypographyP>
-              </div>
-              <div class=" w-full  h-[1px] bg-slate-300"></div>
+
+            <!-- Links -->
+            <div class="text-center text-sm mt-2 space-y-2">
+              <p>
+                Don't have account?
+                <button @click="handlechangepage" class="text-blue-600 font-semibold">
+                  Sign up
+                </button>
+              </p>
+            </div>
           </div>
-            <button
-            
-              class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-4 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
-            >
-              <img src="/image/icon/gmail.svg" class=" w-6" alt="">
-              <p class=" text-sm">Google</p>
-            </button>
-          </div>  
-        </form>
 
-      
-
-        <!-- Links -->
-        <div class="text-center text-sm mt-2 space-y-2">
-          <p>
-            Don't have account?
-            <button @click="handlechangepage" class="text-blue-600 font-semibold">
-              Sign up
-            </button>
-          </p>
-        </div>
-
+          <div v-if="otpverify" >
+             <AuthEmailVerifcation :email=" loginData.email " />
+          </div>
       </div>
 
        <div v-if="isregisterpage" class=" sm:max-w-md w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
         <div v-if="!otpverify" class="">
            <p class="text-xl font-semibold   ">
-            Create a aaa new account
+            Create a new account
             </p>
             <p class=" mb-8 text-gray-600 text-sm">
               Already have an account? 
@@ -281,14 +343,14 @@ watch(
             <!-- Form -->
             <form @submit.prevent="handleregister(1)" class="space-y-7">
               <div  class="">
-                 {{ registerData.full_name }}
+                
                 <FormInput  type="text" v-model:inputValue="registerData.full_name"  :required="true" :usePlaceholder=true   class=" "  label="Full name">
                     <template #prefix>
                     <img src="/image/icon/person.svg" alt="" srcset="">
                     </template>
                 </FormInput>
               </div>
-              {{ registerData.email }}
+             
               <!-- Email -->
               <div >
                 <FormInput type="email" :required="true" v-model:inputValue="registerData.email"  :usePlaceholder=true  label="email">
@@ -299,7 +361,7 @@ watch(
               </div>
 
               <!-- passwords -->
-                {{ registerData.password }}
+               
               <div  class="">
                 <FormInput type="password" v-model:inputValue="registerData.password"   class=" "  label="Password"></FormInput>
               </div>

@@ -1,251 +1,267 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import { ref, computed } from 'vue'
 
-/* =========================
-   REFS
-========================= */
-const mapRef = ref(null)
-
-let map = null
-let mapboxgl = null
-let myMarker = null
-let watchId = null
-
-const corners = ref([])
-
-const form = ref({
-  area: 0,
-  plots: 0
+definePageMeta({
+  layout: 'auth'
 })
 
-console.log('🚀 Component loaded')
+/* =============================
+   STATE
+============================= */
 
-/* =========================
-   START LIVE GPS
-========================= */
-const startLivePosition = () => {
-  console.log('📍 Starting GPS...')
+const search = ref('')
+const category = ref('')
+const type = ref('')
+const location = ref('')
 
-  if (!navigator.geolocation) {
-    alert('GPS not supported')
-    return
-  }
+/* =============================
+   SAMPLE DATA
+============================= */
 
-  if (watchId) navigator.geolocation.clearWatch(watchId)
+const names = [
+  'Mr. Adewale','Mrs. Adebayo','Mr. Bello','Mrs. Kemi','Mr. Hassan',
+  'Miss Fatima','Mr. Tunde','Mrs. Funke','Mr. Chinedu','Mrs. Grace'
+]
 
-  watchId = navigator.geolocation.watchPosition(
-    ({ coords }) => {
-      const { latitude, longitude } = coords
+const cities = [
+  'Ilorin','Lekki','Abuja','Ibadan','Port Harcourt',
+  'Kano','Enugu','Abeokuta','Osogbo','Akure'
+]
 
-      console.log('✅ GPS position:', latitude, longitude)
+const results = ref(
+  Array.from({ length: 60 }, (_, i) => {
+    const mod = i % 4
 
-      if (!myMarker) {
-        console.log('🟢 Creating marker')
-
-        myMarker = new mapboxgl.Marker({ color: 'blue' })
-          .setLngLat([longitude, latitude])
-          .addTo(map)
-      } else {
-        myMarker.setLngLat([longitude, latitude])
+    if (mod === 0) {
+      return {
+        id: i,
+        category: 'property',
+        name: names[i % names.length],
+        type: i % 2 ? 'house' : 'land',
+        title: 'Property for Sale',
+        price: `₦${(Math.random() * 900 + 50).toFixed(0)}m`,
+        images: ['/images/land1.jpg'], // ✅ fixed path
+        description: 'Well located property with good access road.',
+        location: cities[i % cities.length]
       }
-
-      map.flyTo({
-        center: [longitude, latitude],
-        zoom: 19
-      })
-    },
-    (err) => {
-      console.log('❌ GPS error:', err)
-      alert('Enable GPS permission')
-    },
-    { enableHighAccuracy: true }
-  )
-}
-
-/* =========================
-   ADD CORNER
-========================= */
-const addCorner = () => {
-  if (!myMarker) {
-    alert('Wait for GPS first')
-    return
-  }
-
-  const { lat, lng } = myMarker.getLngLat()
-
-  console.log('📌 Corner added:', lat, lng)
-
-  corners.value.push([lng, lat])
-
-  drawPolygon()
-}
-
-/* =========================
-   DRAW POLYGON
-========================= */
-const drawPolygon = () => {
-  if (corners.value.length < 2) return
-
-  console.log('🔺 Drawing polygon...')
-
-  const coords = [...corners.value]
-
-  if (coords.length > 2) coords.push(coords[0])
-
-  const geojson = {
-    type: 'Feature',
-    geometry: {
-      type: 'Polygon',
-      coordinates: [coords]
     }
-  }
 
-  if (map.getSource('plot')) {
-    map.getSource('plot').setData(geojson)
-  } else {
-    console.log('🆕 Creating polygon source')
-
-    map.addSource('plot', { type: 'geojson', data: geojson })
-
-    map.addLayer({
-      id: 'plot-fill',
-      type: 'fill',
-      source: 'plot',
-      paint: {
-        'fill-color': '#ff0000',
-        'fill-opacity': 0.2
+    if (mod === 1) {
+      return {
+        id: i,
+        category: 'service',
+        name: names[i % names.length],
+        type: 'survey',
+        title: 'Land Survey Service',
+        price: 80000,
+        rating: 4.7,
+        images: ['/images/land1.jpg'], // ✅ fixed
+        location: cities[i % cities.length]
       }
-    })
+    }
 
-    map.addLayer({
-      id: 'plot-line',
-      type: 'line',
-      source: 'plot',
-      paint: {
-        'line-color': '#ff0000',
-        'line-width': 3
+    if (mod === 2) {
+      return {
+        id: i,
+        category: 'profile',
+        name: names[i % names.length],
+        type: 'agent',
+        avatar: '/images/avatar.png', // ✅ fixed
+        location: cities[i % cities.length]
       }
-    })
-  }
+    }
 
-  form.value.area = Math.round(geodesicAreaMeters(coords))
-  form.value.plots = Math.round(form.value.area / 450)
-
-  console.log('📐 Area:', form.value.area, 'm²')
-}
-
-/* =========================
-   AREA CALCULATION
-========================= */
-const geodesicAreaMeters = (coords) => {
-  if (coords.length < 3) return 0
-
-  const rad = Math.PI / 180
-  const latRef = coords[0][1] * rad
-
-  const meters = coords.map(([lng, lat]) => {
-    const x = lng * 111320 * Math.cos(latRef)
-    const y = lat * 110540
-    return [x, y]
+    return {
+      id: i,
+      category: 'history',
+      title: 'Previous transaction',
+      date: '2 days ago',
+      location: cities[i % cities.length]
+    }
   })
+)
 
-  let area = 0
-  for (let i = 0; i < meters.length; i++) {
-    const [x1, y1] = meters[i]
-    const [x2, y2] = meters[(i + 1) % meters.length]
-    area += x1 * y2 - x2 * y1
+/* =============================
+   OPTIONS
+============================= */
+
+const typeOptions = computed(() => {
+  const map = {
+    property: ['land', 'house', 'rent', 'buy'],
+    service: ['survey', 'construction', 'agent', 'worker'],
+    profile: ['agent', 'worker']
   }
+  return map[category.value] || []
+})
 
-  return Math.abs(area / 2)
-}
+const locationOptions = computed(() =>
+  [...new Set(results.value.map(r => r.location).filter(Boolean))]
+)
 
-/* =========================
-   RESET
-========================= */
-const resetPlot = () => {
-  console.log('🔄 Resetting plot')
+/* =============================
+   FILTER LOGIC
+============================= */
 
-  corners.value = []
-  form.value.area = 0
-  form.value.plots = 0
+const filteredResults = computed(() => {
+  const q = search.value.toLowerCase()
 
-  if (map.getSource('plot')) {
-    map.removeLayer('plot-fill')
-    map.removeLayer('plot-line')
-    map.removeSource('plot')
-  }
-}
+  return results.value.filter(item => {
+    const text = `${item.title ?? ''} ${item.name ?? ''} ${item.description ?? ''}`.toLowerCase()
 
-/* =========================
-   INIT MAP
-========================= */
-onMounted(async () => {
-  console.log('🔥 Mounted')
-
-  if (!process.client) return
-
-  await nextTick()
-
-  const config = useRuntimeConfig()
-
-  console.log('🔑 MAPBOX TOKEN =>', config.public.mapboxToken)
-
-  if (!config.public.mapboxToken) {
-    alert('Mapbox token missing in .env')
-    return
-  }
-
-  mapboxgl = (await import('mapbox-gl')).default
-
-  mapboxgl.accessToken = config.public.mapboxToken
-
-  console.log('🗺 Creating map...')
-
-  map = new mapboxgl.Map({
-    container: mapRef.value,
-    style: 'mapbox://styles/mapbox/streets-v12',
-    center: [4.18, 7.88],
-    zoom: 18
-  })
-
-  map.on('load', () => {
-    console.log('✅ Map loaded successfully')
-    startLivePosition()
+    return (
+      (!q || text.includes(q)) &&
+      (!category.value || item.category === category.value) &&
+      (!type.value || item.type === type.value) &&
+      (!location.value || item.location === location.value)
+    )
   })
 })
 
-onUnmounted(() => {
-  console.log('🧹 Cleaning up')
+/* =============================
+   AUTO COMPONENT MAP
+   (Nuxt auto-imports components)
+============================= */
 
-  if (watchId) navigator.geolocation.clearWatch(watchId)
-  if (map) map.remove()
-})
+const componentMap = {
+  service: 'ServiceCard',
+  property: 'PropertyCard',
+  profile: 'ProfileCard',
+  history: 'HistoryCard'
+}
 </script>
 
+
 <template>
-<ClientOnly>
-  <div class="p-4 space-y-4">
+  <div>
+    <div class="  bg-[url('/images/hero.jpg')]  bg-cover bg-no-repeat  h-screen-60  bg-center header ">
 
-    <div class="flex gap-2">
-      <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
-        ➕ Add Corner
-      </button>
-
-      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
-        🔄 Reset
-      </button>
+      <div class="  w-full h-full bg-black/50 flex items-center justify-center">
+        <div>
+          <h1 class="text-2xl font-normal md:text-3xl text-white ">Discover Your Perfect Property in Nigeria</h1>
+          <p class=" text-white">Buy land • Sell property • Rent homes • List your property today.</p>
+        </div>
+      </div>
     </div>
+    <div class=" relative bottom-16">
+      <Container>
+        <div class="  flex gap-5 shadow-xl  rounded-md  h-20 w-full  px-4 py-4 bg-white">
+          <input type="text" placeholder="Search services, property, profiles..." class=" border outline-none border-gray-700 bg-white rounded-md  h-full  px-4    w-full ">
+          <div class=" flex justify-center items-center gap-3" >
+            <button class="bg-slate-200 rounded-md font-medium py-3 px-4 h-fit" type="button">Filter</button>
+            <button class="bg-green-700 text-white rounded-md font-medium py-3 h-fit px-4" type="button">Search</button>
+          </div>
+        </div>
+      </Container>
+    </div>
+     <Container class="min-h-screen mt-16 bg-gray-50 p-6">
 
-    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
+    <!-- TOP BAR -->
+    <div class="max-w-6xl mx-auto space-y-4">
 
-    <div class="text-sm text-gray-600">
-      <div>Corners: {{ corners.length }}</div>
-      <div v-if="form.area">
-        Area: {{ form.area }} m² (~{{ form.plots }} plots)
+      <input
+        v-model="search"
+        placeholder="Search services, property, profiles..."
+        class="w-full px-5 py-3 rounded-2xl shadow bg-white outline-none"
+      />
+
+      <!-- Tabs -->
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="c in ['', 'service', 'property', 'profile', 'history']"
+          :key="c"
+          @click="category = c; type=''; location=''"
+          class="px-5 py-2 rounded-xl text-sm font-medium transition"
+          :class="category === c
+            ? 'bg-blue-600 text-white shadow'
+            : 'bg-white hover:bg-gray-100'"
+        >
+          {{ c || 'All' }}
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-3">
+
+        <select
+          v-if="typeOptions.length"
+          v-model="type"
+          class="px-4 py-2 rounded-xl bg-white shadow"
+        >
+          <option value="">All Types</option>
+          <option v-for="t in typeOptions" :key="t">{{ t }}</option>
+        </select>
+
+        <select
+          v-if="locationOptions.length"
+          v-model="location"
+          class="px-4 py-2 rounded-xl bg-white shadow"
+        >
+          <option value="">All Locations</option>
+          <option v-for="l in locationOptions" :key="l">{{ l }}</option>
+        </select>
+
       </div>
     </div>
 
+    <!-- GRID -->
+    <div class="grid gap-6 mt-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+      <component
+        v-for="item in filteredResults"
+        :key="item.id"
+        :is="componentMap[item.category]"
+        :data="item"
+      />
+
+      <div
+        v-if="!filteredResults.length"
+        class="col-span-full text-center py-20 text-gray-400"
+      >
+        No results found
+      </div>
+
+    </div>
+  </Container>
+
   </div>
-</ClientOnly>
+ 
 </template>
+
+<style>
+header {
+  background: linear-gradient(rgba(31, 31, 31, 0.838), rgba(41, 41, 41, 0.7)), url('/images/hero.jpg');
+  background-blend-mode: multiply;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+
+
+.cta {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/images/unilorin_gate.jpg');
+  background-blend-mode: multiply;
+  background-repeat: no-repeat;
+  background-size: cover;
+ 
+  background-position: top;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #b78d46;
+  border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9e7636;
+}
+</style>

@@ -3,14 +3,13 @@
 
     <div class="w-full">
 
-      <!-- ================= HEADER ================= -->
+      <!-- HEADER -->
       <h3 class="font-semibold text-xl">Education</h3>
       <p class="text-sm text-gray-600">
         Back up your skills and qualifications with educational degrees.
       </p>
 
-
-      <!-- ================= ADD BUTTON ================= -->
+      <!-- ADD BUTTON -->
       <button
         v-if="!showEduForm"
         @click="openEduForm"
@@ -20,7 +19,7 @@
       </button>
 
 
-      <!-- ================= FORM ================= -->
+      <!-- FORM -->
       <div
         v-if="showEduForm"
         class="bg-white border mt-4 p-6 rounded-xl space-y-3"
@@ -58,7 +57,6 @@
           class="border w-full p-2 rounded"
         />
 
-
         <div class="flex gap-2 justify-end pt-2">
           <button
             @click="closeEduForm"
@@ -77,11 +75,11 @@
       </div>
 
 
-      <!-- ================= LIST ================= -->
+      <!-- LIST -->
       <div class="mt-6 space-y-3">
 
         <div
-          v-for="(item, i) in education"
+          v-for="(item, i) in modelValue"
           :key="i"
           class="flex justify-between border rounded-lg px-4 py-3"
         >
@@ -97,12 +95,12 @@
             @click="removeEducation(i)"
             class="text-red-500"
           >
-            <img src="@/assets/images/icons/delete.svg" alt="" srcset="" />
+            <img src="@/assets/images/icons/delete.svg" />
           </button>
         </div>
 
         <p
-          v-if="education.length === 0"
+          v-if="modelValue.length === 0"
           class="text-gray-400 text-sm"
         >
           No education added yet
@@ -120,23 +118,35 @@
 import { ref } from 'vue'
 
 /* =========================
-   STATE
+PROPS
+========================= */
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+
+/* =========================
+STATE
 ========================= */
 
 const showEduForm = ref(false)
 
-const education = ref([])
-
 const eduForm = ref({
   school: '',
-  level: '',   // ✅ added (was missing)
+  level: '',
   degree: '',
   year: ''
 })
 
 
 /* =========================
-   FUNCTIONS
+FUNCTIONS
 ========================= */
 
 const openEduForm = () => {
@@ -148,18 +158,30 @@ const closeEduForm = () => {
 }
 
 const saveEducation = () => {
+
   if (!eduForm.value.school.trim()) return
 
-  education.value.push({ ...eduForm.value })
+  const updated = [
+    ...props.modelValue,
+    { ...eduForm.value }
+  ]
+
+  emit('update:modelValue', updated)
 
   resetForm()
 }
 
 const removeEducation = (index) => {
-  education.value.splice(index, 1)
+
+  const updated = [...props.modelValue]
+
+  updated.splice(index, 1)
+
+  emit('update:modelValue', updated)
 }
 
 const resetForm = () => {
+
   eduForm.value = {
     school: '',
     level: '',

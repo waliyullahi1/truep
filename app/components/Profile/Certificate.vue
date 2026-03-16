@@ -3,13 +3,13 @@
 
     <div class="w-full">
 
-      <!-- ================= HEADER ================= -->
+      <!-- HEADER -->
       <h3 class="font-semibold text-xl">Certifications</h3>
       <p class="text-sm text-gray-600">
         Showcase your mastery with certifications earned in your field.
       </p>
 
-      <!-- ================= ADD BUTTON ================= -->
+      <!-- ADD BUTTON -->
       <button
         v-if="!showCertForm"
         @click="openCertForm"
@@ -19,7 +19,7 @@
       </button>
 
 
-      <!-- ================= FORM ================= -->
+      <!-- FORM -->
       <div
         v-if="showCertForm"
         class="mt-5 bg-white border rounded-xl p-6 space-y-3"
@@ -62,11 +62,11 @@
       </div>
 
 
-      <!-- ================= LIST ================= -->
+      <!-- LIST -->
       <div class="mt-6 space-y-3">
 
         <div
-          v-for="(item, i) in certifications"
+          v-for="(item, i) in modelValue"
           :key="i"
           class="flex justify-between border rounded-lg px-4 py-3"
         >
@@ -80,12 +80,12 @@
             @click="removeCert(i)"
             class="text-red-500"
           >
-            <img src="@/assets/images/icons/delete.svg" alt="" srcset="" />
+            <img src="@/assets/images/icons/delete.svg" />
           </button>
         </div>
 
         <p
-          v-if="certifications.length === 0"
+          v-if="modelValue.length === 0"
           class="text-gray-400 text-sm"
         >
           No certificates added yet
@@ -98,17 +98,28 @@
 </template>
 
 
-
 <script setup>
 import { ref } from 'vue'
 
 /* =========================
-   STATE
+PROPS
+========================= */
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+
+/* =========================
+STATE
 ========================= */
 
 const showCertForm = ref(false)
-
-const certifications = ref([])
 
 const certForm = ref({
   certificate: '',
@@ -118,7 +129,7 @@ const certForm = ref({
 
 
 /* =========================
-   FUNCTIONS
+FUNCTIONS
 ========================= */
 
 const openCertForm = () => {
@@ -130,15 +141,26 @@ const closeCertForm = () => {
 }
 
 const saveCert = () => {
+
   if (!certForm.value.certificate.trim()) return
 
-  certifications.value.push({ ...certForm.value })
+  const updated = [
+    ...props.modelValue,
+    { ...certForm.value }
+  ]
+
+  emit('update:modelValue', updated)
 
   resetForm()
 }
 
 const removeCert = (index) => {
-  certifications.value.splice(index, 1)
+
+  const updated = [...props.modelValue]
+
+  updated.splice(index, 1)
+
+  emit('update:modelValue', updated)
 }
 
 const resetForm = () => {
