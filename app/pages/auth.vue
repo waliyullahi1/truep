@@ -276,8 +276,8 @@ watch(
               <!-- Button -->
               <div >
                 <div class="">
-                  <button :disabled="loading" @click="SubmiteEmail" class="w-full bg-slate-800 text-white py-2  text-sm  font-medium hover:bg-slate-600 rounded-sm transition disabled:opacity-60" >
-                    {{ loading ? 'Logging in...' : 'Continue' }}
+                  <button :disabled="loginloading" @click="SubmiteEmail" class="w-full bg-slate-800 text-white py-2  text-sm  font-medium hover:bg-slate-600 rounded-sm transition disabled:opacity-60" >
+                    {{ loginloading ? 'Logging in...' : 'Continue' }}
                   </button>
                 </div>
 

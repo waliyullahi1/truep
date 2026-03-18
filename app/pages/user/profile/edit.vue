@@ -6,11 +6,11 @@
             <UiTypographyH3 class=" text-center">Update Your Information Profile</UiTypographyH3>
             <UiTypographyP class=" text-center mt-2">Add missing details to complete your profile. You can update it at any time.</UiTypographyP>
 
-            <div class="  flex justify-center  shadow-md w-full h-full py-10  bg-white">
-               <div class=" bg-950  mt-9 w-[70%]">
-                <div class=" w-full gap-4 flex items-center ">
+            <div class="  flex justify-center   shadow-md w-full h-full py-10  bg-white">
+               <div class=" bg-950  w-full max-w-5xl  mt-9 ">
+                <div class=" w-full b gap-4 flex items-center ">
                 
-                    <div class=" flex items-end ">
+                    <div class=" b flex items-end ">
                           <ProfileImage v-model="user.profile_image" />
                          
                     </div>
@@ -38,7 +38,7 @@
                                 <h4 class=" text-sm  font-medium ">Nigeria</h4>
                             </div>
                             <ProfileLanguage v-model="user.languages"/>
-                                                        
+                                                                               
                             
                         </div>
                       
@@ -53,11 +53,13 @@
                 <ProfileAbout v-model="user.about" />
                  <ProfileSkills v-model="user.skills"/>
                 
-                <ProfileWorkexperience v-model="user.workExperience"/>
+                <!-- <ProfileWorkexperience v-model="user.workExperience"/> -->
                 <div class="  gap-4">
                        
                     <ProfileEducation  v-model="user.education"/>
-                   <profileCertificate v-model="user.certificates"/> 
+                   <profileCertificate v-model="user.certificates"/>
+
+                     <ProfileCompany  v-model="user.company"/>  
                 </div>
                 
                    <button @click="saveProfile" class=" px-6 py-2 bg-black text-white rounded-lg">
@@ -103,6 +105,16 @@ const user = ref({
   languages: [],
   about: '',
   skills: [],
+  company:{
+    shopName: '',
+    description: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    latitude: null,
+    longitude: null
+  },
   workExperience: [],
   education: [],
   certificates: []
