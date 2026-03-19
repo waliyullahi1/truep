@@ -49,7 +49,7 @@
 
 
 
-
+                 <ProfileFaceVerification v-model="user.nin" />
                 <ProfileAbout v-model="user.about" />
                  <ProfileSkills v-model="user.skills"/>
                 
@@ -105,7 +105,9 @@ const user = ref({
   languages: [],
   about: '',
   skills: [],
+  nin: '',
   company:{
+    
     shopName: '',
     description: '',
     address: '',

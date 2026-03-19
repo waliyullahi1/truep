@@ -36,8 +36,8 @@
 
 <script>
 import { FaceMesh } from "@mediapipe/face_mesh"
-import { Camera } from "@mediapipe/camera_utils"
-
+import * as cameraUtils  from "@mediapipe/camera_utils"
+const {Camera} = cameraUtils
 export default {
 
 data(){
