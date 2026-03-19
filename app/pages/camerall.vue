@@ -9,17 +9,10 @@
 
     <div v-show="started" class="camera-frame">
       <video ref="video" autoplay playsinline muted></video>
-      <div class="face-guide"></div>
+      <div class="face-guide" :class="{ valid: isFaceValid }"></div>
     </div>
 
-    <div v-if="started" class="status">
-      <p>Step {{ currentStep + 1 }} / {{ actions.length }}</p>
-      <p class="instruction">{{ instruction }}</p>
-
-      <p v-if="noFace" class="warning">
-        ⚠ Adjust your face inside the frame
-      </p>
-    </div>
+    <p class="instruction">{{ instruction }}</p>
 
     <p v-if="verified" class="success">✅ Verified</p>
     <p v-if="failed" class="fail">❌ Failed</p>
@@ -48,32 +41,45 @@ instruction:"",
 verified:false,
 failed:false,
 
-noFace:false,
+/* calibration */
+calibrating:true,
+calibrationFrames:0,
 
-/* stability */
-stableCount:0,
+baseEAR:0,
+baseMouth:0,
 
-/* blink */
+blinkThreshold:0,
+smileThreshold:0,
+
+/* detection */
 blinkFrames:0,
+blinkCount:0,
+requiredBlinks:2,
 blinkCooldown:false,
-
-/* hold detection */
 holdCount:0,
 
-timer:null,
-cameraInstance:null
+prevEAR:0,
+
+cameraInstance:null,
+
+/* UX */
+isFaceValid:false,
+
+/* timeout */
+timeoutTimer:null,
+maxTime:30000
 
 }
 },
 
 methods:{
 
-/* START */
-
 async startVerification(){
 
 this.started = true
 await this.$nextTick()
+
+this.startTimeout()
 
 const video = this.$refs.video
 
@@ -86,38 +92,37 @@ video.srcObject = stream
 await video.play()
 
 this.generateActions()
-this.updateInstruction()
 
 const faceMesh = new FaceMesh({
-locateFile:(file)=>{
-return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-}
+locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 })
 
 faceMesh.setOptions({
 maxNumFaces:1,
 refineLandmarks:true,
-minDetectionConfidence:0.5,
-minTrackingConfidence:0.5
+minDetectionConfidence:0.6,
+minTrackingConfidence:0.6
 })
 
 faceMesh.onResults(this.onResults)
 
 this.cameraInstance = new Camera(video,{
-onFrame: async ()=>{
-await faceMesh.send({image:video})
-},
+onFrame: async ()=> await faceMesh.send({image:video}),
 width:400,
 height:400
 })
 
 this.cameraInstance.start()
-
-this.startTimer()
-
 },
 
-/* ACTIONS */
+startTimeout(){
+this.timeoutTimer = setTimeout(()=>{
+if(!this.verified){
+this.failed = true
+this.stopCamera()
+}
+}, this.maxTime)
+},
 
 generateActions(){
 const all = ["blink","left","right","smile"]
@@ -125,56 +130,44 @@ this.actions = all.sort(()=>Math.random()-0.5).slice(0,3)
 },
 
 updateInstruction(){
-
 const action = this.actions[this.currentStep]
 
-if(action==="blink") this.instruction="Blink your eyes"
-if(action==="left") this.instruction="Turn head LEFT"
-if(action==="right") this.instruction="Turn head RIGHT"
+if(action==="blink") this.instruction=`Blink ${this.requiredBlinks} times`
+if(action==="left") this.instruction="Turn LEFT"
+if(action==="right") this.instruction="Turn RIGHT"
 if(action==="smile") this.instruction="Smile"
-
-this.speak(this.instruction)
-
 },
 
-/* SPEECH */
+/* FACE POSITION CHECK */
+checkFacePosition(landmarks){
 
-speak(text){
-const speech = new SpeechSynthesisUtterance(text)
-window.speechSynthesis.cancel()
-window.speechSynthesis.speak(speech)
+const left = landmarks[234].x
+const right = landmarks[454].x
+const top = landmarks[10].y
+const bottom = landmarks[152].y
+
+const centerX = (left + right)/2
+const centerY = (top + bottom)/2
+
+/* center box */
+const isCentered =
+centerX > 0.4 && centerX < 0.6 &&
+centerY > 0.35 && centerY < 0.65
+
+/* straight head */
+const eyeLeft = landmarks[33]
+const eyeRight = landmarks[263]
+const eyeDiffY = Math.abs(eyeLeft.y - eyeRight.y)
+const isStraight = eyeDiffY < 0.02
+
+/* symmetry */
+const nose = landmarks[1].x
+const leftDist = Math.abs(nose - left)
+const rightDist = Math.abs(right - nose)
+const isSymmetric = Math.abs(leftDist - rightDist) < 0.03
+
+return isCentered && isStraight && isSymmetric
 },
-
-/* TIMER */
-
-startTimer(){
-clearTimeout(this.timer)
-
-this.timer = setTimeout(()=>{
-this.failed = true
-this.stopCamera()
-},10000)
-},
-
-nextStep(){
-
-clearTimeout(this.timer)
-this.holdCount = 0
-
-this.currentStep++
-
-if(this.currentStep >= this.actions.length){
-this.verified = true
-this.stopCamera()
-return
-}
-
-this.updateInstruction()
-this.startTimer()
-
-},
-
-/* EAR */
 
 getEAR(landmarks, left=true){
 
@@ -189,111 +182,146 @@ const h = Math.abs(landmarks[eye[0]].x - landmarks[eye[3]].x)
 return (v1 + v2) / (2.0 * h)
 },
 
-/* RESULTS */
-
 onResults(results){
 
 if(!results.multiFaceLandmarks){
-this.noFace = true
-this.stableCount = 0
+this.instruction = "No face detected"
+this.isFaceValid = false
 return
 }
 
-this.noFace = false
-
-/* stability */
-this.stableCount++
-if(this.stableCount < 5) return
-
 const landmarks = results.multiFaceLandmarks[0]
 
+/* POSITION CHECK */
+const valid = this.checkFacePosition(landmarks)
+this.isFaceValid = valid
+
+if(!valid){
+this.instruction = "Center your face & keep it straight"
+return
+}
+
+/* DISTANCE CHECK */
+const faceWidth = Math.abs(landmarks[234].x - landmarks[454].x)
+if(faceWidth < 0.15){
+this.instruction = "Move closer"
+return
+}
+if(faceWidth > 0.45){
+this.instruction = "Move back"
+return
+}
+
+/* EAR */
 const leftEAR = this.getEAR(landmarks,true)
 const rightEAR = this.getEAR(landmarks,false)
 const avgEAR = (leftEAR + rightEAR)/2
 
-const mouth = landmarks[14].y - landmarks[13].y
+const smoothEAR = (this.prevEAR * 0.7) + (avgEAR * 0.3)
+this.prevEAR = smoothEAR
 
-const leftFace = landmarks[234].x
-const rightFace = landmarks[454].x
-const faceCenter = (leftFace + rightFace)/2
+/* SMILE */
+const mouthWidth = Math.abs(landmarks[61].x - landmarks[291].x)
 
+/* TURN */
+const left = landmarks[234].x
+const right = landmarks[454].x
+const nose = landmarks[1].x
+const faceCenter = (left + right)/2
+const turnRatio = (nose - faceCenter)/(right-left)
+
+/* CALIBRATION */
+if(this.calibrating){
+
+this.baseEAR += smoothEAR
+this.baseMouth += mouthWidth
+this.calibrationFrames++
+
+this.instruction = "Stay still... calibrating"
+
+if(this.calibrationFrames > 40){
+
+this.baseEAR /= this.calibrationFrames
+this.baseMouth /= this.calibrationFrames
+
+this.blinkThreshold = this.baseEAR * 0.85
+this.smileThreshold = this.baseMouth * 1.2
+
+this.calibrating = false
+this.updateInstruction()
+}
+
+return
+}
+
+/* ACTION */
 const action = this.actions[this.currentStep]
 
 /* BLINK */
-
 if(action==="blink"){
 
-if(avgEAR < 0.22){
+if(smoothEAR < this.blinkThreshold){
 this.blinkFrames++
 }else{
 
-if(this.blinkFrames > 2 && !this.blinkCooldown){
+if(this.blinkFrames > 1 && !this.blinkCooldown){
+
 this.blinkCooldown = true
+setTimeout(()=>this.blinkCooldown=false,800)
 
-setTimeout(()=>{
-this.blinkCooldown = false
-},1000)
+this.blinkCount++
 
-this.blinkFrames = 0
+if(this.blinkCount >= this.requiredBlinks){
+this.blinkCount = 0
 this.nextStep()
 }
 
-this.blinkFrames = 0
 }
 
+this.blinkFrames = 0
+}
 }
 
 /* LEFT */
-
 if(action==="left"){
+if(turnRatio > 0.15) this.holdCount++
+else this.holdCount=0
 
-if(faceCenter > 0.55){
-this.holdCount++
-}else{
-this.holdCount = 0
-}
-
-if(this.holdCount > 5){
-this.nextStep()
-}
-
+if(this.holdCount > 5) this.nextStep()
 }
 
 /* RIGHT */
-
 if(action==="right"){
+if(turnRatio < -0.15) this.holdCount++
+else this.holdCount=0
 
-if(faceCenter < 0.45){
-this.holdCount++
-}else{
-this.holdCount = 0
-}
-
-if(this.holdCount > 5){
-this.nextStep()
-}
-
+if(this.holdCount > 5) this.nextStep()
 }
 
 /* SMILE */
-
 if(action==="smile"){
+if(mouthWidth > this.smileThreshold) this.holdCount++
+else this.holdCount=0
 
-if(mouth > 0.07){
-this.holdCount++
-}else{
-this.holdCount = 0
-}
-
-if(this.holdCount > 5){
-this.nextStep()
-}
-
+if(this.holdCount > 5) this.nextStep()
 }
 
 },
 
-/* STOP */
+nextStep(){
+
+this.holdCount = 0
+this.currentStep++
+
+if(this.currentStep >= this.actions.length){
+this.verified = true
+clearTimeout(this.timeoutTimer)
+this.stopCamera()
+return
+}
+
+this.updateInstruction()
+},
 
 stopCamera(){
 
@@ -313,10 +341,7 @@ video.srcObject.getTracks().forEach(track=>track.stop())
 </script>
 
 <style scoped>
-
 .liveness-container{
-max-width:420px;
-margin:auto;
 text-align:center;
 font-family:Arial;
 }
@@ -335,7 +360,6 @@ video{
 width:100%;
 height:100%;
 object-fit:cover;
-background:black;
 }
 
 .face-guide{
@@ -345,32 +369,20 @@ left:50%;
 transform:translate(-50%,-50%);
 width:220px;
 height:260px;
-border:2px dashed white;
+border:2px dashed red;
 border-radius:50%;
+}
+
+.face-guide.valid{
+border:2px solid #00ff88;
 }
 
 .instruction{
 font-size:18px;
 font-weight:bold;
+margin-top:10px;
 }
 
-.warning{
-color:#e67e22;
-}
-
-.success{
-color:#27ae60;
-font-size:20px;
-}
-
-.fail{
-color:#e74c3c;
-font-size:20px;
-}
-
-button{
-padding:10px 20px;
-margin:10px;
-}
-
+.success{ color:green; }
+.fail{ color:red; }
 </style>
