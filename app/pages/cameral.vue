@@ -35,9 +35,10 @@
 </template>
 
 <script>
-import { FaceMesh } from "@mediapipe/face_mesh"
+import * as faceMeshPkg from "@mediapipe/face_mesh"
 import * as cameraUtils  from "@mediapipe/camera_utils"
 const {Camera} = cameraUtils
+ const { FaceMesh } = faceMeshPkg
 export default {
 
 data(){
