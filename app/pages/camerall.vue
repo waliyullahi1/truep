@@ -24,7 +24,6 @@
 import * as faceMeshPkg from "@mediapipe/face_mesh"
 import * as cameraUtils from "@mediapipe/camera_utils"
 
-const { Camera } = cameraUtils
 const { FaceMesh } = faceMeshPkg
 
 export default {
@@ -33,41 +32,28 @@ data(){
 return{
 
 started:false,
-
-actions:[],
-currentStep:0,
-instruction:"",
-
 verified:false,
 failed:false,
 
-/* calibration */
-calibrating:true,
-calibrationFrames:0,
+instruction:"Initializing...",
 
-baseEAR:0,
-baseMouth:0,
+camera:null,
+stream:null,
 
-blinkThreshold:0,
-smileThreshold:0,
-
-/* detection */
-blinkFrames:0,
-blinkCount:0,
-requiredBlinks:2,
-blinkCooldown:false,
-holdCount:0,
-
-prevEAR:0,
-
-cameraInstance:null,
-
-/* UX */
 isFaceValid:false,
 
-/* timeout */
-timeoutTimer:null,
-maxTime:30000
+/* detection */
+prevEAR:0,
+blinkCount:0,
+blinkFrames:0,
+blinkCooldown:false,
+
+baseEAR:0,
+calibrationFrames:0,
+calibrating:true,
+blinkThreshold:0,
+
+timeout:null
 
 }
 },
@@ -76,23 +62,41 @@ methods:{
 
 async startVerification(){
 
+try{
+
 this.started = true
+this.instruction = "Starting camera..."
+
 await this.$nextTick()
 
-this.startTimeout()
+/* ✅ SAFARI CHECK */
+if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+this.failed = true
+this.instruction = "Camera not supported"
+return
+}
 
-const video = this.$refs.video
-
-const stream = await navigator.mediaDevices.getUserMedia({
-video:{ facingMode:"user" },
+/* ✅ GET CAMERA (LOW RES FOR MOBILE) */
+this.stream = await navigator.mediaDevices.getUserMedia({
+video:{
+facingMode:"user",
+width:{ ideal: 320 },
+height:{ ideal: 320 }
+},
 audio:false
 })
 
-video.srcObject = stream
-await video.play()
+const video = this.$refs.video
+video.srcObject = this.stream
 
-this.generateActions()
+/* ✅ SAFARI SAFE PLAY */
+await new Promise((resolve)=>{
+video.onloadedmetadata = () => {
+video.play().then(resolve).catch(resolve)
+}
+})
 
+/* ✅ INIT MEDIAPIPE */
 const faceMesh = new FaceMesh({
 locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 })
@@ -100,166 +104,118 @@ locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 faceMesh.setOptions({
 maxNumFaces:1,
 refineLandmarks:true,
-minDetectionConfidence:0.6,
-minTrackingConfidence:0.6
+minDetectionConfidence:0.5,
+minTrackingConfidence:0.5
 })
 
 faceMesh.onResults(this.onResults)
 
-this.cameraInstance = new Camera(video,{
-onFrame: async ()=> await faceMesh.send({image:video}),
-width:400,
-height:400
+/* ✅ CAMERA LOOP (FIXED) */
+this.camera = new cameraUtils.Camera(video,{
+onFrame: async ()=>{
+if(video.readyState >= 2){
+await faceMesh.send({image:video})
+}
+},
+width:320,
+height:320
 })
 
-this.cameraInstance.start()
+this.camera.start()
+
+this.startTimeout()
+
+}catch(err){
+console.log(err)
+this.failed = true
+this.instruction = "Camera error"
+}
+
 },
 
+/* GLOBAL TIMEOUT */
 startTimeout(){
-this.timeoutTimer = setTimeout(()=>{
+this.timeout = setTimeout(()=>{
 if(!this.verified){
 this.failed = true
 this.stopCamera()
 }
-}, this.maxTime)
+},30000)
 },
 
-generateActions(){
-const all = ["blink","left","right","smile"]
-this.actions = all.sort(()=>Math.random()-0.5).slice(0,3)
+/* EAR */
+getEAR(landmarks){
+
+const eye = [33,160,158,133,153,144]
+
+const v1 = Math.abs(landmarks[160].y - landmarks[144].y)
+const v2 = Math.abs(landmarks[158].y - landmarks[153].y)
+const h = Math.abs(landmarks[33].x - landmarks[133].x)
+
+return (v1 + v2)/(2*h)
 },
 
-updateInstruction(){
-const action = this.actions[this.currentStep]
-
-if(action==="blink") this.instruction=`Blink ${this.requiredBlinks} times`
-if(action==="left") this.instruction="Turn LEFT"
-if(action==="right") this.instruction="Turn RIGHT"
-if(action==="smile") this.instruction="Smile"
-},
-
-/* FACE POSITION CHECK */
-checkFacePosition(landmarks){
-
-const left = landmarks[234].x
-const right = landmarks[454].x
-const top = landmarks[10].y
-const bottom = landmarks[152].y
-
-const centerX = (left + right)/2
-const centerY = (top + bottom)/2
-
-/* center box */
-const isCentered =
-centerX > 0.4 && centerX < 0.6 &&
-centerY > 0.35 && centerY < 0.65
-
-/* straight head */
-const eyeLeft = landmarks[33]
-const eyeRight = landmarks[263]
-const eyeDiffY = Math.abs(eyeLeft.y - eyeRight.y)
-const isStraight = eyeDiffY < 0.02
-
-/* symmetry */
-const nose = landmarks[1].x
-const leftDist = Math.abs(nose - left)
-const rightDist = Math.abs(right - nose)
-const isSymmetric = Math.abs(leftDist - rightDist) < 0.03
-
-return isCentered && isStraight && isSymmetric
-},
-
-getEAR(landmarks, left=true){
-
-const eye = left
-? [33,160,158,133,153,144]
-: [362,385,387,263,373,380]
-
-const v1 = Math.abs(landmarks[eye[1]].y - landmarks[eye[5]].y)
-const v2 = Math.abs(landmarks[eye[2]].y - landmarks[eye[4]].y)
-const h = Math.abs(landmarks[eye[0]].x - landmarks[eye[3]].x)
-
-return (v1 + v2) / (2.0 * h)
-},
-
+/* RESULTS */
 onResults(results){
 
 if(!results.multiFaceLandmarks){
-this.instruction = "No face detected"
+this.instruction = "Show your face"
 this.isFaceValid = false
 return
 }
 
 const landmarks = results.multiFaceLandmarks[0]
 
-/* POSITION CHECK */
-const valid = this.checkFacePosition(landmarks)
-this.isFaceValid = valid
-
-if(!valid){
-this.instruction = "Center your face & keep it straight"
-return
-}
-
-/* DISTANCE CHECK */
+/* FACE SIZE CHECK */
 const faceWidth = Math.abs(landmarks[234].x - landmarks[454].x)
+
 if(faceWidth < 0.15){
 this.instruction = "Move closer"
 return
 }
-if(faceWidth > 0.45){
+
+if(faceWidth > 0.5){
 this.instruction = "Move back"
 return
 }
 
+/* CENTER CHECK */
+const centerX = (landmarks[234].x + landmarks[454].x)/2
+
+if(centerX < 0.35 || centerX > 0.65){
+this.instruction = "Center your face"
+this.isFaceValid = false
+return
+}
+
+this.isFaceValid = true
+
 /* EAR */
-const leftEAR = this.getEAR(landmarks,true)
-const rightEAR = this.getEAR(landmarks,false)
-const avgEAR = (leftEAR + rightEAR)/2
-
-const smoothEAR = (this.prevEAR * 0.7) + (avgEAR * 0.3)
+const ear = this.getEAR(landmarks)
+const smoothEAR = (this.prevEAR*0.7)+(ear*0.3)
 this.prevEAR = smoothEAR
-
-/* SMILE */
-const mouthWidth = Math.abs(landmarks[61].x - landmarks[291].x)
-
-/* TURN */
-const left = landmarks[234].x
-const right = landmarks[454].x
-const nose = landmarks[1].x
-const faceCenter = (left + right)/2
-const turnRatio = (nose - faceCenter)/(right-left)
 
 /* CALIBRATION */
 if(this.calibrating){
 
 this.baseEAR += smoothEAR
-this.baseMouth += mouthWidth
 this.calibrationFrames++
 
-this.instruction = "Stay still... calibrating"
+this.instruction = "Stay still..."
 
-if(this.calibrationFrames > 40){
+if(this.calibrationFrames > 30){
 
 this.baseEAR /= this.calibrationFrames
-this.baseMouth /= this.calibrationFrames
-
-this.blinkThreshold = this.baseEAR * 0.85
-this.smileThreshold = this.baseMouth * 1.2
+this.blinkThreshold = this.baseEAR * 0.75
 
 this.calibrating = false
-this.updateInstruction()
+this.instruction = "Blink 2 times"
 }
 
 return
 }
 
-/* ACTION */
-const action = this.actions[this.currentStep]
-
-/* BLINK */
-if(action==="blink"){
-
+/* BLINK DETECTION */
 if(smoothEAR < this.blinkThreshold){
 this.blinkFrames++
 }else{
@@ -271,75 +227,38 @@ setTimeout(()=>this.blinkCooldown=false,800)
 
 this.blinkCount++
 
-if(this.blinkCount >= this.requiredBlinks){
-this.blinkCount = 0
-this.nextStep()
-}
+this.instruction = `Blink count: ${this.blinkCount}`
 
+if(this.blinkCount >= 2){
+this.verified = true
+this.instruction = "Verified ✅"
+clearTimeout(this.timeout)
+this.stopCamera()
+}
 }
 
 this.blinkFrames = 0
 }
-}
 
-/* LEFT */
-if(action==="left"){
-if(turnRatio > 0.15) this.holdCount++
-else this.holdCount=0
-
-if(this.holdCount > 5) this.nextStep()
-}
-
-/* RIGHT */
-if(action==="right"){
-if(turnRatio < -0.15) this.holdCount++
-else this.holdCount=0
-
-if(this.holdCount > 5) this.nextStep()
-}
-
-/* SMILE */
-if(action==="smile"){
-if(mouthWidth > this.smileThreshold) this.holdCount++
-else this.holdCount=0
-
-if(this.holdCount > 5) this.nextStep()
-}
-
-},
-
-nextStep(){
-
-this.holdCount = 0
-this.currentStep++
-
-if(this.currentStep >= this.actions.length){
-this.verified = true
-clearTimeout(this.timeoutTimer)
-this.stopCamera()
-return
-}
-
-this.updateInstruction()
 },
 
 stopCamera(){
 
-if(this.cameraInstance){
-this.cameraInstance.stop()
+if(this.camera){
+this.camera.stop()
 }
 
-const video = this.$refs.video
-if(video && video.srcObject){
-video.srcObject.getTracks().forEach(track=>track.stop())
+if(this.stream){
+this.stream.getTracks().forEach(t=>t.stop())
 }
+
+clearTimeout(this.timeout)
 
 }
 
 }
 }
 </script>
-
 <style scoped>
 .liveness-container{
 text-align:center;
@@ -347,12 +266,12 @@ font-family:Arial;
 }
 
 .camera-frame{
-width:320px;
-height:320px;
+width:300px;
+height:300px;
 margin:auto;
 border-radius:50%;
 overflow:hidden;
-border:4px solid green;
+border:3px solid green;
 position:relative;
 }
 
@@ -367,8 +286,8 @@ position:absolute;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
-width:220px;
-height:260px;
+width:200px;
+height:240px;
 border:2px dashed red;
 border-radius:50%;
 }
