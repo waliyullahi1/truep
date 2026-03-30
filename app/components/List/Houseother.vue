@@ -80,12 +80,12 @@ const money = (v) =>
 <div class="border w-full p-5 rounded-xl shadow space-y-6">
 
 <h2 class="section-title">
-{{ purpose.toLowerCase() === "sell" ? "House Price" : "Rent Price" }}
+{{ purpose.split(' ')[0].toLowerCase() === "sell" ? "House Price" : "Rent Price" }}
 </h2>
 
 <!-- SELL -->
 
-<div v-if="purpose.toLowerCase() === 'sell'" class="space-y-2">
+<div v-if="purpose  === 'sale'" class="space-y-2">
 
 <label class="text-sm text-gray-500">
 Selling Price (₦)

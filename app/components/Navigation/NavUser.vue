@@ -99,7 +99,7 @@
                  </div>
                 
                  <div>
-                   <NuxtLink to="/profile" class="">
+                   <NuxtLink to="/user/list/new" class="">
                       <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer">   Post property </p>
                   </NuxtLink>
                  </div>

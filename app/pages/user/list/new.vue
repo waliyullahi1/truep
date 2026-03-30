@@ -1,297 +1,485 @@
-<script setup>
-import { ref } from 'vue'
-
-definePageMeta({
-  layout: 'auth'
-})
-
-/* ======================
-   STEP
-====================== */
-const step = ref(1)
-
-/* ======================
-   IMAGE STATE (3)
-====================== */
-const previews = ref([null, null, null])
-
-/* ======================
-   DOCUMENT TYPES (6)
-====================== */
-const documentTypes = [
-  'Certificate of Occupancy (C of O)',
-  'Land Agreement',
-  'Survey Plan',
-  'Deed of Assignment',
-  'Allocation Letter',
-  'Other Document'
-]
-
-const docs = ref(Array(6).fill(null))
-const docNames = ref(Array(6).fill(null))
-
-/* ======================
-   FORM
-====================== */
-const form = ref({
-  title: '',
-  purpose: 'Sell',
-  price: '',
-  size: '',
-  state: '',
-  city: '',
-  address: '',
-  description: '',
-  fenced: false,
-  roadAccess: false,
-  dry: false,
-  phone: '',
-  whatsapp: '',
-  images: [],
-  documents: []
-})
-
-/* ======================
-   NAVIGATION
-====================== */
-const next = () => step.value++
-const back = () => step.value--
-
-/* ======================
-   IMAGE UPLOAD
-====================== */
-const handleUpload = (e, index) => {
-  const file = e.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-
-  reader.onload = () => {
-    previews.value[index] = reader.result
-    form.value.images[index] = file
-  }
-
-  reader.readAsDataURL(file)
-}
-
-const removeImage = (index) => {
-  previews.value[index] = null
-  form.value.images[index] = null
-}
-
-/* ======================
-   DOCUMENT UPLOAD
-====================== */
-const handleDoc = (e, index) => {
-  const file = e.target.files[0]
-  if (!file) return
-
-  if (file.type !== 'application/pdf') {
-    alert('Only PDF allowed')
-    return
-  }
-
-  docs.value[index] = file
-  docNames.value[index] = file.name
-  form.value.documents[index] = file
-}
-
-const removeDoc = (index) => {
-  docs.value[index] = null
-  docNames.value[index] = null
-  form.value.documents[index] = null
-}
-
-/* ======================
-   SUBMIT
-====================== */
-const submit = () => {
-  const formData = new FormData()
-
-  form.value.images.forEach(i => i && formData.append('images', i))
-  form.value.documents.forEach(d => d && formData.append('documents', d))
-
-  console.log(form.value)
-
-  alert('Land submitted successfully ✅')
-}
-</script>
-
-
-
 <template>
-<div class="min-h-screen py-10 px-4">
-<div class="max-w-4xl mx-auto">
-
-  <!-- STEP INDICATOR -->
-  <div class="flex gap-3 mb-10">
-    <div
-      v-for="n in 5"
-      :key="n"
-      class="h-10 w-10 rounded-full flex items-center justify-center text-sm"
-      :class="step >= n ? 'bg-black text-white' : 'bg-gray-200'"
-    >
-      {{ n }}
+  <div class="min-h-screen py-10 px-4">
+    {{ form }}
+    <div  class=" hidden">
+    <Phoneverification></Phoneverification>
     </div>
-  </div>
+    <Container>
+      <!-- ================= STEP 1 ================= -->
+      <div v-if="step === 1" class="max-w-4xl list-disc mx-auto space-y-4">
+        <div class="bg-white p-5 rounded shadow space-y-6">
 
-
-  <!-- ================= STEP 1 ================= -->
-  <div v-if="step===1" class="space-y-10">
-
-    <!-- IMAGES -->
-    <div>
-      <h2 class="section-title">Land Images (max 3)</h2>
-
-      <div class="flex gap-6 mt-4">
-        <div
-          v-for="(img,index) in previews"
-          :key="index"
-          class="relative w-56 h-40 border border-dashed border-gray-400 rounded-md overflow-hidden flex items-center justify-center hover:border-black"
-        >
-
-          <img v-if="img" :src="img" class="w-full h-full object-cover"/>
-
-          <div v-else class="text-center text-gray-400 text-sm">
-            Upload Image
+          <!-- PROPERTY TITLE -->
+          <div class="flex gap-5">
+            <div class="w-1/3">
+              <h2 class="section-title">Property Title</h2>
+              <p class="text-gray-500 text-sm">Add a clear title for your property</p>
+            </div>
+            <div class="w-2/3">
+              <textarea
+                v-model="form.title"
+                placeholder="Example: 2 Plots of Land in Lekki"
+                class="input h-20"
+              />
+            </div>
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            :id="'img-'+index"
-            class="hidden"
-            @change="handleUpload($event,index)"
-          />
+          <!-- PURPOSE & TYPE -->
+          <div class="flex gap-5">
+            <div class="flex-1">
+              <h2 class="section-title">Purpose</h2>
+              <select @change="onCategoryChange" v-model="formSelection" class="input">
+                <option disabled value="">Select Purpose</option>
+                <option
+                  v-for="item in purposeOptions"
+                  :key="item.label"
+                  :value="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
 
-          <label :for="'img-'+index" class="absolute inset-0 cursor-pointer"></label>
+            <div class="flex-1">
+              <h2 class="section-title">Category</h2>
+              <select v-model="form.category" class="input">
+                <option disabled value="">Select Type</option>
+                <option
+                  v-for="item in options"
+                  :key="item.key"
+                  :value="item.key"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+          </div>
 
-          <button
-            v-if="img"
-            @click="removeImage(index)"
-            class="absolute top-2 right-2 bg-black text-white w-6 h-6 rounded-full text-xs"
-          >
-            ✕
-          </button>
+          <!-- LOCATION / FEATURES / OTHERS -->
+          <div class="mt-10 border rounded p-4">
 
+            <!-- TABS -->
+            <div class="flex bg-gray-50 rounded overflow-hidden">
+              <div
+                class="tab flex-1"
+                :class="{ active: activeSection === 'location' }"
+                @click="activeSection = 'location'"
+              >
+                Location
+                <span v-if="isCompleted('location')">✅</span>
+              </div>
+              <div
+                class="tab flex-1"
+                :class="{ active: activeSection === 'features' }"
+                @click="activeSection = 'features'"
+              >
+                Features
+                <span v-if="isCompleted('features')">✅</span>
+              </div>
+              <div
+                class="tab flex-1"
+                :class="{ active: activeSection === 'others' }"
+                @click="activeSection = 'others'"
+              >
+                Others
+                <span v-if="isCompleted('others')">✅</span>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <!-- LOCATION -->
+              <div v-if="activeSection === 'location'">
+                <div
+                  v-if="propertyType === ''"
+                  class="bg-gray-50 border rounded p-6 text-center"
+                >
+                  Select purpose first
+                </div>
+                <div v-if="propertyType">
+
+  <!-- 🔥 SWITCH BUTTONS -->
+                <div class="flex gap-2 mb-4">
+                  <button
+                    @click="setSource('gps')"
+                    :class="[
+                      'px-4 py-2 text-sm rounded',
+                      form.location.source === 'gps'
+                        ? 'bg-slate-800 text-white'
+                        : 'bg-gray-200'
+                    ]"
+                  >
+                    Use Map
+                  </button>
+
+                  <button
+                    @click="setSource('manual')"
+                    :class="[
+                      'px-4 py-2 text-sm rounded',
+                      form.location.source === 'manual'
+                        ? 'bg-slate-800 text-white'
+                        : 'bg-gray-200'
+                    ]"
+                  >
+                    Enter Manually
+                  </button>
+                </div>
+
+                <!-- ================= MAP ================= -->
+                <div v-if="form.location.source === 'gps'">
+
+                  <div v-if="propertyType === 'land'">
+                    <ListLandMap v-model="form" />
+                  </div>
+
+                  <div v-if="propertyType === 'house'">
+                    <ListHouseLocationPicker v-model="form" />
+                  </div>
+
+                </div>
+
+                <!-- ================= MANUAL ================= -->
+                <div v-if="form.location.source === 'manual'">
+                  <ListStateLGASelector v-model="form.location" />
+                </div>
+
+              </div>
+              </div>
+
+              <!-- FEATURES -->
+              <div v-if="activeSection === 'features'">
+                <ListFeature :type="propertyType" v-model="form.features" />
+              </div>
+
+              <!-- OTHERS -->
+              <div v-if="activeSection === 'others'">
+                <div v-if="propertyType === 'land'">
+                  <ListLandother v-model="form" />
+                </div>
+                <div v-if="propertyType === 'house'">
+                  <ListHouseother v-model="form" :purpose="form.purpose" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-
-    <!-- DOCUMENTS -->
-    <div class="border-t pt-10">
-      <h2 class="section-title">Ownership Documents (PDF only)</h2>
-
-      <div class="grid grid-cols-2 gap-6 mt-4">
-
-        <div
-          v-for="(label,index) in documentTypes"
-          :key="index"
-          class="relative border border-dashed border-gray-400 rounded-md h-28 flex items-center justify-center hover:border-black"
-        >
-
-          <div v-if="docs[index]" class="text-center text-sm px-3">
-            📄
-            <p class="font-medium">{{ label }}</p>
-            <p class="text-xs truncate">{{ docNames[index] }}</p>
-          </div>
-
-          <div v-else class="text-center text-gray-400 text-sm">
-            {{ label }}
-          </div>
-
-          <input
-            type="file"
-            accept="application/pdf"
-            :id="'doc-'+index"
-            class="hidden"
-            @change="handleDoc($event,index)"
-          />
-
-          <label :for="'doc-'+index" class="absolute inset-0 cursor-pointer"></label>
-
-          <button
-            v-if="docs[index]"
-            @click="removeDoc(index)"
-            class="absolute top-2 right-2 bg-black text-white w-6 h-6 rounded-full text-xs"
-          >
-            ✕
-          </button>
-
-        </div>
-
+      <!-- ================= STEP 2 ================= -->
+      <div v-if="step === 2">
+        <ListDescription v-model="form.description" />
       </div>
-    </div>
+
+      <!-- ================= STEP 3 ================= -->
+      <div v-if="step === 3">
+
+        <ListUpload v-model="form" />
+         <!-- <ListUploadhouse v-model="form" /> -->
+      </div>
+
+      <!-- ================= STEP 4 ================= -->
+      <div v-if="step === 4">
+        <h2 class="section-title">Contact</h2>
+        <input v-model="form.contact.phone" placeholder="Phone" class="input" />
+        <input v-model="form.contact.whatsapp" placeholder="WhatsApp" class="input" />
+      </div>
+
+      <!-- ================= STEP 5 ================= -->
+      
+
+      <!-- ================= NAVIGATION ================= -->
+      <div class="flex justify-between mt-8">
+        <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
+        <button v-if="step < 3" :disabled="loginloading" @click="next" class="btn-primary ml-auto"> {{ loginloading ? 'Uploading...' : 'Next' }}</button>
+        <button v-if="step === 3" @click="submit" class="btn-primary ml-auto">Submit</button>
+      </div>
+    </Container>
   </div>
-
-
-
-  <!-- ================= STEP 2 ================= -->
-  <div v-if="step===2" class="space-y-4">
-    <h2 class="section-title">Location</h2>
-    <input v-model="form.state" placeholder="State" class="input"/>
-    <input v-model="form.city" placeholder="City" class="input"/>
-    <input v-model="form.address" placeholder="Address" class="input"/>
-  </div>
-
-
-
-  <!-- ================= STEP 3 ================= -->
-  <div v-if="step===3" class="space-y-4">
-    <h2 class="section-title">Land Features</h2>
-
-    <textarea v-model="form.description" class="input h-28"/>
-
-    <label><input type="checkbox" v-model="form.fenced"/> Fenced</label>
-    <label><input type="checkbox" v-model="form.roadAccess"/> Road Access</label>
-    <label><input type="checkbox" v-model="form.dry"/> Dry Land</label>
-  </div>
-
-
-
-  <!-- ================= STEP 4 ================= -->
-  <div v-if="step===4" class="space-y-4">
-    <h2 class="section-title">Contact Info</h2>
-    <input v-model="form.phone" class="input" placeholder="Phone"/>
-    <input v-model="form.whatsapp" class="input" placeholder="WhatsApp"/>
-  </div>
-
-
-
-  <!-- ================= STEP 5 ================= -->
-  <div v-if="step===5" class="text-center">
-    <button @click="submit" class="btn-primary">Submit</button>
-  </div>
-
-
-
-  <!-- NAV BUTTONS -->
-  <div class="flex justify-between mt-10">
-    <button v-if="step>1" @click="back" class="btn-secondary">Back</button>
-    <button v-if="step<5" @click="next" class="btn-primary ml-auto">Next</button>
-  </div>
-
-</div>
-</div>
 </template>
 
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
+const router = useRouter()
+const route = useRoute()
+const { $toast } = useNuxtApp()
+
+definePageMeta({ layout: 'auth' })
+
+/* ================= STEP CONTROL ================= */
+const step = ref(Number(route.query.step) || 1)
+const activeSection = ref('location')
+const loginloading = ref(false)
+/* ================= FORM DATA ================= */
+const form = ref({
+  id: null,
+  title: '',
+  description: '',
+  category: '',
+  type: '',
+  purpose: '',
+
+  pricing: {
+    price: null,
+    currency: "NGN",
+    rentDuration: null,
+    installment: false,
+    installmentPlan: { months: null, monthlyAmount: null }
+  },
+
+  location: {
+    
+    country: "Nigeria",
+    state: "",
+    lga: "",
+    city: "",
+    address: "",
+    source: "gps",
+    geometry: { type: "Polygon", coordinates: [] }
+  },
+
+  landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null },
+  houseDetails: null,
+  media: { images: [], video: null },
+  documents: { surveyPlan: null, titleDocument: null },
+  features: [],
+  contact: { name: "", phone: "", whatsapp: "" }
+})
+
+/* ================= PURPOSE OPTIONS ================= */
+const purposeOptions = [
+  { label: 'Sell Land', value: { purpose: 'sale', type: 'land' } },
+  { label: 'Sell House', value: { purpose: 'sale', type: 'house' } },
+  { label: 'Rent House', value: { purpose: 'rent', type: 'house' } }
+]
+
+const formSelection = ref(null)
+watch(formSelection, val => {
+  if (val) {
+    form.value.purpose = val.purpose
+    form.value.type = val.type
+  }
+})
+
+const setSource = (type) => {
+  form.value.location.source = type
+}
+/* ================= PROPERTY TYPE ================= */
+const propertyType = computed(() => form.value.type)
+
+/* ================= OPTIONS BASED ON TYPE ================= */
+const houseType = [
+  { key: 'self_contain', label: 'Self Contain' },
+  { key: 'duplex', label: 'Duplex' },
+  { key: 'flat', label: 'Flat' },
+  { key: 'mansion', label: 'Mansion' },
+  { key: 'bungalow', label: 'Bungalow' },
+  { key: 'villa', label: 'Villa' },
+  { key: 'shop', label: 'Shop' },
+  { key: 'office_space', label: 'Office Space' }
+]
+
+const landType = [
+  { key: 'commercial_land', label: 'Commercial Land' },
+  { key: 'residential_land', label: 'Residential Land' },
+  { key: 'industrial_land', label: 'Industrial Land' },
+  { key: 'mixed_use_land', label: 'Mixed-use Land' },
+  { key: 'family_land', label: 'Family Land' },
+  { key: 'other_land', label: 'Other Land' }
+]
+
+const options = computed(() => {
+  if (propertyType.value === 'land') return landType
+  if (propertyType.value === 'house') return houseType
+  return []
+})
+
+/* ================= WATCH TYPE TO UPDATE GEO ================= */
+watch(propertyType, type => {
+  form.value.location.geometry.type = type === 'house' ? 'Point' : 'Polygon'
+})
+function generateRandomLand() {
+  // Iwo, Osun base coordinates
+  const baseLng = 4.18 + (Math.random() - 0.5) * 0.02
+  const baseLat = 7.63 + (Math.random() - 0.5) * 0.02
+
+  const size = 0.001 + Math.random() * 0.001
+
+  const corners = [
+    [baseLng, baseLat],
+    [baseLng + size, baseLat],
+    [baseLng + size, baseLat + size],
+    [baseLng, baseLat + size],
+    [baseLng, baseLat]
+  ]
+
+  return {
+    country: "Nigeria",
+    state: "Osun",
+    lga: "Iwo",
+    city: "Iwo",
+    address: "Iwo Test Land (Near Bowen Area)",
+    source: "manual",
+    geometry: {
+      type: "Polygon",
+      coordinates: [corners]
+    }
+  }
+}
+
+function onCategoryChange(e) {
+  const value = e.target.value
+  console.log('Selected:', value)
+    form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
+  form.value.houseDetails = null
+  form.value.features = []
+  form.value.location.geometry = val === 'house' ? { type: 'Point', coordinates: [] } : { type: 'Polygon', coordinates: [] }
+  form.value.pricing = { price: null, currency: "NGN", rentDuration: null, installment: false, installmentPlan: { months: null, monthlyAmount: null } }
+  form.value.location = { country: "", state: "", lga: "", city: "", address: "", source: "gps", geometry: form.value.location.geometry }
+  form.value.category = ''
+  // // do anything here
+  // if (value === 'duplex') {
+  //   form.value.houseDetails = { rooms: 5 }
+  // }
+}
+// watch(() => form.value.type, val => {
+//   form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
+//   form.value.houseDetails = null
+//   form.value.features = []
+//   form.value.location.geometry = val === 'house' ? { type: 'Point', coordinates: [] } : { type: 'Polygon', coordinates: [] }
+//   form.value.pricing = { price: null, currency: "NGN", rentDuration: null, installment: false, installmentPlan: { months: null, monthlyAmount: null } }
+//   form.value.location = { country: "", state: "", lga: "", city: "", address: "", source: "gps", geometry: form.value.location.geometry }
+//   form.value.category = ''
+// })
+
+/* ================= SECTION COMPLETION ================= */
+function isCompleted(section) {
+  if (section === 'location') {
+    const loc = form.value.location
+    return loc.state && loc.city && loc.address
+  }
+  if (section === 'features') return form.value.features.length >= 3
+  if (section === 'others') {
+    if (propertyType.value === 'land') return form.value.landDetails.size
+    if (propertyType.value === 'house') return form.value.houseDetails
+  }
+  return false
+}
+
+/* ================= DEEP MERGE HELPER ================= */
+function mergeForm(property) {
+  if (!property) return
+  console.log(property.category);
+  
+  form.value.title = property.title ?? form.value.title
+  form.value.description = property.description ?? form.value.description
+  form.value.category = property.category ?? 'category'
+  form.value.type = property.type ?? form.value.type
+  form.value.purpose = property.purpose ?? form.value.purpose
+
+  form.value.pricing = { ...form.value.pricing, ...(property.pricing || {}) }
+  form.value.location = { ...form.value.location, ...(property.location || {}) }
+  form.value.location.geometry = { ...(property.location?.geometry || form.value.location.geometry) }
+  form.value.landDetails = { ...form.value.landDetails, ...(property.landDetails || {}) }
+  form.value.houseDetails = property.houseDetails ?? form.value.houseDetails
+  form.value.media = { ...form.value.media, ...(property.media || {}) }
+  form.value.documents = { ...form.value.documents, ...(property.documents || {}) }
+  form.value.contact = { ...form.value.contact, ...(property.contact || {}) }
+
+  form.value.features = Array.isArray(property.features) ? [...property.features] : form.value.features
+
+  form.value.id = property._id ?? form.value.id
+
+  if (property.purpose && property.type) {
+    formSelection.value = { purpose: property.purpose, type: property.type }
+  }
+
+  form.value.location = generateRandomLand()
+}
+
+/* ================= NAVIGATION ================= */
+const next = async () => {
+  if (step.value === 1 || step.value === 2) {
+    loginloading.value = true
+    try { 
+      console.log(form.value);
+      
+      const response = await useApiFetch(`/property/${form.value.id || null}`, {
+        method: 'POST',
+        body: {details: form.value}
+      })
+      const property = response.data?.data || response.data
+      mergeForm(property)
+
+      if (property?._id) {
+        router.replace({ query: { ...route.query, id: property._id } })
+      }
+      if (property?._id) {
+        router.replace({
+          query: {
+            ...route.query,
+            id: property._id,
+            step: step.value + 1
+          }
+        })
+      }
+      $toast.success("Saved successfully")
+      loginloading.value = false
+    } catch (err) {
+      console.error(err)
+      $toast.error(err?.message || "Something went wrong")
+      loginloading.value = false
+      return
+    }
+  }
+  if (step.value < 5) step.value++
+}
+
+const back = () => { if (step.value > 1) {
+   router.replace({
+          query: {
+            ...route.query,
+    
+            step: step.value - 1
+          }
+        })
+  step.value--
+   }}
+const submit = () => { console.log("Final Data:", form.value); alert('Property submitted successfully ✅') }
+
+
+/* ================= LOAD EXISTING FORM ================= */
+onMounted(async () => {
+  const propertyId = route.query?.id
+  if (!propertyId) return
+  try {
+    const response = await useApiFetch(`/property/${propertyId}`, { method: 'GET' })
+    const property = response.data?.data || response.data
+    mergeForm(property)
+  } catch (err) {
+    console.error(err)
+    $toast.error(err?.message || "Failed to load property")
+  }
+})
+</script>
 
 <style scoped>
-.input {
-  @apply w-full border rounded-lg px-4 py-2;
+.input{
+  @apply w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black;
 }
-
-.section-title {
+.section-title{
   @apply text-lg font-semibold;
 }
-
-.btn-primary {
+.btn-primary{
   @apply bg-black text-white px-6 py-2 rounded-lg;
 }
-
-.btn-secondary {
+.btn-secondary{
   @apply border px-6 py-2 rounded-lg;
+}
+.tab{
+  @apply p-3 cursor-pointer font-medium flex justify-between;
+}
+.tab.active{
+  @apply bg-gray-200;
 }
 </style>

@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     },
 
     head: {
-      title: 'UNILORIN Nursery And Primary School',
+      title: 'Abanise Enterprises - Buy and Sell Properties in Nigeria',
 
       htmlAttrs: {
         lang: 'en'
@@ -33,7 +33,7 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'UNILORIN Nursery And Primary School Portal' }
+        { name: 'description', content: 'Abanise Enterprises - Buy and Sell Properties in Nigeria' }
       ],
 
       link: [

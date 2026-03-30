@@ -1,267 +1,357 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from "vue"
+import "mapbox-gl/dist/mapbox-gl.css"
 
-definePageMeta({
-  layout: 'auth'
+/* =========================
+PROPS
+========================= */
+const props = defineProps({
+  modelValue: Object
 })
 
-/* =============================
-   STATE
-============================= */
+const emit = defineEmits(["update:modelValue"])
 
-const search = ref('')
-const category = ref('')
-const type = ref('')
-const location = ref('')
+/* =========================
+MAP REFS
+========================= */
+const mapRef = ref(null)
 
-/* =============================
-   SAMPLE DATA
-============================= */
+let map = null
+let mapboxgl = null
+let myMarker = null
+let watchId = null
 
-const names = [
-  'Mr. Adewale','Mrs. Adebayo','Mr. Bello','Mrs. Kemi','Mr. Hassan',
-  'Miss Fatima','Mr. Tunde','Mrs. Funke','Mr. Chinedu','Mrs. Grace'
-]
+/* =========================
+DATA
+========================= */
+const corners = ref([])
+const area = ref(0)
+const plots = ref(0)
 
-const cities = [
-  'Ilorin','Lekki','Abuja','Ibadan','Port Harcourt',
-  'Kano','Enugu','Abeokuta','Osogbo','Akure'
-]
+/* =========================
+ACCURACY
+========================= */
+const accuracy = ref(9999)
+const TEST_MODE = true
 
-const results = ref(
-  Array.from({ length: 60 }, (_, i) => {
-    const mod = i % 4
+const REQUIRED_ACCURACY = TEST_MODE ? 999999 : 20
+/* =========================
+SAFE UPDATE PARENT
+========================= */
+const updateParent = (extra = {}) => {
+  emit("update:modelValue", {
+    ...props.modelValue,
 
-    if (mod === 0) {
-      return {
-        id: i,
-        category: 'property',
-        name: names[i % names.length],
-        type: i % 2 ? 'house' : 'land',
-        title: 'Property for Sale',
-        price: `₦${(Math.random() * 900 + 50).toFixed(0)}m`,
-        images: ['/images/land1.jpg'], // ✅ fixed path
-        description: 'Well located property with good access road.',
-        location: cities[i % cities.length]
-      }
-    }
+    location: {
+      ...(props.modelValue?.location || {}),
+      ...(extra.location || {})
+    },
 
-    if (mod === 1) {
-      return {
-        id: i,
-        category: 'service',
-        name: names[i % names.length],
-        type: 'survey',
-        title: 'Land Survey Service',
-        price: 80000,
-        rating: 4.7,
-        images: ['/images/land1.jpg'], // ✅ fixed
-        location: cities[i % cities.length]
-      }
-    }
-
-    if (mod === 2) {
-      return {
-        id: i,
-        category: 'profile',
-        name: names[i % names.length],
-        type: 'agent',
-        avatar: '/images/avatar.png', // ✅ fixed
-        location: cities[i % cities.length]
-      }
-    }
-
-    return {
-      id: i,
-      category: 'history',
-      title: 'Previous transaction',
-      date: '2 days ago',
-      location: cities[i % cities.length]
+    landDetails: {
+      ...(props.modelValue?.landDetails || {}),
+      ...(extra.landDetails || {})
     }
   })
-)
-
-/* =============================
-   OPTIONS
-============================= */
-
-const typeOptions = computed(() => {
-  const map = {
-    property: ['land', 'house', 'rent', 'buy'],
-    service: ['survey', 'construction', 'agent', 'worker'],
-    profile: ['agent', 'worker']
-  }
-  return map[category.value] || []
-})
-
-const locationOptions = computed(() =>
-  [...new Set(results.value.map(r => r.location).filter(Boolean))]
-)
-
-/* =============================
-   FILTER LOGIC
-============================= */
-
-const filteredResults = computed(() => {
-  const q = search.value.toLowerCase()
-
-  return results.value.filter(item => {
-    const text = `${item.title ?? ''} ${item.name ?? ''} ${item.description ?? ''}`.toLowerCase()
-
-    return (
-      (!q || text.includes(q)) &&
-      (!category.value || item.category === category.value) &&
-      (!type.value || item.type === type.value) &&
-      (!location.value || item.location === location.value)
-    )
-  })
-})
-
-/* =============================
-   AUTO COMPONENT MAP
-   (Nuxt auto-imports components)
-============================= */
-
-const componentMap = {
-  service: 'ServiceCard',
-  property: 'PropertyCard',
-  profile: 'ProfileCard',
-  history: 'HistoryCard'
 }
+
+/* =========================
+REVERSE GEOCODE
+========================= */
+const reverseGeocode = async (lng, lat) => {
+  try {
+    const config = useRuntimeConfig()
+
+    const res = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.public.mapboxToken}`
+    )
+
+    const data = await res.json()
+
+    const place = {
+      country: "",
+      state: "",
+      city: "",
+      lga: "",
+      address: ""
+    }
+
+    data.features.forEach((f) => {
+      if (f.place_type.includes("country")) place.country = f.text
+      if (f.place_type.includes("region")) place.state = f.text
+      if (f.place_type.includes("place")) place.city = f.text
+      if (f.place_type.includes("district")) place.lga = f.text
+      if (f.place_type.includes("locality")) place.address = f.text
+    })
+
+    return place
+  } catch (err) {
+    console.log("Geocode error", err)
+    return null
+  }
+}
+
+/* =========================
+GPS TRACKING
+========================= */
+const startLivePosition = () => {
+  if (!navigator.geolocation) return alert("GPS not supported")
+
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+
+  watchId = navigator.geolocation.watchPosition(
+    ({ coords }) => {
+      const { latitude, longitude, accuracy: acc } = coords
+
+      accuracy.value = Number(acc.toFixed(1))
+
+      if (!myMarker) {
+        myMarker = new mapboxgl.Marker({ color: "blue" })
+          .setLngLat([longitude, latitude])
+          .addTo(map)
+      } else {
+        myMarker.setLngLat([longitude, latitude])
+      }
+
+      map.flyTo({
+        center: [longitude, latitude],
+        zoom: 19
+      })
+    },
+    () => alert("Enable GPS permission"),
+    { enableHighAccuracy: true }
+  )
+}
+
+/* =========================
+ADD CORNER
+========================= */
+const addCorner = async () => {
+    if (hasExistingPolygon.value) {
+    alert("Polygon already exists. Reset to edit.")
+    return
+  }
+  if (!myMarker) return alert("Wait for GPS")
+
+  if (accuracy.value > REQUIRED_ACCURACY) {
+    return alert(`Low accuracy: ${accuracy.value}m`)
+  }
+
+  const { lat, lng } = myMarker.getLngLat()
+
+  corners.value.push([lng, lat])
+
+  const place = await reverseGeocode(lng, lat)
+
+  if (place) {
+    updateParent({
+      location: place
+    })
+  }
+
+  drawPolygon()
+}
+
+/* =========================
+DRAW POLYGON
+========================= */
+const drawPolygon = () => {
+  if (!map) return
+  if (corners.value.length < 3) return
+
+  const coords = [...corners.value]
+  coords.push(coords[0]) // close polygon
+
+  const geojson = {
+    type: "Feature",
+    geometry: {
+      type: "Polygon",
+      coordinates: [coords]
+    }
+  }
+
+  if (map.getSource("plot")) {
+    map.getSource("plot").setData(geojson)
+  } else {
+    map.addSource("plot", { type: "geojson", data: geojson })
+
+    map.addLayer({
+      id: "plot-fill",
+      type: "fill",
+      source: "plot",
+      paint: { "fill-color": "#ff0000", "fill-opacity": 0.2 }
+    })
+
+    map.addLayer({
+      id: "plot-line",
+      type: "line",
+      source: "plot",
+      paint: { "line-color": "#ff0000", "line-width": 3 }
+    })
+  }
+
+  area.value = Math.round(geodesicAreaMeters(coords))
+  plots.value = Math.round(area.value / 450)
+
+  updateParent({
+    location: {
+      geometry: {
+        type: "Polygon",
+        coordinates: [coords]
+      }
+    },
+    landDetails: {
+      size: area.value,
+      totalSqm: area.value
+    }
+  })
+}
+
+/* =========================
+LOAD EXISTING DATA (🔥 FIX)
+========================= */
+watch(
+  () => props.modelValue?.location?.geometry?.coordinates,
+  (coords) => {
+    if (!coords || !coords.length) return
+
+    const polygon = coords[0]
+    if (!polygon || polygon.length < 3) return
+
+    // remove closing point
+    corners.value = polygon.slice(0, -1)
+
+    setTimeout(() => {
+      drawPolygon()
+
+      const [lng, lat] = corners.value[0]
+      map?.flyTo({ center: [lng, lat], zoom: 18 })
+    }, 500)
+  },
+  { immediate: true, deep: true }
+)
+
+/* =========================
+AREA CALCULATION
+========================= */
+const geodesicAreaMeters = (coords) => {
+  if (coords.length < 3) return 0
+
+  const rad = Math.PI / 180
+  const latRef = coords[0][1] * rad
+
+  const meters = coords.map(([lng, lat]) => {
+    const x = lng * 111320 * Math.cos(latRef)
+    const y = lat * 110540
+    return [x, y]
+  })
+
+  let area = 0
+
+  for (let i = 0; i < meters.length; i++) {
+    const [x1, y1] = meters[i]
+    const [x2, y2] = meters[(i + 1) % meters.length]
+    area += x1 * y2 - x2 * y1
+  }
+
+  return Math.abs(area / 2)
+}
+
+/* =========================
+RESET
+========================= */
+const resetPlot = () => {
+  corners.value = []
+  area.value = 0
+  plots.value = 0
+
+  if (map?.getSource("plot")) {
+    map.removeLayer("plot-fill")
+    map.removeLayer("plot-line")
+    map.removeSource("plot")
+  }
+
+  updateParent({
+    location: {
+      geometry: { type: "Polygon", coordinates: [] }
+    },
+    landDetails: {
+      size: 0,
+      totalSqm: 0
+    }
+  })
+}
+
+/* =========================
+INIT MAP
+========================= */
+onMounted(async () => {
+  if (!process.client) return
+
+  await nextTick()
+
+  const config = useRuntimeConfig()
+  mapboxgl = (await import("mapbox-gl")).default
+  mapboxgl.accessToken = config.public.mapboxToken
+
+  map = new mapboxgl.Map({
+    container: mapRef.value,
+    style: "mapbox://styles/mapbox/streets-v12",
+    center: [3.9, 7.4],
+    zoom: 18
+  })
+map.addControl(new mapboxgl.NavigationControl(), "top-right")
+map.scrollZoom.enable()
+map.touchZoomRotate.enable()
+  map.on("load", startLivePosition)
+
+})
+
+onUnmounted(() => {
+  if (watchId) navigator.geolocation.clearWatch(watchId)
+  if (map) map.remove()
+})
+
+const hasExistingPolygon = computed(() => {
+  const coords = props.modelValue?.location?.geometry?.coordinates
+  return coords && coords.length && coords[0]?.length >= 3
+})
 </script>
 
-
 <template>
-  <div>
-    <div class="  bg-[url('/images/hero.jpg')]  bg-cover bg-no-repeat  h-screen-60  bg-center header ">
+<ClientOnly>
+  <div class="p-4 space-y-4">
 
-      <div class="  w-full h-full bg-black/50 flex items-center justify-center">
-        <div>
-          <h1 class="text-2xl font-normal md:text-3xl text-white ">Discover Your Perfect Property in Nigeria</h1>
-          <p class=" text-white">Buy land • Sell property • Rent homes • List your property today.</p>
-        </div>
-      </div>
-    </div>
-    <div class=" relative bottom-16">
-      <Container>
-        <div class="  flex gap-5 shadow-xl  rounded-md  h-20 w-full  px-4 py-4 bg-white">
-          <input type="text" placeholder="Search services, property, profiles..." class=" border outline-none border-gray-700 bg-white rounded-md  h-full  px-4    w-full ">
-          <div class=" flex justify-center items-center gap-3" >
-            <button class="bg-slate-200 rounded-md font-medium py-3 px-4 h-fit" type="button">Filter</button>
-            <button class="bg-green-700 text-white rounded-md font-medium py-3 h-fit px-4" type="button">Search</button>
-          </div>
-        </div>
-      </Container>
-    </div>
-     <Container class="min-h-screen mt-16 bg-gray-50 p-6">
-
-    <!-- TOP BAR -->
-    <div class="max-w-6xl mx-auto space-y-4">
-
-      <input
-        v-model="search"
-        placeholder="Search services, property, profiles..."
-        class="w-full px-5 py-3 rounded-2xl shadow bg-white outline-none"
-      />
-
-      <!-- Tabs -->
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="c in ['', 'service', 'property', 'profile', 'history']"
-          :key="c"
-          @click="category = c; type=''; location=''"
-          class="px-5 py-2 rounded-xl text-sm font-medium transition"
-          :class="category === c
-            ? 'bg-blue-600 text-white shadow'
-            : 'bg-white hover:bg-gray-100'"
-        >
-          {{ c || 'All' }}
-        </button>
-      </div>
-
-      <!-- Filters -->
-      <div class="flex flex-wrap gap-3">
-
-        <select
-          v-if="typeOptions.length"
-          v-model="type"
-          class="px-4 py-2 rounded-xl bg-white shadow"
-        >
-          <option value="">All Types</option>
-          <option v-for="t in typeOptions" :key="t">{{ t }}</option>
-        </select>
-
-        <select
-          v-if="locationOptions.length"
-          v-model="location"
-          class="px-4 py-2 rounded-xl bg-white shadow"
-        >
-          <option value="">All Locations</option>
-          <option v-for="l in locationOptions" :key="l">{{ l }}</option>
-        </select>
-
-      </div>
+    <div class="font-bold">
+      Accuracy: {{ accuracy }} m
     </div>
 
-    <!-- GRID -->
-    <div class="grid gap-6 mt-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-      <component
-        v-for="item in filteredResults"
-        :key="item.id"
-        :is="componentMap[item.category]"
-        :data="item"
-      />
-
-      <div
-        v-if="!filteredResults.length"
-        class="col-span-full text-center py-20 text-gray-400"
-      >
-        No results found
-      </div>
-
+    <div v-if="accuracy > REQUIRED_ACCURACY" class="text-red-600">
+      Waiting for better GPS accuracy...
     </div>
-  </Container>
+
+    <div v-else class="text-green-600">
+      GPS Ready ✓
+    </div>
+
+    <div class="flex gap-2">
+      <button @click="addCorner"  :disabled="hasExistingPolygon" class="bg-green-600 text-white px-4 py-2 rounded">
+        Add Corner
+      </button>
+
+      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
+        Reset
+      </button>
+    </div>
+
+    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
+
+    <div class="text-sm text-gray-600">
+      <div>Corners: {{ corners.length }}</div>
+      <div v-if="area">
+        Area: {{ area }} m² (~{{ plots }} plots)
+      </div>
+    </div>
 
   </div>
- 
+</ClientOnly>
 </template>
-
-<style>
-header {
-  background: linear-gradient(rgba(31, 31, 31, 0.838), rgba(41, 41, 41, 0.7)), url('/images/hero.jpg');
-  background-blend-mode: multiply;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-}
-
-
-
-.cta {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/images/unilorin_gate.jpg');
-  background-blend-mode: multiply;
-  background-repeat: no-repeat;
-  background-size: cover;
- 
-  background-position: top;
-}
-
-.custom-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #b78d46;
-  border-radius: 10px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: #9e7636;
-}
-</style>

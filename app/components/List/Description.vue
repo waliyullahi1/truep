@@ -50,3 +50,9 @@ class="min-h-[220px]"
 </div>
 
 </template>
+<style scoped>
+/* optional: fix min-height of read-only editor */
+.ql-container {
+  min-height: 150px;
+}
+</style>
