@@ -1,211 +1,256 @@
 <script setup>
-import { ref, computed } from 'vue'
-import loadstates from '@/data/nigeria-states.js'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-definePageMeta({ layout: 'auth' })
+const router = useRouter()
+const route = useRoute()
+const { $toast } = useNuxtApp()
 
-/* ======================
-   STEP CONTROL
-====================== */
-const step = ref(1)
-
-const steps = [
-  'Details',
-  'Location',
-  'Uploads',
-  'Contact',
-  'Review'
-]
-
-/* ======================
-   FORM
-====================== */
-const form = ref({
-  title: '',
-  purpose: 'Sell Land',
-  type: '',
-  price: '',
-  size: '',
-  state: '',
-  city: '',
-  address: '',
-  description: '',
-  phone: '',
-  whatsapp: ''
+definePageMeta({
+  layout: 'auth'
 })
 
-/* ======================
-   TYPES
-====================== */
-const houseType = [
-  { key: 'duplex', label: 'Duplex' },
-  { key: 'flat', label: 'Flat' },
-  { key: 'bungalow', label: 'Bungalow' }
-]
+/* ================= STATE ================= */
+const filter = ref('all')
+const openMenuId = ref(null)
 
-const landType = [
-  { key: 'residential_land', label: 'Residential Land' },
-  { key: 'commercial_land', label: 'Commercial Land' }
-]
+/* ================= DATA ================= */
+const properties = ref([])
 
-const options = computed(() =>
-  form.value.purpose.includes('Land') ? landType : houseType
+/* ================= COMPUTED ================= */
+
+const totalItems = computed(() => properties.value.length)
+
+const filteredList = computed(() =>
+  filter.value === 'all'
+    ? properties.value
+    : properties.value.filter(p => p.status === filter.value)
 )
 
-/* ======================
-   CURRENCY FORMAT
-====================== */
-const formatMoney = (v) =>
-  '₦' + Number(v.replace(/[^\d]/g, '')).toLocaleString()
+const statuses = computed(() => [
+  'all',
+  ...new Set(properties.value.map(p => p.status))
+])
 
-const handleMoney = (e) =>
-  (form.value.price = formatMoney(e.target.value))
+/* ================= HELPERS ================= */
 
-/* ======================
-   NAV
-====================== */
-const next = () => step.value < 5 && step.value++
-const back = () => step.value > 1 && step.value--
+const getPrice = (item) => {
+  if (!item.pricing) return 0
 
-const submit = () => {
-  console.log(form.value)
-  alert('Submitted successfully ✅')
+  if (item.pricing.paymentType === 'outright') {
+    return item.pricing.price || 0
+  }
+
+  if (item.pricing.paymentType === 'installment') {
+    return item.pricing.installment?.monthlyAmount || 0
+  }
+
+  if (item.pricing.paymentType === 'rent') {
+    return item.pricing.rent?.duration || 0
+  }
+
+  if (item.landDetails?.pricePerUnit) {
+    return item.landDetails.pricePerUnit
+  }
+
+  return 0
 }
+
+const getPriceLabel = (item) => {
+  if (item.pricing?.paymentType === 'rent') {
+    return item.pricing?.rent?.period === 'yearly' ? '/year' : '/month'
+  }
+
+  if (item.landDetails?.unit) {
+    return `/per ${item.landDetails.unit}`
+  }
+
+  return ''
+}
+
+const getLocation = (item) => {
+  return `${item.location?.state || ''}/${item.location?.area || ''}`
+}
+
+const getImage = (item) => {
+  return item.media?.files?.[0]?.url || '/images/agent-land.png'
+}
+
+/* ================= METHODS ================= */
+
+const removeItem = (id) => {
+  properties.value = properties.value.filter(p => p._id !== id)
+  openMenuId.value = null
+}
+
+const toggleMenu = (id) => {
+  openMenuId.value = openMenuId.value === id ? null : id
+}
+
+const handleClickOutside = () => {
+  openMenuId.value = null
+}
+
+/* ================= FETCH ================= */
+
+onMounted(async () => {
+  window.addEventListener('click', handleClickOutside)
+
+  try {
+    const response = await useApiFetch(`/property`, { method: 'GET' })
+    properties.value = response.data?.data || response.data
+    console.log(properties.value)
+  } catch (err) {
+    console.error(err)
+    $toast.error(err?.message || "Failed to load property")
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
 </script>
 
-
-
 <template>
-<div class="min-h-screen bg-gray-50 py-10">
+<div class="min-h-screen bg-gray-50 p-6">
+<ContainerUser>
 
-  <div class="max-w-6xl mx-auto flex gap-8">
-
-    <!-- ================= SIDEBAR ================= -->
-    <div class="w-64 bg-white rounded-2xl shadow p-6 h-fit sticky top-6">
-
-      <h2 class="font-bold text-lg mb-6">Create Listing</h2>
-
-      <div
-        v-for="(s,i) in steps"
-        :key="i"
-        class="flex items-center gap-3 mb-5"
-      >
-        <div
-          class="w-7 h-7 rounded-full text-sm flex items-center justify-center"
-          :class="step>=i+1 ? 'bg-black text-white' : 'bg-gray-200'"
-        >
-          {{ i+1 }}
-        </div>
-
-        <span
-          :class="step===i+1 ? 'font-semibold text-black' : 'text-gray-500'"
-        >
-          {{ s }}
-        </span>
-      </div>
+  <!-- HEADER -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-2xl font-bold">My Properties</h1>
+      <p class="text-sm text-gray-500">Manage your listings</p>
     </div>
 
-
-
-    <!-- ================= MAIN CARD ================= -->
-    <div class="flex-1 bg-white rounded-2xl shadow p-8 space-y-6">
-
-      <!-- STEP 1 -->
-      <div v-if="step===1" class="space-y-5">
-        <h2 class="title">Property Details</h2>
-
-        <input v-model="form.title" class="input" placeholder="Title"/>
-
-        <select v-model="form.purpose" class="input">
-          <option>Sell Land</option>
-          <option>Sell House</option>
-          <option>Rent House</option>
-        </select>
-
-        <select v-model="form.type" class="input">
-          <option
-            v-for="item in options"
-            :key="item.key"
-            :value="item.key"
-          >
-            {{ item.label }}
-          </option>
-        </select>
-
-        <input
-          :value="form.price"
-          @input="handleMoney"
-          class="input"
-          placeholder="Price"
-        />
-      </div>
-
-
-      <!-- STEP 2 -->
-      <div v-if="step===2" class="space-y-5">
-        <h2 class="title">Location</h2>
-
-        <input v-model="form.state" class="input" placeholder="State"/>
-        <input v-model="form.city" class="input" placeholder="City"/>
-        <input v-model="form.address" class="input" placeholder="Address"/>
-      </div>
-
-
-      <!-- STEP 3 -->
-      <div v-if="step===3">
-        <h2 class="title mb-4">Upload Images</h2>
-
-        <div class="grid grid-cols-3 gap-4">
-          <div
-            v-for="n in 6"
-            :key="n"
-            class="upload-box"
-          >
-            +
-          </div>
-        </div>
-      </div>
-
-
-      <!-- STEP 4 -->
-      <div v-if="step===4" class="space-y-5">
-        <h2 class="title">Contact</h2>
-        <input v-model="form.phone" class="input" placeholder="Phone"/>
-        <input v-model="form.whatsapp" class="input" placeholder="WhatsApp"/>
-      </div>
-
-
-      <!-- STEP 5 -->
-      <div v-if="step===5" class="text-center space-y-4">
-        <h2 class="title">Review</h2>
-        <pre class="bg-gray-100 p-4 rounded text-xs text-left">
-{{ form }}
-        </pre>
-      </div>
-
-
-      <!-- NAVIGATION -->
-      <div class="flex justify-between pt-6 border-t">
-        <button v-if="step>1" @click="back" class="btn-outline">Back</button>
-        <button v-if="step<5" @click="next" class="btn-primary ml-auto">Next</button>
-        <button v-if="step===5" @click="submit" class="btn-primary ml-auto">Submit</button>
-      </div>
-
-    </div>
+    <button class="bg-black text-white px-5 py-2.5 rounded-xl text-sm shadow hover:scale-105 transition">
+      + Add Property
+    </button>
   </div>
+
+  <!-- FILTER -->
+  <div class="flex gap-3 mb-6 flex-wrap">
+    <button
+      v-for="s in statuses"
+      :key="s"
+      @click="filter=s"
+      class="px-4 py-2 rounded-full text-sm capitalize transition"
+      :class="filter===s
+        ? 'bg-black text-white shadow'
+        : 'bg-white border text-gray-600 hover:bg-gray-100'"
+    >
+      {{ s }}
+    </button>
+  </div>
+
+  <!-- EMPTY -->
+  <div v-if="!filteredList.length" class="text-center py-20 text-gray-400">
+    No properties found
+  </div>
+
+  <!-- GRID -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+    <div
+      v-for="item in filteredList"
+      :key="item._id"
+      class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition group"
+    >
+
+      <!-- IMAGE -->
+      <div class="relative">
+        <img
+          :src="getImage(item)"
+          class="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
+        />
+
+        <!-- STATUS BADGE -->
+        <span
+          class="absolute top-3 left-3 px-2 py-1 text-xs rounded-full font-medium"
+          :class="{
+            'bg-green-100 text-green-700': item.status==='Available',
+            'bg-blue-100 text-blue-700': item.status==='Rented',
+            'bg-red-100 text-red-700': item.status==='Sold'
+          }"
+        >
+          {{ item.status }}
+        </span>
+
+        <!-- ACTION BUTTON -->
+        <button
+          @click.stop="toggleMenu(item._id)"
+          class="absolute top-3 right-3 bg-white/90 backdrop-blur w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-white"
+        >
+          ⋮
+        </button>
+
+        <!-- DROPDOWN -->
+        <div
+          v-if="openMenuId === item._id"
+          class="absolute right-3 top-12 w-32 bg-white border rounded-xl shadow-lg text-sm z-50"
+        >
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-100">
+            View
+          </button>
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-100">
+            Edit
+          </button>
+          <button
+            class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+            @click.stop="removeItem(item._id)"
+          >
+            Delete
+          </button>
+        </div>
+
+      </div>
+
+      <!-- CONTENT -->
+      <div class="p-4 space-y-2">
+
+        <!-- TITLE -->
+        <h2 class="font-semibold text-sm line-clamp-2">
+          {{ item.title }}
+        </h2>
+
+        <!-- LOCATION -->
+        <p class="text-xs text-gray-500">
+          📍 {{ getLocation(item) }}
+        </p>
+
+        <!-- TAGS -->
+        <div class="flex gap-2 flex-wrap">
+          <span class="text-xs px-2 py-1 bg-gray-100 rounded">
+            {{ item.type === 'house' ? 'House' : 'Land' }}
+          </span>
+
+          <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">
+            {{ item.purpose === 'sale' ? 'For Sale' : 'For Rent' }}
+          </span>
+        </div>
+
+        <!-- PRICE -->
+        <div class="pt-2 border-t mt-2 flex justify-between items-center">
+          <span class="text-lg font-bold">
+            ₦{{ getPrice(item).toLocaleString() }}
+          </span>
+
+          <span class="text-xs text-gray-400">
+            {{ getPriceLabel(item) }}
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</ContainerUser>
 </div>
 </template>
 
-
-
 <style scoped>
-.title { @apply text-xl font-semibold; }
-.input { @apply w-full border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-black; }
-
-.btn-primary { @apply bg-black text-white px-6 py-3 rounded-xl; }
-.btn-outline { @apply border px-6 py-3 rounded-xl; }
-
-.upload-box {
-  @apply border-2 border-dashed rounded-xl h-32 flex items-center justify-center text-3xl text-gray-400 cursor-pointer hover:border-black;
+.badge {
+  @apply px-2 py-1 rounded text-xs font-medium;
 }
 </style>

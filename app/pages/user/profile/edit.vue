@@ -96,6 +96,7 @@ const user = ref({
   name: '',
   profile_image: '',
   title: null,
+  
   location: {
     country: 'Nigeria',
     state: '',
@@ -156,11 +157,11 @@ async function saveProfile() {
   //   user.value.title.remove('tittle') ''
   // }
    if(user.name){
-    user.lastName = user.value.name.split(' ')[0]
-    user.firstName = user.value.name.split(' ')[1]
-    user.middleName = user.value.name.split(' ')[2] || ''
+    user.value.lastName = user.value.name.split(' ')[0]
+    user.value.firstName = user.value.name.split(' ')[1]
+    user.value.middleName = user.value.name.split(' ')[2] || ''
    }
-   console.log(user.value.languages, 'sssss');
+   console.log( user.lastName,  user.firstName,  user.middleName, 'sssss');
    
   try {
 

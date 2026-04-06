@@ -1,173 +1,183 @@
-<script setup>
-import { ref } from 'vue'
-
-const { $toast } = useNuxtApp()
-const config = useRuntimeConfig()
-
-/* ================= STATE ================= */
-const phone = ref('')
-const otp = ref('')
-const loading = ref(false)
-const otpSent = ref(false)
-
-const emit = defineEmits(['close'])
-
-const cancelPage = () => {
-  emit('close')
-}
-
-/* ================= SEND OTP ================= */
-const sendOtp = async () => {
-  if (!phone.value) {
-    $toast.error('Please enter your phone number')
-    return
-  }
-
-  loading.value = true
-
-  try {
-        const response = await useApiFetch(`/profile/sendsms`, {
-        method: 'POST',
-        body: {details: null}
-      })
-    // const response = await fetch(`${config.public.api_url}/auth/send-otp`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ phone: phone.value })
-    // })
-
-    // const data = await response.json()
-
-    // if (!response.ok) {
-    //   $toast.error(data.message || 'Failed to send OTP')
-    //   return
-    // }
-
-    $toast.success('OTP sent successfully')
-    otpSent.value = true
-  } catch (err) {
-    $toast.error(err.message || 'Error sending OTP')
-  } finally {
-    loading.value = false
-  }
-}
-
-/* ================= VERIFY OTP ================= */
-const verifyOtp = async () => {
-  if (!otp.value) {
-    $toast.error('Enter OTP code')
-    return
-  }
-
-  loading.value = true
-
-  try {
-    const response = await fetch(`${config.public.api_url}/auth/verify-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone: phone.value,
-        otp: otp.value
-      })
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      $toast.error(data.message || 'Invalid OTP')
-      return
-    }
-
-    $toast.success('Phone verified successfully')
-    cancelPage()
-  } catch (err) {
-    $toast.error(err.message || 'Verification failed')
-  } finally {
-    loading.value = false
-  }
-}
-</script>
-
 <template>
-  <div class="min-h-screen fixed inset-0 z-30 backdrop-blur-sm">
-    <div class="w-full min-h-screen fixed flex justify-center pt-10 pb-6 px-4 bg-black/40">
+  <div>
+    <!-- Open KYC Modal Button -->
+    <button @click="openModal" class="bg-slate-800 text-white px-4 py-2 rounded-lg">
+      Verify Identity
+    </button>
 
-      <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+    <!-- KYC Modal -->
+    <div v-if="open" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white w-full max-w-md p-6 rounded-xl space-y-4">
 
-        <!-- Close -->
-        <div class="flex justify-end">
-          <button @click="cancelPage" class="text-lg ">
-          <img src="/image/icon/cancel.svg" class="w-4"/>
-          
-          </button>
-        </div>
+        <h2 class="text-lg font-semibold">KYC Verification</h2>
 
-        <!-- Icon -->
-        <div class="flex justify-center">
-          <img src="/image/icon/phone.svg" class="w-16" />
-        </div>
+        <!-- NIN Input -->
+        <input v-model="nin" placeholder="Enter NIN" maxlength="11"
+          @input="nin = nin.replace(/[^0-9]/g, '')"
+          class="w-full border p-2 rounded" />
 
-        <!-- Title -->
-        <p class="text-xl text-center font-semibold pt-5">
-          Verify your Phone Number
-        </p>
+        <!-- Phone Input -->
+        <input v-model="phone" placeholder="Phone Number" maxlength="11"
+          @input="phone = phone.replace(/[^0-9]/g, '')"
+          class="w-full border p-2 rounded" />
 
-        <p class="text-center mb-6 text-gray-600 text-sm">
-          Enter your phone number and we'll send you an OTP code
-        </p>
+        <!-- Upload NIN Image -->
+        <input type="file" accept="image/*" @change="handleNinUpload" />
 
-        <!-- FORM -->
-        <form @submit.prevent class="space-y-6">
+        <!-- Start Face Verification -->
+        <button @click="startCamera" class="w-full bg-blue-600 text-white py-2 rounded">
+          Start Face Verification
+        </button>
 
-          <!-- Phone -->
-          <div>
-            <label class="text-sm text-gray-600">Phone Number</label>
-            <input
-              type="tel"
-              v-model="phone"
-              placeholder="08123456789"
-              class="w-full mt-1 border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400"
-            />
-          </div>
+        <!-- Preview Images -->
+        <img v-if="ninImage" :src="ninImage" class="mt-2" />
+        <img v-if="faceImage" :src="faceImage" class="mt-2" />
 
-          <!-- SEND OTP BUTTON -->
-          <button
-            v-if="!otpSent"
-            type="button"
-            @click="sendOtp"
-            :disabled="loading"
-            class="w-full bg-slate-800 text-white py-2 text-sm rounded-sm hover:bg-slate-600 disabled:opacity-60"
-          >
-            {{ loading ? 'Sending...' : 'Send OTP' }}
-          </button>
-
-          <!-- OTP SECTION -->
-          <div v-if="otpSent" class="space-y-4">
-
-            <div>
-              <label class="text-sm text-gray-600">Enter OTP</label>
-              <input
-                type="number"
-                v-model="otp"
-                placeholder="123456"
-                class="w-full mt-1 border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-green-400"
-              />
-            </div>
-
-            <button
-              type="button"
-              @click="verifyOtp"
-              :disabled="loading"
-              class="w-full bg-green-600 text-white py-2 text-sm rounded-sm hover:bg-green-500 disabled:opacity-60"
-            >
-              {{ loading ? 'Verifying...' : 'Verify OTP' }}
-            </button>
-
-          </div>
-
-        </form>
-
+        <!-- Submit -->
+        <button @click="submit" class="w-full bg-green-600 text-white py-2 rounded">
+          Submit
+        </button>
       </div>
+    </div>
+
+    <!-- Camera Section -->
+    <div v-show="camera" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
+      <div class="relative">
+        <video ref="video" autoplay playsinline class="w-full max-w-md rounded"></video>
+        <canvas ref="canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+      </div>
+      <p class="text-white mt-3 text-center">{{ instruction }}</p>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, nextTick } from 'vue'
+import { FaceMesh } from '@mediapipe/face_mesh'
+import { Camera } from '@mediapipe/camera_utils'
+
+const open = ref(false)
+const camera = ref(false)
+
+const nin = ref('')
+const phone = ref('')
+const ninImage = ref(null)
+const faceImage = ref(null)
+
+const video = ref(null)
+const canvas = ref(null)
+let faceMesh, cam
+
+const step = ref(0)
+const instruction = ref('Align your face')
+
+const openModal = () => open.value = true
+
+const handleNinUpload = (e) => {
+  const file = e.target.files[0]
+  const reader = new FileReader()
+  reader.onload = () => ninImage.value = reader.result
+  reader.readAsDataURL(file)
+}
+
+const startCamera = async () => {
+  camera.value = true
+  step.value = 0
+  instruction.value = 'Align your face'
+
+  await nextTick() // wait for video element
+
+  if (!video.value) {
+    console.error('Video element not ready')
+    return
+  }
+
+  faceMesh = new FaceMesh({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+  })
+
+  faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true })
+  faceMesh.onResults(onResults)
+
+  cam = new Camera(video.value, {
+    onFrame: async () => {
+      await faceMesh.send({ image: video.value })
+    },
+    width: 640,
+    height: 480
+  })
+
+  cam.start()
+}
+
+const onResults = (results) => {
+  const ctx = canvas.value.getContext('2d')
+  canvas.value.width = video.value.videoWidth
+  canvas.value.height = video.value.videoHeight
+  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
+
+  if (!results.multiFaceLandmarks.length) {
+    instruction.value = 'No face detected'
+    return
+  }
+
+  const landmarks = results.multiFaceLandmarks[0]
+
+  // Draw Face Mesh
+  ctx.strokeStyle = 'lime'
+  landmarks.forEach(p => {
+    ctx.beginPath()
+    ctx.arc(p.x * canvas.value.width, p.y * canvas.value.height, 1, 0, 2 * Math.PI)
+    ctx.stroke()
+  })
+
+  const nose = landmarks[1]
+
+  // Head Turn Detection
+  if (step.value === 0 && nose.x < 0.4) {
+    instruction.value = 'Turn head LEFT detected'
+    step.value = 1
+  } else if (step.value === 1 && nose.x > 0.6) {
+    instruction.value = 'Turn head RIGHT detected'
+    step.value = 2
+  }
+
+  // Blink Detection
+  else if (step.value === 2) {
+    instruction.value = 'Blink your eyes'
+    const leftEyeTop = landmarks[159]
+    const leftEyeBottom = landmarks[145]
+    const eyeOpen = Math.abs(leftEyeTop.y - leftEyeBottom.y)
+    if (eyeOpen < 0.01) {
+      captureFace()
+    }
+  }
+}
+
+const captureFace = () => {
+  const imgCanvas = document.createElement('canvas')
+  imgCanvas.width = video.value.videoWidth
+  imgCanvas.height = video.value.videoHeight
+  const ictx = imgCanvas.getContext('2d')
+  ictx.drawImage(video.value, 0, 0)
+  faceImage.value = imgCanvas.toDataURL('image/png')
+
+  cam.stop()
+  camera.value = false
+  instruction.value = 'Face captured ✅'
+}
+
+const submit = async () => {
+  if (!nin.value || !phone.value || !ninImage.value || !faceImage.value) {
+    alert('Please complete all verification steps')
+    return
+  }
+
+  await fetch('/api/kyc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nin: nin.value, phone: phone.value, ninImage: ninImage.value, faceImage: faceImage.value })
+  })
+  alert('KYC submitted successfully')
+}
+</script>

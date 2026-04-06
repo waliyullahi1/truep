@@ -2,11 +2,11 @@
 
 
 <template>
-  <div  class=" h-16 z-80 relative ov   w-full "> 
+  <div  class=" h-16  z-150 relative    w-full "> 
    
     <nav
       :class="[
-        'transition-all  bg-white  overflow-hidden  py- bg-hite duration-300 border-b',
+        'transition-all   bg-white  overflow-hidden  py- bg-hite duration-300 border-b',
         // isScrolled
         //   ? 'bg-white text-black border-accent-200 shadow-md'
         //   : 'bg-transparent text-white border-transparent'

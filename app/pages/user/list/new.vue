@@ -1,10 +1,11 @@
 <template>
   <div class="min-h-screen py-10 px-4">
-    {{ form }}
-    <div  class=" hidden">
-    <Phoneverification></Phoneverification>
-    </div>
+  
+    
     <Container>
+    
+   
+            <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="max-w-4xl list-disc mx-auto space-y-4">
         <div class="bg-white p-5 rounded shadow space-y-6">
@@ -19,7 +20,7 @@
               <textarea
                 v-model="form.title"
                 placeholder="Example: 2 Plots of Land in Lekki"
-                class="input h-20"
+                class="input h-16 font-semibold text-2xl"
               />
             </div>
           </div>
@@ -97,7 +98,7 @@
                 </div>
                 <div v-if="propertyType">
 
-  <!-- 🔥 SWITCH BUTTONS -->
+                <!-- 🔥 SWITCH BUTTONS -->
                 <div class="flex gap-2 mb-4">
                   <button
                     @click="setSource('gps')"
@@ -152,11 +153,25 @@
 
               <!-- OTHERS -->
               <div v-if="activeSection === 'others'">
-                <div v-if="propertyType === 'land'">
-                  <ListLandother v-model="form" />
-                </div>
-                <div v-if="propertyType === 'house'">
-                  <ListHouseother v-model="form" :purpose="form.purpose" />
+                <!-- Header -->
+                
+
+              
+
+                <!-- Other Sections -->
+                <div class="mt-8">
+                  <div v-if="propertyType === 'land'">
+                    <ListLandother v-model="form" />
+                  </div>
+
+                  <div v-if="propertyType === 'house'">
+                    <ListHouseother v-model="form" :purpose="form.purpose" />
+                  </div>
+                  <div class="mb-6 mt-5 text">
+                    <h2 class="text-lg font-semibold">Select Payment Type <span>(Optional)</span></h2>
+                    <p class="text-gray-500 text-sm">Choose how this property will be paid for</p>
+                  </div>
+                    <ListPaymentType v-model="form.pricing" :purpose="form.purpose" />
                 </div>
               </div>
             </div>
@@ -172,15 +187,15 @@
       <!-- ================= STEP 3 ================= -->
       <div v-if="step === 3">
 
-        <ListUpload v-model="form" />
+        <ListUpload     :purpose="form.purpose" />
          <!-- <ListUploadhouse v-model="form" /> -->
       </div>
 
       <!-- ================= STEP 4 ================= -->
       <div v-if="step === 4">
-        <h2 class="section-title">Contact</h2>
-        <input v-model="form.contact.phone" placeholder="Phone" class="input" />
-        <input v-model="form.contact.whatsapp" placeholder="WhatsApp" class="input" />
+        
+        <ListOwnershipSelector v-model="ownershipType"
+    @update:agentName="agentName = $event"></ListOwnershipSelector>
       </div>
 
       <!-- ================= STEP 5 ================= -->
@@ -189,8 +204,8 @@
       <!-- ================= NAVIGATION ================= -->
       <div class="flex justify-between mt-8">
         <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
-        <button v-if="step < 3" :disabled="loginloading" @click="next" class="btn-primary ml-auto"> {{ loginloading ? 'Uploading...' : 'Next' }}</button>
-        <button v-if="step === 3" @click="submit" class="btn-primary ml-auto">Submit</button>
+        <button v-if="step < 4" :disabled="loginloading" @click="next" class="btn-primary ml-auto"> {{ loginloading ? 'Uploading...' : 'Next' }}</button>
+        <button v-if="step === 4" :disabled="loginloading" @click="submit" class="btn-primary ml-auto"> {{ loginloading ? 'Uploading...' : 'Next' }}</button>
       </div>
     </Container>
   </div>
@@ -199,7 +214,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-
+const ownershipType = ref('')
+const agentName = ref('')
 const router = useRouter()
 const route = useRoute()
 const { $toast } = useNuxtApp()
@@ -218,14 +234,27 @@ const form = ref({
   category: '',
   type: '',
   purpose: '',
+pricing: {
+  price: null,               // Total price
+  currency: "NGN",           // Currency
+  negotiable: false,         // Is price negotiable
+  paymentType: 'outright',   // "outright" | "installment" | "rent"
 
-  pricing: {
-    price: null,
-    currency: "NGN",
-    rentDuration: null,
-    installment: false,
-    installmentPlan: { months: null, monthlyAmount: null }
+  // ✅ RENT STRUCTURE
+  rent: {
+    duration: {
+      value: null,           // e.g. 1, 2, 6
+      unit: null             // "day" | "week" | "month" | "year"
+    }
   },
+
+  // ✅ INSTALLMENT STRUCTURE
+  installment: {
+    months: null,            // Number of months to pay
+    monthlyAmount: null      // Amount per month
+  }
+},
+   
 
   location: {
     
@@ -237,8 +266,8 @@ const form = ref({
     source: "gps",
     geometry: { type: "Polygon", coordinates: [] }
   },
-
-  landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null },
+  paymentType: 'outright',
+  landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
   houseDetails: null,
   media: { images: [], video: null },
   documents: { surveyPlan: null, titleDocument: null },
@@ -342,15 +371,7 @@ function onCategoryChange(e) {
   //   form.value.houseDetails = { rooms: 5 }
   // }
 }
-// watch(() => form.value.type, val => {
-//   form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
-//   form.value.houseDetails = null
-//   form.value.features = []
-//   form.value.location.geometry = val === 'house' ? { type: 'Point', coordinates: [] } : { type: 'Polygon', coordinates: [] }
-//   form.value.pricing = { price: null, currency: "NGN", rentDuration: null, installment: false, installmentPlan: { months: null, monthlyAmount: null } }
-//   form.value.location = { country: "", state: "", lga: "", city: "", address: "", source: "gps", geometry: form.value.location.geometry }
-//   form.value.category = ''
-// })
+
 
 /* ================= SECTION COMPLETION ================= */
 function isCompleted(section) {
@@ -445,12 +466,37 @@ const back = () => { if (step.value > 1) {
         })
   step.value--
    }}
-const submit = () => { console.log("Final Data:", form.value); alert('Property submitted successfully ✅') }
+const submit =  async() => { 
+   loginloading.value = true
+    try {
+    const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })
+    const data = res.data?.data || res.data
+    const imageCount = data.media.files?.filter(f => f.type === 'image').length || 0
+    if (imageCount < 6) {
+       $toast.error("Please upload at least 6 images.")
+        return
+      }
+
+       router.push({
+       path: '/property',
+        query: {
+         id: form.value.id,
+         preview: true,
+         },
+       })
+     loginloading.value = true
+  } catch (err) {
+    console.error(err)
+  }
+ 
+  
+   }
 
 
 /* ================= LOAD EXISTING FORM ================= */
 onMounted(async () => {
   const propertyId = route.query?.id
+  
   if (!propertyId) return
   try {
     const response = await useApiFetch(`/property/${propertyId}`, { method: 'GET' })
@@ -480,6 +526,6 @@ onMounted(async () => {
   @apply p-3 cursor-pointer font-medium flex justify-between;
 }
 .tab.active{
-  @apply bg-gray-200;
+  @apply border-blue-500 border bg-blue-50;
 }
 </style>

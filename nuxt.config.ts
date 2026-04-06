@@ -14,7 +14,8 @@ export default defineNuxtConfig({
 
   css: [
     '~/assets/css/main.css',
-    '@vueup/vue-quill/dist/vue-quill.snow.css'
+    '@vueup/vue-quill/dist/vue-quill.snow.css',
+   
   ],
 
   app: {

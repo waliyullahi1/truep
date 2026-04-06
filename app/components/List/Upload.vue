@@ -7,6 +7,13 @@ const { $toast } = useNuxtApp()
 
 const propertyId = route.query?.id || ''
 
+const props = defineProps({
+
+  purpose: {
+    type: String,
+    default: 'Sale'
+  }
+})
 /* ======================
 STATE
 ====================== */
@@ -130,7 +137,7 @@ onMounted(async () => {
 <div class="min-h-screen py-10 px-4">
   <Container>
     <div class="space-y-10">
-
+ 
       <!-- ================= LAND IMAGES ================= -->
       <div>
         <h2 class="section-title">Land Images (max 6)</h2>
@@ -181,7 +188,7 @@ onMounted(async () => {
       </div>
 
       <!-- ================= SURVEY PLAN ================= -->
-      <div class="border-t pt-10">
+      <div v-if="purpose === 'sale'" class="border-t pt-10">
         <h2 class="section-title">Survey Plan (Required)</h2>
         <p class="text-gray-500 mb-4">Upload official survey plan.</p>
 
@@ -230,7 +237,7 @@ onMounted(async () => {
       </div>
 
       <!-- ================= TITLE DOCS ================= -->
-      <div class="border-t pt-10">
+      <div v-if="purpose === 'sale'" class="border-t pt-10">
         <h2 class="section-title">Title Document (Required)</h2>
         <p class="text-gray-500 mb-3">C of O, Deed, Gazette, etc.</p>
 

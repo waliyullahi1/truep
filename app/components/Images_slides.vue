@@ -1,7 +1,7 @@
 
 <template>
-  <div class="relative py-6 max-w-5xl mx-auto group">
-
+  <div class="relative  max-w-5xl mx-auto group">
+  <button class=" text-md absolute top-0 z-10 w-24 h-12 left-0  text-white 2 font-medium bg-primary right-2"> For {{purpose}} </button>
     <!-- ================= MAIN SLIDER ================= -->
     <div class="relative">
       <Swiper
@@ -24,12 +24,12 @@
           />
         </SwiperSlide>
       </Swiper>
-
+      
       <!-- MAIN ARROWS -->
       <button class="main-prev nav-btn left-2">‹</button>
       <button class="main-next nav-btn right-2">›</button>
     </div>
-
+  
     <!-- ================= THUMBNAILS ================= -->
     <div class="relative mt-4">
       <Swiper
@@ -78,6 +78,11 @@ const props = defineProps({
   images: {
     type: Array,
     default: () => []
+  },
+
+  purpose:{
+    type:String,
+    default:'Sale'
   }
 })
 

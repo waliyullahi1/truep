@@ -24,6 +24,7 @@
     "face-api.js": "^0.22.2",
     "leaflet": "^1.9.4",
     "leaflet.gridlayer.googlemutant": "^0.16.0",
+    "lucide-vue-next": "^1.0.0",
     "mapbox-gl": "^3.19.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
