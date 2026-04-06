@@ -136,29 +136,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-<ClientOnly>
-  <div class="p-4 space-y-4">
-
-    <!-- BUTTONS -->
-    <div class="flex gap-2">
-      <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
-        ➕ Add Corner
-      </button>
-
-      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
-        🔄 Reset
-      </button>
-    </div>
-
-    <!-- MAP -->
-    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
-
-    <!-- INFO -->
-    <div class="text-sm text-gray-600">
-      <div>Number of Corners: {{ corners.length }}</div>
-      <div v-if="form.area">Land Area: {{ form.area }} m² (~{{ form.plots }} plots)</div>
-    </div>
-
-  </div>
-</ClientOnly>
+<div>
+  <Phoneverification></Phoneverification>
+</div>
 </template>
