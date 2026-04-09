@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'vue3-carousel-nuxt',
     '@pinia/nuxt',
+    
   
   ],
 
@@ -15,6 +16,7 @@ export default defineNuxtConfig({
   css: [
     '~/assets/css/main.css',
     '@vueup/vue-quill/dist/vue-quill.snow.css',
+    
    
   ],
 

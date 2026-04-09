@@ -75,7 +75,7 @@ const getPriceLabel = (item) => {
     // 🏠 SALE
     if (item.purpose === 'sale') {
       if (pricing.paymentType === 'installment') {
-        return '/month'
+        return '/monthly payment'
       }
       return '/outright' // outright sale → no label
     }
@@ -93,11 +93,11 @@ const getPriceLabel = (item) => {
   // ================= LAND =================
   if (item.type === 'land') {
     if (pricing.paymentType === 'outright') {
-      return item.landDetails?.unit ? `/per ${item.landDetails.unit}` : ''
+      return item.landDetails?.unit ? `/per ${item.landDetails.unit}  ` : ''
     }
 
     if (pricing.paymentType === 'installment') {
-      return '/month'
+      return ` /per ${item.landDetails.unit} /monthly payment`
     }
   }
 
@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
 <template>
 <div class="min-h-screen bg-gray-50 py-8">
 <ContainerUser>
-
+<Webcam />
   <!-- ================= HEADER ================= -->
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-light text-gray-800">Properties</h1>
