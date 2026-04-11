@@ -1,309 +1,226 @@
 <template>
   <div>
-    <!-- Open Modal -->
-    <button @click="openModal" class="bg-slate-800 text-white px-4 py-2 rounded-lg">
+    <!-- OPEN BUTTON -->
+    <button
+      @click="startverification"
+      class="bg-slate-800 text-white px-5 py-2.5 rounded-xl"
+    >
       Verify Identity
     </button>
 
-    <!-- Modal -->
-    <div v-if="open" overflow-y-scroll  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white  h-80  overflow-y-scroll w-full max-w-md p-6 rounded-xl space-y-4 relative">
+    <!-- MODAL -->
+    <div v-if="open" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div class="bg-white w-full max-w-md p-6  rounded-sm space-y-5 relative">
 
-        <h2 class="text-lg font-semibold">KYC Verification</h2>
+        <!-- CLOSE -->
+        <button @click="open = false" class="absolute top-3 right-3">✖</button>
 
-        <!-- Inputs -->
-        <input v-model="nin" placeholder="Enter NIN" maxlength="11"
-          @input="nin = nin.replace(/[^0-9]/g, '')"
-          class="w-full border p-2 rounded" />
-
-        <input v-model="phone" placeholder="Phone Number" maxlength="11"
-          @input="phone = phone.replace(/[^0-9]/g, '')"
-          class="w-full border p-2 rounded" />
-
-        <!-- NIN Upload -->
-        <input type="file" accept="image/*" @change="handleNinUpload" />
-        <img v-if="ninImage" :src="ninImage" class="rounded border mt-2" />
-
-        <!-- Start Camera -->
-        <button v-if="!camera" @click="startCamera"
-          class="w-full bg-blue-600 text-white py-2 rounded">
-          Start Face Verification
-        </button>
-
-        <!-- Retry -->
-        <button v-if="faceImage" @click="resetFace"
-          class="w-full bg-yellow-500 text-white py-2 rounded">
-          Retry
-        </button>
-
-        <!-- Camera -->
-        <div v-show="camera" class="relative">
-          <video ref="video" autoplay playsinline class="w-full rounded"></video>
-          <canvas ref="canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+        <!-- HEADER -->
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-xl">🪪</div>
+          <div>
+            <h2 class="text-xl font-semibold">KYC & Business Verification</h2>
+            <p class="text-sm text-gray-500">Complete verification process</p>
+          </div>
         </div>
 
-        <!-- Instruction -->
-        <p class="text-center font-semibold">{{ instruction }}</p>
+        <!-- ================= PERSONAL FORM ================= -->
+        <div v-if="step === 'form'" class="space-y-4">
+          <input v-model="form.nin" placeholder="NIN" maxlength="11"
+            @input="onlyNumber('nin')"
+            class="w-full border  rounded-sm px-4 py-2"/>
 
-        <!-- Result -->
-        <img v-if="faceImage" :src="faceImage" class="rounded border" />
+          <input v-model="form.phone" placeholder="Phone" maxlength="11"
+            @input="onlyNumber('phone')"
+            class="w-full border  rounded-sm px-4 py-2"/>
 
-        <!-- Submit -->
-        <button @click="submit"
-          class="w-full bg-green-600 text-white py-2 rounded">
-          Submit
-        </button>
+          <div v-if="!form.ninImage"
+            class="h-32 border-2 border-dashed  rounded-sm flex items-center justify-center cursor-pointer"
+            @click="$refs.ninFile.click()">
+            Upload NIN
+          </div>
 
-        <button @click="open = false"
-          class="absolute top-2 right-2">✖</button>
+          <input type="file" ref="ninFile" class="hidden" @change="handleNinUpload"/>
+
+          <img v-if="form.ninImage" :src="form.ninImage"
+            class="h-32 w-full object-cover rounded-xl"/>
+
+          <button @click="toInstruction"
+            class="w-full bg-blue-600 text-white py-2  rounded-sm">
+            Continue
+          </button>
+        </div>
+
+        <!-- ================= INSTRUCTION ================= -->
+        <div v-if="step === 'instruction'" class="text-center space-y-4">
+          <div class="text-4xl">📷</div>
+          <h3 class="font-semibold">Face Verification</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>✔ Look straight</li>
+            <li>✔ Turn head left/right</li>
+            <li>✔ Blink eyes</li>
+          </ul>
+          <button @click="startFace"
+            class="w-full bg-green-600 text-white py-2  rounded-sm">
+            Start
+          </button>
+        </div>
+
+        <!-- ================= FACE ================= -->
+        <div v-if="step === 'face'" class="flex justify-center">
+          <FaceVerify ref="faceRef" @completed="handleFaceResult" />
+        </div>
+
+        <!-- ================= BUSINESS FORM ================= -->
+        <div v-if="step === 'business'" class="space-y-4">
+          <input v-model="form.businessName"
+            placeholder="Business Name"
+            class="w-full border  rounded-sm px-4 py-2"/>
+
+          <input v-model="form.cacNumber"
+            placeholder="CAC Registration Number"
+            @input="onlyNumber('cacNumber')"
+            class="w-full border  rounded-sm px-4 py-2"/>
+
+          
+
+
+          <div v-if="!form.cacImage"
+            class="h-32 border-2 border-dashed  rounded-sm flex items-center justify-center cursor-pointer"
+            @click="$refs.cacFile.click()">
+            Upload CAC Certificate
+          </div>
+
+          <input type="file" ref="cacFile" class="hidden" @change="handleCACUpload"/>
+
+          <img v-if="form.cacImage"
+            :src="form.cacImage"
+            class="h-32 w-full object-cover rounded-sm"/>
+
+          <button @click="submit"
+            class="w-full bg-green-600 text-white py-2 rounded-xl">
+            Submit Verification
+          </button>
+        </div>
 
       </div>
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
-import { FaceMesh } from '@mediapipe/face_mesh'
-import { Camera } from '@mediapipe/camera_utils'
-import * as faceapi from 'face-api.js'
+import { ref } from 'vue'
+import FaceVerify from '@/components/FaceVerify.vue'
 
-/* ================= STATE ================= */
 const open = ref(false)
-const camera = ref(false)
-const nin = ref('')
-const phone = ref('')
-const ninImage = ref(null)
-const faceImage = ref(null)
-const faceVector = ref(null)
+const step = ref('form')
+const faceRef = ref(null)
 
-const video = ref(null)
-const canvas = ref(null)
-
-let faceMesh = null
-let cam = null
-
-/* ================= ACTIONS ================= */
-const actions = [
-  { name: 'LEFT', text: 'Turn your head LEFT' },
-  { name: 'RIGHT', text: 'Turn your head RIGHT' },
-  { name: 'BLINK', text: 'Blink BOTH eyes' },
-  { name: 'MOUTH', text: 'Open your mouth' }
-]
-
-const sequence = ref([])
-const currentIndex = ref(0)
-const instruction = ref('Align your face inside the box')
-
-/* ================= LOAD MODELS ================= */
-onMounted(async () => {
-  await faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
-  await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
-  await faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+const form = ref({
+  nin: '',
+  phone: '',
+  ninImage: null,
+  faceImage: null,
+  faceVector: null,
+  businessName: '',
+  cacNumber: '',
+  businessType: '',
+  cacImage: null
 })
 
-/* ================= UI ================= */
-const openModal = () => open.value = true
+const onlyNumber = (field) => {
+  form.value[field] = form.value[field].replace(/[^0-9]/g, '')
+}
 
 const handleNinUpload = (e) => {
   const file = e.target.files[0]
+  if (!file) return
   const reader = new FileReader()
-  reader.onload = () => ninImage.value = reader.result
+  reader.onload = () => form.value.ninImage = reader.result
   reader.readAsDataURL(file)
 }
 
-/* ================= START CAMERA ================= */
-const startCamera = async () => {
-  stopCamera()
-  camera.value = true
-  faceImage.value = null
-  await nextTick()
-
-  sequence.value = [...actions].sort(() => 0.5 - Math.random()).slice(0, 3)
-  currentIndex.value = 0
-  instruction.value = sequence.value[0].text
-
-  if (!faceMesh) {
-    faceMesh = new FaceMesh({
-      locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-    })
-    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true })
-    faceMesh.onResults(onResults)
+const handleCACUpload = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => form.value.cacImage = reader.result
+  reader.readAsDataURL(file)
+}
+const startverification =  async () => {
+    try {
+    const res = await useApiFetch(`/kyc`, { method: 'GET' })
+     console.log(res, 'sssss');
+     if (res.exists== false){
+      open.value = true
+      
+     }
+  return
+    // mergeForm(data)
+     property.value = propertyId
+  } catch (err) {
+    console.error(err)
   }
-
-  cam = new Camera(video.value, {
-    onFrame: async () => await faceMesh.send({ image: video.value }),
-    width: 640,
-    height: 480
-  })
-  cam.start()
+  // open.value = true
 }
-
-/* ================= STOP CAMERA ================= */
-const stopCamera = () => {
-  if (cam) {
-    cam.stop()
-    cam = null
-  }
-  if (video.value?.srcObject) {
-    video.value.srcObject.getTracks().forEach(t => t.stop())
-    video.value.srcObject = null
-  }
-}
-
-/* ================= HELPERS ================= */
-const isCentered = (nose, w, h) => {
-  const x = nose.x * w
-  const y = nose.y * h
-  return x > w * 0.3 && x < w * 0.7 && y > h * 0.3 && y < h * 0.7
-}
-
-const faceSizeOk = (landmarks) => {
-  const left = landmarks[234]
-  const right = landmarks[454]
-  const width = Math.abs(right.x - left.x)
-  return width > 0.25
-}
-
-const getYaw = (landmarks) => {
-  const nose = landmarks[1]
-  const left = landmarks[234]
-  const right = landmarks[454]
-  const leftDist = nose.x - left.x
-  const rightDist = right.x - nose.x
-  return leftDist / (leftDist + rightDist)
-}
-
-const blinkDetected = (landmarks) => {
-  const leftEye = Math.abs(landmarks[159].y - landmarks[145].y)
-  const rightEye = Math.abs(landmarks[386].y - landmarks[374].y)
-  return leftEye < 0.008 && rightEye < 0.008
-}
-
-const mouthOpenDetected = (landmarks) => {
-  const mouth = Math.abs(landmarks[13].y - landmarks[14].y)
-  return mouth > 0.06
-}
-
-/* ================= DETECTION ================= */
-const onResults = (results) => {
-  if (!results.multiFaceLandmarks?.length) {
-    instruction.value = 'No face detected'
+const toInstruction = () => {
+  const { nin, phone, ninImage } = form.value
+  if (!nin || !phone || !ninImage) {
+    alert('Complete all fields')
     return
   }
-
-  const ctx = canvas.value.getContext('2d')
-  const w = video.value.videoWidth
-  const h = video.value.videoHeight
-  canvas.value.width = w
-  canvas.value.height = h
-  ctx.clearRect(0, 0, w, h)
-
-  const landmarks = results.multiFaceLandmarks[0]
-  const nose = landmarks[1]
-
-  // draw guide box
-  ctx.strokeStyle = 'yellow'
-  ctx.strokeRect(w * 0.3, h * 0.3, w * 0.4, h * 0.4)
-
-  if (!isCentered(nose, w, h)) {
-    instruction.value = 'Center your face'
-    return
-  }
-
-  if (!faceSizeOk(landmarks)) {
-    instruction.value = 'Move closer to camera'
-    return
-  }
-
-  const action = sequence.value[currentIndex.value]
-  if (!action) return
-
-  const yaw = getYaw(landmarks)
-
-  if (action.name === 'LEFT' && yaw < 0.38) nextStep()
-  else if (action.name === 'RIGHT' && yaw > 0.62) nextStep()
-  else if (action.name === 'BLINK' && blinkDetected(landmarks)) nextStep()
-  else if (action.name === 'MOUTH' && mouthOpenDetected(landmarks)) nextStep()
+  step.value = 'instruction'
 }
 
-/* ================= NEXT STEP ================= */
-const nextStep = () => {
-  currentIndex.value++
-  if (currentIndex.value >= sequence.value.length) {
-    saveFaceData()
-  } else {
-    instruction.value = sequence.value[currentIndex.value].text
-  }
+const startFace = () => {
+  step.value = 'face'
+  setTimeout(() => {
+    faceRef.value?.startVerification()
+  }, 300)
 }
 
-/* ================= FACE VECTOR ================= */
-const saveFaceData = async () => {
-  instruction.value = 'Capturing face...'
-
-  const detection = await faceapi
-    .detectSingleFace(video.value)
-    .withFaceLandmarks()
-    .withFaceDescriptor()
-
-  if (!detection) {
-    instruction.value = 'Face not clear. Retry'
-    return
-  }
-
-  faceVector.value = Array.from(detection.descriptor)
-  captureFace()
+const handleFaceResult = (data) => {
+  form.value.faceImage = data.image
+  form.value.faceVector = data.vector
+  step.value = 'business'
 }
 
-/* ================= CAPTURE ================= */
-const captureFace = () => {
-  const c = document.createElement('canvas')
-  c.width = video.value.videoWidth
-  c.height = video.value.videoHeight
-  c.getContext('2d').drawImage(video.value, 0, 0)
-  faceImage.value = c.toDataURL('image/png')
-  stopCamera()
-  camera.value = false
-  instruction.value = 'Face captured ✅'
-}
 
-/* ================= RETRY ================= */
-const resetFace = async () => {
-  faceImage.value = null
-  await nextTick()
-  startCamera()
-}
 
-/* ================= SUBMIT ================= */
+
 const submit = async () => {
-  if (!nin.value || !phone.value || !ninImage.value || !faceImage.value) {
-    alert('Complete all steps')
-    return
-  }
+  try {
+    const fd = new FormData()
 
-  await fetch('/api/kyc', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      nin: nin.value,
-      phone: phone.value,
-      ninImage: ninImage.value,
-      faceImage: faceImage.value,
-      faceVector: faceVector.value
+    // convert images
+    const ninFile = await base64ToFile(form.value.ninImage, 'nin.jpg')
+    const faceFile = await base64ToFile(form.value.faceImage, 'face.jpg')
+    const cacFile = await base64ToFile(form.value.cacImage, 'cac.jpg')
+
+    // append files
+    fd.append('ninImage', ninFile)
+    fd.append('faceImage', faceFile)
+    fd.append('cacImage', cacFile)
+
+    // append text fields
+    fd.append('nin', form.value.nin)
+    fd.append('phone', form.value.phone)
+    fd.append('businessName', form.value.businessName)
+    fd.append('cacNumber', form.value.cacNumber)
+    fd.append('businessType', form.value.businessType)
+
+    // append face vector
+    fd.append('faceVector', JSON.stringify(form.value.faceVector))
+
+    await axios.post('http://localhost:5000/api/kyc/verify', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
-  })
 
-  alert('Submitted successfully')
-  open.value = false
+    alert('Verification Completed ✅')
+    open.value = false
+  } catch (err) {
+    console.error(err)
+    alert('Upload failed')
+  }
 }
 </script>
-<style scoped>
-video {
-  border-radius: 0.5rem;
-}
-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-</style>

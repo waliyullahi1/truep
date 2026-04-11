@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen py-10 px-4">
-  
+    
     
     <Container>
     
    
-            <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
+    <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="max-w-4xl list-disc mx-auto space-y-4">
         <div class="bg-white p-5 rounded shadow space-y-6">
@@ -193,7 +193,7 @@
 
       <!-- ================= STEP 4 ================= -->
       <div v-if="step === 4">
-        
+        <!-- <Webcan></Webcan> -->
         <ListOwnershipSelector v-model="ownershipType"
     @update:agentName="agentName = $event"></ListOwnershipSelector>
       </div>

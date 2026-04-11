@@ -1,16 +1,31 @@
 <template>
-<div class="flex flex-col items-center justify-center w-full h-[400px]">
+<div  v-if="started" class="flex flex-col items-center justify-center w-full h-[400px]">
 
   <!-- START BUTTON -->
-  <button
+  <!-- <button
     v-if="!started && !finished"
     @click="startVerification"
     class="px-6 py-3 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
   >
     ▶ Start Verification
-  </button>
+  </button> -->
 
   <!-- CAMERA -->
+  <div v-if="loading" class=" z-30 mb-12 flex  flex-col justify-center items-center  bg-white absolute w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-green-400 shadow-lg">
+   <div class=" flex flex-col items-center ">
+   <img src="/image/icon/loading.svg"/> 
+    <div>
+    {{currentmessage}}
+    </div>
+  </div>
+     <button v-if="retryCapture"
+    @click="startVerification"
+    class="px-6 py-3 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
+  >
+     Retry Capture
+  </button>
+  
+  </div>
   <div v-if="started" class="relative w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-green-400 shadow-lg">
 
     <video
@@ -18,6 +33,7 @@
       autoplay
       playsinline
       muted
+        
       class="absolute w-full h-full object-cover mirror"
     ></video>
 
@@ -34,9 +50,12 @@
   </div>
 
   <!-- DONE MESSAGE -->
-  <div v-if="finished" class="text-green-600 text-lg font-semibold">
-    ✅ Verification Completed Successfully
+    <div v-if="finished" class="text-green-600">
+    ✅ Done
   </div>
+  <!-- <div v-if="finished" class="text-green-600 text-lg font-semibold">
+    ✅ Verification Completed Successfully
+  </div> -->
 
 </div>
  
@@ -52,10 +71,12 @@ const canvas = ref(null)
 const statusMessage = ref('Loading camera...')
 const started = ref(false)
 const finished = ref(false) 
+const currentmessage = ref('initializing Face Capture')
 let stream = null
 let detector = null
 let animationId = null
-
+const loading = ref(true)
+const retryCapture = ref(false)
 /* ================= STEP CONTROL ================= */
 const STABLE_FRAMES = 10
 const MIN_MOUTH_OPEN = 25;
@@ -67,6 +88,9 @@ let rightCount = 0
 let blinkCount = 0
 let mouthCount = 0
 const capturedImages = []
+
+/* ================= EMIT ================= */
+const emit = defineEmits(['completed'])
 
 /* ================= INSTRUCTIONS ================= */
 const ALL_INSTRUCTIONS = ['left', 'right', 'blink', 'mouth']
@@ -110,8 +134,18 @@ const updateInstruction = () => {
 
 /* ================= CAMERA ================= */
 const startCamera = async () => {
+    step = 0
+  leftCount = 0
+  rightCount = 0
+  blinkCount = 0
+  mouthCount = 0
   stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 640, height: 480, facingMode: 'user' },
+    video: {
+      width: { ideal: 480 },
+      height: { ideal: 480 },
+      aspectRatio: 1, // ✅ forces square
+      facingMode: 'user'
+    },
     audio: false
   })
 
@@ -171,16 +205,16 @@ const getHeadDirection = (face) => {
   // normalize nose position across the face
   const ratio = (noseX - leftX) / (rightX - leftX)
 
-  console.log('Nose ratio:', ratio.toFixed(2))
+  // console.log('Nose ratio:', ratio.toFixed(2))
 
   // 👇 THESE ARE THE LINES YOU WANT
   if ( ratio > 0.8) {
-    console.log('✅ HEAD FULL LEFT REACHED')
+    // console.log('✅ HEAD FULL LEFT REACHED')
     return 'left'
   }
 
-  if (ratio < 0.1) {
-    console.log('✅ HEAD FULL RIGHT REACHED')
+  if (ratio < 0.3) {
+    // console.log('✅ HEAD FULL RIGHT REACHED')
     return 'right'
   }
 
@@ -197,7 +231,7 @@ const isBlink = (face) => {
 const isMouthOpen = (face) => {
   const k = face.keypoints
   const ratio = dist(k[M_TOP], k[M_BOT]) / dist(k[M_L], k[M_R])
-  return ratio > 0.88
+  return ratio > 0.6
 }
 
 const isFaceCloseEnough = (face) => {
@@ -232,15 +266,55 @@ const captureFaceImage = () => {
   console.log('Captured image', step, img)
 }
 
+
 /* generate embedding using face-api.js */
-const getFaceVector = async (imgBase64) => {
-  const img = new Image()
-  img.src = imgBase64
-  await img.decode()
-  const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
-  return detection?.descriptor || null
+const getFaceVectorFromVideo = async () => {
+  const detection = await faceapi
+    .detectSingleFace(video.value)
+    .withFaceLandmarks()
+    .withFaceDescriptor()
+
+  if (!detection) return null
+
+  return Array.from(detection.descriptor)
 }
 
+const captureCleanImage = () => {
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = video.value.videoWidth
+  tempCanvas.height = video.value.videoHeight
+
+  const ctx = tempCanvas.getContext('2d')
+  ctx.drawImage(video.value, 0, 0)
+
+  return tempCanvas.toDataURL('image/png')
+}
+
+const resetVerification = async () => {
+  // stop everything
+  stopCamera()
+
+  // reset state
+  step = 0
+  leftCount = 0
+  rightCount = 0
+  blinkCount = 0
+  mouthCount = 0
+  tooFar = false
+started.value = false
+  capturedImages.length = 0
+
+  // pick new random steps again
+  stepsList = pickRandomInstructions()
+
+  // small delay (optional, smoother UX)
+  statusMessage.value = '🔄 Restarting...'
+
+  await new Promise(res => setTimeout(res, 1000))
+
+  // restart
+  await startVerification()
+}
 /* ================= DETECTION LOOP ================= */
 const detect = async () => {
   if (!video.value || video.value.readyState !== 4) {
@@ -249,6 +323,7 @@ const detect = async () => {
   }
 
   const faces = await detector.estimateFaces(video.value)
+
   const ctx = canvas.value.getContext('2d')
   canvas.value.width = video.value.videoWidth
   canvas.value.height = video.value.videoHeight
@@ -257,80 +332,106 @@ const detect = async () => {
   if (faces.length && step < stepsList.length) {
     const face = faces[0]
 
-     if (!isFaceCloseEnough(face)) {
-    tooFar = true
-    updateInstruction()
-
-    drawMesh(faces, ctx, canvas.value.width)
-    animationId = requestAnimationFrame(detect)
-    return
-
-  } else {
-    if (tooFar) {
-      tooFar = false
+    // ================= TOO FAR CHECK =================
+    if (!isFaceCloseEnough(face)) {
+      tooFar = true
       updateInstruction()
+
+      drawMesh(faces, ctx, canvas.value.width)
+      animationId = requestAnimationFrame(detect)
+      return
+    } else {
+      if (tooFar) {
+        tooFar = false
+        updateInstruction()
+      }
     }
 
     const current = stepsList[step]
 
-      // reset counts for non-relevant actions
-      if (current !== 'left') leftCount = 0
-      if (current !== 'right') rightCount = 0
-      if (current !== 'blink') blinkCount = 0
-      if (current !== 'mouth') mouthCount = 0
+    // reset counters
+    if (current !== 'left') leftCount = 0
+    if (current !== 'right') rightCount = 0
+    if (current !== 'blink') blinkCount = 0
+    if (current !== 'mouth') mouthCount = 0
 
-      let passed = false
-      if (current === 'left' && getHeadDirection(face) === 'left') {
-        leftCount++
-        if (leftCount > STABLE_FRAMES) passed = true
-      }
-      if (current === 'right' && getHeadDirection(face) === 'right') {
-        rightCount++
-        if (rightCount > STABLE_FRAMES) passed = true
-      }
-      if (current === 'blink' && isBlink(face)) {
-        blinkCount++
-        if (blinkCount > STABLE_FRAMES) passed = true
-      }
-      if (current === 'mouth' && isMouthOpen(face)) {
-        mouthCount++
-        if (mouthCount > STABLE_FRAMES) passed = true
-      }
+    let passed = false
 
-      if (passed) {
-       
-        step++
-        updateInstruction()
+    if (current === 'left' && getHeadDirection(face) === 'left') {
+      if (++leftCount > STABLE_FRAMES) passed = true
+    }
 
-        // if finished all steps, send last image + vector to backend
+    if (current === 'right' && getHeadDirection(face) === 'right') {
+      if (++rightCount > STABLE_FRAMES) passed = true
+    }
+
+    if (current === 'blink' && isBlink(face)) {
+      if (++blinkCount > STABLE_FRAMES) passed = true
+    }
+
+    if (current === 'mouth' && isMouthOpen(face)) {
+      if (++mouthCount > STABLE_FRAMES) passed = true
+    }
+
+    // ================= STEP PASSED =================
+    if (passed) {
+      step++
+      updateInstruction()
+
+      // small delay (smooth UX)
+      await new Promise(r => setTimeout(r, 400))
+
+      // ================= FINAL STEP =================
       if (step >= stepsList.length) {
-        // ✅ Capture ONLY ONCE here
-        const finalImage = canvas.value.toDataURL('image/png')
+        loading.value = true
+        currentmessage.value = 'Processing...'
 
-        const vector = await getFaceVector(finalImage)
+        const finalImage = captureCleanImage()
 
-        await fetch('/api/verify-face', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: finalImage,
-            vector: Array.from(vector || [])
-          })
-        })
+        // ✅ GET VECTOR BEFORE STOPPING CAMERA
+        let vector = await getFaceVectorFromVideo()
+
+        // ✅ retry once if failed
+        if (!vector) {
+          await new Promise(r => setTimeout(r, 300))
+          vector = await getFaceVectorFromVideo()
+        }
+        console.log(vector, 'VECTOR LENGTH:', vector?.length);
+                console.log(finalImage, 'FINAL IMAGE');
+        
+
+        if (!vector) {
+          currentmessage.value = '❌ Face not detected properly, click retry'
+          statusMessage.value = '❌ Face not detected properly'
+          retryCapture.value = true
+          loading.value = true
+          return
+        }
+
         statusMessage.value = '✅ Verification Complete!'
 
-          // ✅ STOP CAMERA + HIDE
-          stopCamera()
-          finished.value = true
-          started.value = false
-      }
+        emit('completed', {
+          finalImage,
+          vector: Array.from(vector)
+        })
+
+        // ✅ STOP AFTER EVERYTHING
+        stopCamera()
+
+        finished.value = true
+        started.value = false
       }
     }
   }
 
-  drawMesh(faces, ctx, canvas.value.width)
+  // ================= DRAW =================
+  if (faces.length) {
+    drawMesh(faces, ctx, canvas.value.width)
+  }
+
   animationId = requestAnimationFrame(detect)
 }
+
 
 /* ================= CLEANUP ================= */
 const stopCamera = () => {
@@ -341,9 +442,12 @@ const stopCamera = () => {
 const startVerification = async () => {
   started.value = true
   finished.value = false
-
+  loading.value = true
   await startCamera()
   await loadModel()
+  retryCapture.value = false
+  currentmessage.value = 'Initializing Face Capture'
+   loading.value = false 
   updateInstruction()
   detect()
 }
@@ -356,6 +460,9 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(stopCamera)
+defineExpose({
+  startVerification
+})
 </script>
 
 <style scoped>
