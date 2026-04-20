@@ -107,7 +107,21 @@ const pickRandomInstructions = () => {
   return result
 }
 
-stepsList = pickRandomInstructions()
+const generateSteps = () => {
+  const actions = ['left', 'right', 'mouth']
+
+  // shuffle only first steps
+  for (let i = actions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[actions[i], actions[j]] = [actions[j], actions[i]]
+  }
+
+  // ALWAYS force blink last
+  return [...actions, 'blink']
+}
+
+
+stepsList = generateSteps()
 
 const instructionText = {
   left: '👉 Turn your head LEFT',
@@ -241,6 +255,70 @@ const isFaceCloseEnough = (face) => {
   return dist(left, right) >= MIN_FACE_WIDTH
 }
 
+
+const isLowLight = (video) => {
+  const canvas = document.createElement('canvas')
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(video, 0, 0)
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const data = imageData.data
+
+  let totalBrightness = 0
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i]
+    const g = data[i + 1]
+    const b = data[i + 2]
+
+    // luminance formula
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b
+    totalBrightness += brightness
+  }
+
+  const avgBrightness = totalBrightness / (data.length / 4)
+
+  console.log("Brightness:", avgBrightness)
+
+  return avgBrightness < 60 // threshold (adjust if needed)
+}
+
+const isBlurry = (video) => {
+  const canvas = document.createElement('canvas')
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(video, 0, 0)
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const data = imageData.data
+
+  let variance = 0
+  let mean = 0
+  let values = []
+
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = (data[i] + data[i + 1] + data[i + 2]) / 3
+    values.push(gray)
+    mean += gray
+  }
+
+  mean /= values.length
+
+  for (let v of values) {
+    variance += (v - mean) ** 2
+  }
+
+  variance /= values.length
+
+  console.log("Sharpness:", variance)
+
+  return variance < 100 // adjust threshold
+}
 /* ================= DRAW ================= */
 const drawMesh = (faces, ctx, width) => {
   ctx.save()
@@ -333,7 +411,7 @@ const detect = async () => {
     const face = faces[0]
 
     // ================= TOO FAR CHECK =================
-    if (!isFaceCloseEnough(face)) {
+    if (!isFaceCloseEnough(face) ) {
       tooFar = true
       updateInstruction()
 
@@ -396,8 +474,7 @@ const detect = async () => {
           await new Promise(r => setTimeout(r, 300))
           vector = await getFaceVectorFromVideo()
         }
-        console.log(vector, 'VECTOR LENGTH:', vector?.length);
-                console.log(finalImage, 'FINAL IMAGE');
+        
         
 
         if (!vector) {
@@ -405,6 +482,12 @@ const detect = async () => {
           statusMessage.value = '❌ Face not detected properly'
           retryCapture.value = true
           loading.value = true
+          step = 0
+          leftCount = 0
+          rightCount = 0
+          blinkCount = 0
+          mouthCount = 0
+            stopCamera()
           return
         }
 
@@ -425,9 +508,9 @@ const detect = async () => {
   }
 
   // ================= DRAW =================
-  if (faces.length) {
-    drawMesh(faces, ctx, canvas.value.width)
-  }
+  // if (faces.length) {
+  //   drawMesh(faces, ctx, canvas.value.width)
+  // }
 
   animationId = requestAnimationFrame(detect)
 }

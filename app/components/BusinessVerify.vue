@@ -72,29 +72,9 @@
             </button>
           </div>
 
-          <!-- ================= INSTRUCTION ================= -->
-          <div v-if="step === 'instruction'" class="text-center space-y-4">
+         
 
-            <div class="text-4xl">📷</div>
-
-            <h3 class="font-semibold">Owner Face Verification</h3>
-
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li>✔ Look straight</li>
-              <li>✔ Turn head left/right</li>
-              <li>✔ Blink eyes</li>
-            </ul>
-
-            <button @click="startFaceFlow"
-              class="w-full bg-green-600 text-white py-2 rounded-xl">
-              Start Verification
-            </button>
-          </div>
-
-          <!-- ================= FACE ================= -->
-          <div v-if="step === 'face'" class="flex justify-center">
-            <FaceVerify ref="faceRef" @completed="handleResult" />
-          </div>
+        
 
         </div>
 

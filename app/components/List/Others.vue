@@ -47,7 +47,7 @@ watch(() => props.modelValue, (v) => {
 
   <!-- HOUSE OTHER FEATURES -->
   <div v-if="props.type === 'house'" class="">
-    <h2>pookpopkkpok</h2>
+    <
     <ListHouseother v-model="local" />
   </div>
 
