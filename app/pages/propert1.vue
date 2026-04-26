@@ -1,5 +1,6 @@
 <template>
   <div class="pt- bg-gray-50 min-h-screen">
+  hjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggfffffffffffffffffffffffffffffyggyuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
   <div v-if="isOwner">
      <div  v-if="isPreview"  class=" flex max-w-6xl px-3  pt-6 justify-between mx-auto ">
         <div class=" font-semibold ">

@@ -64,6 +64,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     mapboxSecret: process.env.MAPBOX_SECRET || '',
     api_url: process.env.BASE_URL || 'http://localhost:5000',
+     geminiApiKey: process.env.GEMINI_API_KEY,
 
     public: {
       projectName: 'true people buy property and sell it',

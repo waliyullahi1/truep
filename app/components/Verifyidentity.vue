@@ -1,5 +1,7 @@
 <template>
   <div>
+
+   {{isVerify}}
     <!-- OPEN BUTTON -->
 <button
   :disabled="verifyLabel === 'Loading...' || verifyLabel === 'verified'"
@@ -198,10 +200,17 @@
 
         <!-- ================= FACE ================= -->
         <div v-if="step === 'face'" class="flex justify-center">
-          <FaceVerify
-            ref="faceRef"
-            @completed="handleFaceResult"
-          />
+         <div v-show="onVerify" class=" ">
+            <FaceVerify
+                ref="faceRef"
+                @completed="handleFaceResult"
+              />
+          </div> 
+          <div v-show="onVerify"  class="h-48 flex flex-col  justify-center items-center  w-full ">
+              <div class=" mr-6"><img src="@/assets/images/icons/loading.svg" class=" w-10"/></div>
+               <p> Processing.....</p>
+          </div>
+
         </div>
 
         <!-- ================= BUSINESS ================= -->
@@ -246,7 +255,7 @@
             @click="saveBusiness"
             class="w-full bg-green-600 text-white py-2 rounded-xl"
           >
-          
+         
             {{ savingBusinessloading ? 'Saving...' : 'Submit Verification' }}
           </button>
         </div>
@@ -259,16 +268,21 @@
 import { ref, computed, watch } from 'vue'
 import FaceVerify from '@/components/FaceVerify.vue'
 import { useRuntimeConfig } from '#app'
+import { useRouter, useRoute } from 'vue-router'
+const route = useRoute()
+
 
 const config = useRuntimeConfig()
 const { $toast } = useNuxtApp()
 const props = defineProps({
-  kycType: { type: String, default: 'individual' }
+  kycType: { type: String, default: 'individual' },
+  isVerify:{type: Boolean, default: false }
 })
 
-
+const emit = defineEmits(['update:isVerify'])
 const verifyLabel = ref('')
 const isLoading = ref(false)
+const onVerify = ref(true)
 /* ---------------- STATE ---------------- */
 
 const open = ref(false)
@@ -332,13 +346,20 @@ const startverification = async () => {
     const res = await useApiFetch('/kyc', { method: 'GET' })
     const data = res.data
     console.log(res);
-    if (!res?.data?.nin || !res?.data?.phone || !res?.data?.ninImage) {
+    if (!res.success) {
+       
+        verifyLabel.value = 'try again'
+        $toast.error(' Failed to fetch')
+        return
+      }
+    if (!data?.data?.nin || !data?.data?.phone || !data?.data?.ninImage) {
        step.value  =  'form'
        open.value = true 
         verifyLabel.value = props.kycType === 'individual' ? 'Verify Identity' : 'Verify Business'
        return
     }
-    if (!res?.data?.faceImage || !res?.data?.phone) {
+
+    if (!data?.data?.faceImage) {
        step.value  =  'instruction'
        open.value = true 
         verifyLabel.value = props.kycType === 'individual' ? 'Verify Identity' : 'Verify Business'
@@ -351,8 +372,11 @@ const startverification = async () => {
       return
     }
 
-     if (res?.data?.nin && res?.data?.phone && res?.data?.ninImage && res?.data?.faceImage) {
+     if (data?.data?.nin && data?.data?.phone && data?.data?.ninImage && data?.data?.faceImage) {
+      emit('update:isVerify', true) 
       verifyLabel.value = 'verified'
+      emit('update:isVerify', true)
+      
       return
       
     }
@@ -371,7 +395,7 @@ const startverification = async () => {
       step.value  =  'form'
        open.value = true 
     }
-  console.log(form.value, 'ddd');
+ 
   
     if (props.kycType === 'business' && !form.value.businessName) { 
       step.value = 'business' 
@@ -384,6 +408,7 @@ const startverification = async () => {
       console.log(data);
       
       verifyLabel.value = 'verified'
+      emit('update:isVerify', true) 
       return
     }
 
@@ -394,6 +419,7 @@ const startverification = async () => {
 
     open.value = true
     verifyLabel.value = 'verified'
+   emit('update:isVerify', true) 
 
   } catch (e) {
     console.error(e)
@@ -424,7 +450,12 @@ const toInstruction = async () => {
     fd.append('ninImage', ninFile)
   }
 
-  await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
+  const res = await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
+   if (!res.success) {
+       
+       isLoading.value = false
+    $toast.error('Failed to submit NIN information')
+    }
   isLoading.value = false
   step.value = 'instruction'
   } catch (error) {
@@ -442,27 +473,50 @@ const startFace = () => {
 }
 
 const handleFaceResult = async (data) => {
-  
+  onVerify.value = false
   form.value.faceImage = data.finalImage
   form.value.faceVector = data.vector
-
+    
+    
   const fd = new FormData()
-  fd.append('faceVector', JSON.stringify(data.vector))
+  if (data.vector) {
+      fd.append('faceVector', JSON.stringify(data.vector))
+
+  }
 
   if (data.finalImage?.startsWith('data:image')) {
     const faceFile = await base64ToFile(data.finalImage, 'face.jpg')
     fd.append('faceImage', faceFile)
   }
 
-  await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
 
+  try {
+   const response =  await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
+    
+  if (!res.success) {
+     verifyLabel.value = 'try again'
+      open.value = false
+       onVerify.value = true
+
+  }
   if (props.kycType === 'individual') {
   verifyLabel.value = 'verified'
+   emit('update:isVerify', true) 
+   onVerify.value = true
+   console.log( props.isVerify);
+   
     step.value = 'review'
     open.value = false
   } else {
     step.value = 'business'
   }
+  } catch (error) {
+    console.log(error);
+      verifyLabel.value = 'try again'
+      open.value = false
+       onVerify.value = true
+  }
+ 
 }
 
 /* ---------------- IMAGE UPLOADS ---------------- */
@@ -501,9 +555,19 @@ const saveBusiness = async () => {
     fd.append('cacImage', cacFile)
   }
 try {
- await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
+ const response =  await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
 savingBusinessloading.value = false
+console.log(response.status);
+
+   if (!response.status) {
+     verifyLabel.value = 'try again'
+      open.value = false
+       onVerify.value = true
+       
+  }
   kycStatus.value = 'verified'
+  
+   emit('update:isVerify', true) 
   open.value = false
 } catch (error) {
   savingBusinessloading.value = false

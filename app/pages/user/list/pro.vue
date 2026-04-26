@@ -14,11 +14,11 @@ definePageMeta({
 const filter = ref('all')
 const openMenuId = ref(null)
 const deleteId = ref(null)
+
 /* ================= DATA ================= */
 const properties = ref([])
 
 /* ================= COMPUTED ================= */
-
 const totalItems = computed(() => properties.value.length)
 
 const filteredList = computed(() =>
@@ -29,9 +29,10 @@ const filteredList = computed(() =>
 
 const statuses = computed(() => [
   'all',
-  ...new Set(properties.value.map(p => p.status))
+  ...new Set((properties.value || []).map(p => p.status))
 ])
 
+/* ================= HELPERS ================= */
 const formatDate = (date) => {
   if (!date) return ''
 
@@ -42,10 +43,9 @@ const formatDate = (date) => {
     day: "numeric"
   })
 }
-/* ================= HELPERS ================= */
 
 const getPrice = (item) => {
-  if (!item.pricing) return 0
+  if (!item?.pricing) return 0
 
   if (item.pricing.paymentType === 'outright') {
     return item.pricing.price || 0
@@ -56,48 +56,38 @@ const getPrice = (item) => {
   }
 
   if (item.pricing.paymentType === 'rent') {
-    return item.pricing.rent?.duration || 0
-  }
-
-  if (item.landDetails?.pricePerUnit) {
-    return item.landDetails.pricePerUnit
+    return item.pricing.price || 0
   }
 
   return 0
 }
 
 const getPriceLabel = (item) => {
-  const pricing = item.pricing || {}
+  const pricing = item?.pricing || {}
 
-  // ================= HOUSE =================
-  if (item.type === 'house') {
-
-    // 🏠 SALE
-    if (item.purpose === 'sale') {
+  if (item?.type === 'house') {
+    if (item?.purpose === 'sale') {
       if (pricing.paymentType === 'installment') {
         return '/monthly payment'
       }
-      return '/outright' // outright sale → no label
+      return '/outright'
     }
 
-    // 🏠 RENT
-    if (item.purpose === 'rent') {
-      const unit = pricing.rent?.duration
-
-      if (!unit) return ''
-
-      return `/ ${unit}` // e.g /month, /year, /week
+    if (item?.purpose === 'rent') {
+      const unit = pricing.rent?.duration?.unit
+      return unit ? `/${unit}` : ''
     }
   }
 
-  // ================= LAND =================
-  if (item.type === 'land') {
+  if (item?.type === 'land') {
     if (pricing.paymentType === 'outright') {
-      return item.landDetails?.unit ? `/per ${item.landDetails.unit}  ` : ''
+      return item.landDetails?.unit
+        ? `/per ${item.landDetails.unit}`
+        : ''
     }
 
     if (pricing.paymentType === 'installment') {
-      return ` /per ${item.landDetails.unit} /monthly payment`
+      return `/per ${item.landDetails?.unit || 'plot'} /monthly`
     }
   }
 
@@ -105,37 +95,68 @@ const getPriceLabel = (item) => {
 }
 
 const getLocation = (item) => {
-  return `${item.location?.state || ''}/${item.location?.city || ''}`
+  return `${item?.location?.state || ''}/${item?.location?.city || ''}`
 }
 
 const getImage = (item) => {
-  return item.media?.files?.[0]?.url || '/image/no-image.png'
+  return item?.media?.files?.[0]?.url || '/image/no-image.png'
+}
+
+const formatStatus = (s = '') =>
+  s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+
+const statusClass = (s = '') => {
+  const key = s.toLowerCase()
+
+  return {
+    available: 'bg-green-100 text-green-700',
+    rented: 'bg-blue-100 text-blue-700',
+    sold: 'bg-red-100 text-red-700',
+    draft: 'bg-yellow-100 text-yellow-700',
+    pending: 'bg-purple-100 text-purple-700',
+    denied: 'bg-gray-200 text-gray-700',
+    paused: 'bg-orange-100 text-orange-700'
+  }[key] || 'bg-gray-100 text-gray-600'
+}
+
+const smartMoney = (value) => {
+  const num = Number(value || 0)
+
+  if (num >= 1_000_000_000) {
+    return "₦" + (num / 1_000_000_000).toFixed(1) + "B"
+  }
+
+  if (num >= 1_000_000) {
+    return "₦" + (num / 1_000_000).toFixed(1) + "M"
+  }
+
+  if (num >= 1_000) {
+    return "₦" + (num / 1_000).toFixed(1) + "K"
+  }
+
+  return "₦" + num.toLocaleString()
 }
 
 /* ================= METHODS ================= */
-
 const removeItem = async (id) => {
-  console.log(id);
-  
-   try {
-    const res = await useApiFetch(`/property/${id}`, {
-      method: "DELETE",
+  try {
+    await useApiFetch(`/property/${id}`, {
+      method: "DELETE"
     })
 
-    const data = res.message?.value || res.message
-       properties.value = properties.value.filter(p => p._id !== id)
-   
-    $toast.success(data || "Property removed")
+    properties.value = properties.value.filter(p => p._id !== id)
 
+    $toast.success("Property removed")
   } catch (err) {
-    console.error(err)
     $toast.error("Remove failed")
   }
+
   openMenuId.value = null
 }
 
 const toggleMenu = (id) => {
-  openMenuId.value = openMenuId.value === id ? null : id
+  openMenuId.value =
+    openMenuId.value === id ? null : id
 }
 
 const editproper = (id) => {
@@ -147,75 +168,48 @@ const editproper = (id) => {
        })
 
 }
-const viewProperty = (id) => {
-  router.push({
-       path: '/property',
-        query: {
-         id: property.value,
-         preview: true,
-         },
-       })
-  
+
+const viewProperty = (slug) => {
+  router.push(`/property/${slug}`)
 }
+
 const handleClickOutside = () => {
   openMenuId.value = null
 }
 
-const formatStatus = (s = '') =>
-  s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
-
-const statusClass = (s = '') => {
-  const key = s.toLowerCase()
-
-  return {
-    'available': 'bg-green-100 text-green-700',
-    'rented': 'bg-blue-100 text-blue-700',
-    'sold': 'bg-red-100 text-red-700',
-    'draft': 'bg-yellow-100 text-yellow-700',
-    'pending': 'bg-purple-100 text-purple-700',
-    'denied': 'bg-gray-200 text-gray-700',
-    'paused': 'bg-orange-100 text-orange-700'
-  }[key] || 'bg-gray-100 text-gray-600'
-}
-
-const smartMoney = (value) => {
-  const num = Number(value || 0)
-
-  if (num >= 1_000_000_000) {
-    return "₦" + (num / 1_000_000_000).toFixed(num % 1_000_000_000 === 0 ? 0 : 1) + "B"
-  }
-
-  if (num >= 1_000_000) {
-    return "₦" + (num / 1_000_000).toFixed(num % 1_000_000 === 0 ? 0 : 1) + "M"
-  }
-
-  if (num >= 1_000) {
-    return "₦" + (num / 1_000).toFixed(num % 1_000 === 0 ? 0 : 1) + "K"
-  }
-
-  return "₦" + num.toLocaleString()
-}
-
 /* ================= FETCH ================= */
-
-onMounted(async () => {
-  window.addEventListener('click', handleClickOutside)
-
+const loadingData = async () => {
   try {
-    const response = await useApiFetch(`/property`, { method: 'GET' })
-    properties.value = response.data?.data || response.data
-    console.log(properties.value)
+    const response = await useApiFetch(`/property`, {
+      method: 'GET'
+    })
+
+    properties.value =
+      response.data?.data ||
+      response.data ||
+      []
   } catch (err) {
-    console.error(err)
-    $toast.error(err?.message || "Failed to load property")
+    properties.value = []
+    $toast.error("Failed to load property")
   }
+}
+
+await loadingData()
+
+onMounted(() => {
+  window.addEventListener(
+    'click',
+    handleClickOutside
+  )
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('click', handleClickOutside)
+  window.removeEventListener(
+    'click',
+    handleClickOutside
+  )
 })
 </script>
-
 <template>
 <div class="min-h-screen bg-gray-50 py-8">
 <ContainerUser>

@@ -1,61 +1,58 @@
 <template>
-<div>
   <div class="min-h-screen py-10 px-4">
     
     
-  <Container>
-  {{form}}
-      <!-- ✅ STEP PROGRESS -->
-    <div class="mb-12 max-w-4xl mx-auto ">
-      <div class="flex  items-center justify-between text-sm font-medium">
-        <div :class="step >= 1 ? 'text-black' : 'text-gray-400'">Basic Info</div>
-        <div :class="step >= 2 ? 'text-black' : 'text-gray-400'">Details</div>
-        <div :class="step >= 3 ? 'text-black' : 'text-gray-400'">Media</div>
-        <div :class="step >= 4 ? 'text-black' : 'text-gray-400'">Ownership</div>
-      </div>
-      <div class="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          class="h-full bg-black transition-all duration-500"
-          :style="{ width: (step / 4) * 100 + '%' }"
-        />
-      </div>
-    </div>
+    <Container>
     
    
     <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="max-w-4xl list-disc mx-auto space-y-4">
         <div class="bg-white p-5 rounded shadow space-y-6">
-          <div class="text-center space-y-2 mb-8">
-            <h1 class="text-2xl font-bold">Basic Property Information</h1>
-            <p class="text-gray-500 text-sm max-w-xl mx-auto">
-              Select the property purpose, category, location, features, and other key details.
-              This information will be used to automatically generate your title and description.
-            </p>
+
+          <!-- PROPERTY TITLE -->
+          <div class="flex gap-5">
+            <div class="w-1/3">
+              <h2 class="section-title">Property Title</h2>
+              <p class="text-gray-500 text-sm">Add a clear title for your property</p>
+            </div>
+            <div class="w-2/3">
+              <textarea
+                v-model="form.title"
+                placeholder="Example: 2 Plots of Land in Lekki"
+                class="input h-16 font-semibold text-2xl"
+              />
+            </div>
           </div>
 
           <!-- PURPOSE & TYPE -->
-          <div class="bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-8 shadow-sm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h2 class="section-title">Purpose</h2>
-                <select v-model="formSelection" @change="onCategoryChange" class="input">
-                  <option disabled value="">Select Purpose</option>
-                  <option v-for="item in purposeOptions" :key="item.label" :value="item.value">
-                    {{ item.label }}
-                  </option>
-                </select>
-              </div>
+          <div class="flex gap-5">
+            <div class="flex-1">
+              <h2 class="section-title">Purpose</h2>
+              <select @change="onCategoryChange" v-model="formSelection" class="input">
+                <option disabled value="">Select Purpose</option>
+                <option
+                  v-for="item in purposeOptions"
+                  :key="item.label"
+                  :value="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
 
-              <div>
-                <h2 class="section-title">Category</h2>
-                <select v-model="form.category" class="input">
-                  <option disabled value="">Select Type</option>
-                  <option v-for="item in options" :key="item.key" :value="item.key">
-                    {{ item.label }}
-                  </option>
-                </select>
-              </div>
+            <div class="flex-1">
+              <h2 class="section-title">Category</h2>
+              <select v-model="form.category" class="input">
+                <option disabled value="">Select Type</option>
+                <option
+                  v-for="item in options"
+                  :key="item.key"
+                  :value="item.key"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -183,117 +180,22 @@
       </div>
 
       <!-- ================= STEP 2 ================= -->
-      <div v-if="step === 2" class="max-w-5xl mx-auto space-y-8">
-
-        <!-- HEADER -->
-        <div class="text-center space-y-1">
-          <h1 class="text-2xl font-bold">Property Details</h1>
-          <p class="text-gray-500 text-sm">
-            Review and refine your listing title and description
-          </p>
-        </div>
-
-        <!-- ================= TITLE CARD ================= -->
-        <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
-
-          <!-- TITLE HEADER -->
-          <div class="flex justify-between items-start">
-
-            <div>
-              <h2 class="text-lg font-semibold">Property Title</h2>
-              <p class="text-xs text-gray-500">
-                Auto-generated from property details
-              </p>
-            </div>
-
-            <!-- EDIT BUTTON -->
-            <button
-              @click="EditTittle"
-              class="text-sm px-3 py-1 border rounded-lg hover:bg-gray-50"
-            >
-              {{ editTitle ? 'Lock' : 'Edit' }}
-            </button>
-
-          </div>
-
-          <!-- TITLE DISPLAY -->
-          <div v-if="!editTitle" class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="text-xl font-bold uppercase tracking-wide">
-              {{ form.title || 'No title generated yet' }}
-            </h3>
-          </div>
-
-          <!-- TITLE EDIT -->
-          <textarea
-            v-else
-            v-model="form.title"
-            class="input text-xl font-semibold h-24"
-            placeholder="Enter property title..."
-          />
-
-        </div>
-
-        <!-- ================= DESCRIPTION CARD ================= -->
-        <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
-
-          <!-- DESCRIPTION HEADER -->
-          <div class="flex justify-between items-start">
-
-            <div>
-              <h2 class="text-lg font-semibold">Description</h2>
-              <p class="text-xs text-gray-500">
-                Write or generate a compelling property description
-              </p>
-            </div>
-
-            <!-- AI BUTTON -->
-            <button
-              @click="generateAI"
-              :disabled="loadingAigenerate"
-              class="flex items-center gap-2 bg-gradient-to-r from-black to-gray-800 text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition disabled:opacity-50"
-            >
-              <!-- ICON -->
-              <svg v-if="!loadingAigenerate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-
-              <!-- LOADING -->
-              <svg v-else class="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10"
-                  stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-
-              {{ loadingAigenerate ? 'Generating...' : 'Generate AI Description' }}
-            </button>
-
-          </div>
-
-          <!-- DESCRIPTION INPUT -->
-          <ListDescription v-model="form.description" />
-
-          <!-- AI TIP -->
-          <p class="text-xs text-gray-400">
-            AI uses your property type, location, and features to generate professional real estate descriptions.
-          </p>
-
-        </div>
-
+      <div v-if="step === 2">
+        <ListDescription v-model="form.description" />
       </div>
 
       <!-- ================= STEP 3 ================= -->
       <div v-if="step === 3">
 
         <ListUpload     :purpose="form.purpose" />
-          <!-- <ListUploadhouse v-model="form" /> -->
+         <!-- <ListUploadhouse v-model="form" /> -->
       </div>
 
       <!-- ================= STEP 4 ================= -->
       <div v-if="step === 4">
-        <!-- <Webcan></Webcan> --> {{verify}}
-              <ListOwnershipSelector v-model:ownlistingType="form.ownership.listingType"  v-model:verified="verified"/> 
+        <!-- <Webcan></Webcan> -->
+        <ListOwnershipSelector v-model="ownershipType"
+    @update:agentName="agentName = $event"></ListOwnershipSelector>
       </div>
 
       <!-- ================= STEP 5 ================= -->
@@ -302,13 +204,11 @@
       <!-- ================= NAVIGATION ================= -->
       <div class="flex justify-between mt-8">
         <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
-        <button v-if="step < 4" :disabled="submitloading" @click="next" class="btn-primary ml-auto"> {{ submitloading ? 'Uploading...' : 'Next' }}</button>
-        <button v-if="step === 4" :disabled="submitloading" @click="submit" class="btn-primary ml-auto"> {{ submitloading ? 'Uploading...' : 'Submit' }}</button>
+        <button v-if="step < 4" :disabled="loginloading" @click="next" class="btn-primary ml-auto"> {{ loginloading ? 'Uploading...' : 'Next' }}</button>
+        <button v-if="step === 4" :disabled="loginloading" @click="submit" class="btn-primary ml-auto"> {{ loginloading ? 'Uploading...' : 'Next' }}</button>
       </div>
     </Container>
   </div>
- 
-</div>
 </template>
 
 <script setup>
@@ -321,18 +221,11 @@ const route = useRoute()
 const { $toast } = useNuxtApp()
 
 definePageMeta({ layout: 'auth' })
- const verified = ref(false)
+
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
 const activeSection = ref('location')
-const loadingAigenerate = ref(false)
-const editTitle = ref(false)
-const istittleEdite = ref(false)
-const storeprevioustitle = ref('')
-const submitloading = ref(false)
-const originalForm = ref(null)
- const propertyId = route.query?.id
-
+const loginloading = ref(false)
 /* ================= FORM DATA ================= */
 const form = ref({
   id: null,
@@ -340,7 +233,6 @@ const form = ref({
   description: '',
   category: '',
   type: '',
-  slug: '',
   purpose: '',
 pricing: {
   price: null,               // Total price
@@ -362,14 +254,6 @@ pricing: {
     monthlyAmount: null      // Amount per month
   }
 },
-
-
-ownership: {
-  listingType:'owner',
-  ownerId: '',
-  agentId: '',
-
-},
    
 
   location: {
@@ -385,12 +269,12 @@ ownership: {
   paymentType: 'outright',
   landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
   houseDetails: null,
- 
   media: { images: [], video: null },
   documents: { surveyPlan: null, titleDocument: null },
   features: [],
   contact: { name: "", phone: "", whatsapp: "" }
 })
+
 /* ================= PURPOSE OPTIONS ================= */
 const purposeOptions = [
   { label: 'Sell Land', value: { purpose: 'sale', type: 'land' } },
@@ -474,7 +358,7 @@ function generateRandomLand() {
 
 function onCategoryChange(e) {
   const value = e.target.value
-  
+  console.log('Selected:', value)
     form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
   form.value.houseDetails = null
   form.value.features = []
@@ -503,18 +387,12 @@ function isCompleted(section) {
   return false
 }
 
-function EditTittle(){
-  editTitle.value = !editTitle.value
-
-  
-}
 /* ================= DEEP MERGE HELPER ================= */
 function mergeForm(property) {
   if (!property) return
- 
+  console.log(property.category);
   
   form.value.title = property.title ?? form.value.title
-  form.value.slug = property.slug ?? form.value.slug
   form.value.description = property.description ?? form.value.description
   form.value.category = property.category ?? 'category'
   form.value.type = property.type ?? form.value.type
@@ -530,155 +408,52 @@ function mergeForm(property) {
   form.value.contact = { ...form.value.contact, ...(property.contact || {}) }
 
   form.value.features = Array.isArray(property.features) ? [...property.features] : form.value.features
-  form.value.ownership  = { ...form.value.ownership, ...(property.ownership || {}) }
+
   form.value.id = property._id ?? form.value.id
 
   if (property.purpose && property.type) {
     formSelection.value = { purpose: property.purpose, type: property.type }
   }
-   originalForm.value = JSON.parse(JSON.stringify(form.value))
+
   form.value.location = generateRandomLand()
 }
 
-const safeClone = (obj) => JSON.parse(JSON.stringify(obj))
-const generateAI = async () => {
-  try {
-    loadingAigenerate.value = true
-
-    // ✅ SAFE COPY (VERY IMPORTANT)
-    const payload = safeClone(form.value)
-
-    const res = await $fetch('/api/ai/property-generate', {
-      method: 'POST',
-      body: { form: payload }
-    })
-
-    console.log(res.data)
-
-    // ✅ DO NOT overwrite blindly
-    const newDescription = res.data
-       form.value.description = newDescription
-
-       console.log(form.value.description);
-       
-    // // If old description exists, append OR replace intelligently
-    // if (form.value.description && form.value.description.trim()) {
-    //   form.value.description = newDescription
-    // } else {
-    //   form.value.description = newDescription
-    // }
-
-  } catch (err) {
-    console.error(err)
-  } finally {
-    loadingAigenerate.value = false
-  }
-}
-function generateTitle(data){
-    if(data.type === 'land'){
-    return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
-    }
-
-    if(data.category === 'office_space'){
-    return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
-    }
-  const bedroom = form.value.features.find(
-  item => item.key === 'bedroom'
-  )?.value
-    return `${bedroom || 0} BEDROOM ${data.category} AT ${data.location.city} ${data.location.state}`.toUpperCase()
-
-}
-
-function isFormChanged() {
-  return JSON.stringify(form.value) !== JSON.stringify(originalForm.value)
-}
 /* ================= NAVIGATION ================= */
 const next = async () => {
-  if (submitloading.value) return
-
-  /* ---------------- STEP VALIDATION ---------------- */
-  if (step.value === 1) {
-    if (!form.value.purpose) {
-      return $toast.error("Please select purpose.")
-    }
-
-    if (!form.value.category) {
-      return $toast.error("Please select category.")
-    }
-
-    if (!form.value.location?.state || !form.value.location?.city) {
-      return $toast.error("Please select location or enter it manually.")
-    }
-
-    const featureCount = form.value.features?.filter(Boolean).length || 0
-
-    if (form.value.type === 'House' && featureCount < 2) {
-      return $toast.error("Please select at least bedroom and one more house feature.")
-    }
-
-    if (form.value.type === 'Land' && featureCount < 3) {
-      return $toast.error("Please select at least 3 land features.")
-    }
-
-    if (!form.value.pricing?.price) {
-      return $toast.error("Please add a price to your property.")
-    }
-  }
-
- 
-
-  /* ---------------- SAVE ---------------- */
-  submitloading.value = true
-
-  try {
-    // Auto-generate title if changed
-    const generatedTitle = generateTitle(form.value)
-    if (generatedTitle !== form.value.title) {
-      form.value.title = generatedTitle
-    }
-
-    const response = await useApiFetch(`/property/${form.value.id || ''}`, {
-      method: 'POST',
-      body: { details: form.value }
-    })
-    if (!response.success) {
-          $toast.error("An Error occur")
-           submitloading.value = false
-          return
-
-    }
-     console.log(response.data);
-     
-     if (step.value === 3) {
-          const imageCount = response.data.media.files?.filter(f => f.type === 'image').length || 0
-          if (imageCount < 6) {
-            return $toast.error("Please upload at least 6 images.")
-          }
-      }
-    const property = response.data?.data || response.data
-    mergeForm(property)
-
-    if (property?._id) {
-      router.replace({
-        query: {
-          ...route.query,
-          id: property._id,
-          step: step.value + 1
-        }
+  if (step.value === 1 || step.value === 2) {
+    loginloading.value = true
+    try { 
+      console.log(form.value);
+      
+      const response = await useApiFetch(`/property/${form.value.id || null}`, {
+        method: 'POST',
+        body: {details: form.value}
       })
+      const property = response.data?.data || response.data
+      mergeForm(property)
+
+      if (property?._id) {
+        router.replace({ query: { ...route.query, id: property._id } })
+      }
+      if (property?._id) {
+        router.replace({
+          query: {
+            ...route.query,
+            id: property._id,
+            step: step.value + 1
+          }
+        })
+      }
+      $toast.success("Saved successfully")
+      loginloading.value = false
+    } catch (err) {
+      console.error(err)
+      $toast.error(err?.message || "Something went wrong")
+      loginloading.value = false
+      return
     }
-
-    $toast.success("Saved successfully")
-
-    // Move to next step ONLY after successful save
-    if (step.value < 5) step.value++
-
-  } catch (err) {
-    console.error(err)
-    $toast.error(err?.message || "Something went wrong")
-  } finally {
-    submitloading.value = false
   }
+  if (step.value < 5) step.value++
 }
 
 const back = () => { if (step.value > 1) {
@@ -692,35 +467,24 @@ const back = () => { if (step.value > 1) {
   step.value--
    }}
 const submit =  async() => { 
-  submitloading.value = true
-        if (!verified.value) {
-          
-        $toast.error("Pls Click Verify Identity or Business to before you can procced ")
-         submitloading.value = false
-         return
-      }
-  
-   submitloading.value = true
+   loginloading.value = true
     try {
     const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })
-    console.log(res);
-    
-      if (!res.success) {
-
-        $toast.error("An Error occure")
-         submitloading.value = false
-         return
+    const data = res.data?.data || res.data
+    const imageCount = data.media.files?.filter(f => f.type === 'image').length || 0
+    if (imageCount < 6) {
+       $toast.error("Please upload at least 6 images.")
+        return
       }
-
 
        router.push({
        path: '/property',
         query: {
-         slog: form.value.slog,
+         id: form.value.id,
          preview: true,
          },
        })
-     submitloading.value = true
+     loginloading.value = true
   } catch (err) {
     console.error(err)
   }
@@ -730,48 +494,19 @@ const submit =  async() => {
 
 
 /* ================= LOAD EXISTING FORM ================= */
-
-const loadData = async () => {
-  try {
-    const response = await useApiFetch(`/property/${propertyId}`, {
-      method: 'GET'
-    })
-
-    // If your API returns wrapped response
-    const property = response?.data?.data || response?.data || null
-
-    if (!property) {
-      console.warn('No property found')
-      return
-    }
-
-    console.log(property)
-    mergeForm(property)
-
-  } catch (err) {
-    console.error('LoadData Error:', err)
-
-    // ✅ show ONE clear message
-    $toast.error('Server unavailable. Try again.')
-  }
-}
-
-await loadData()
-
-//  mergeForm(data.value.data)
-// onMounted(async () => {
-//   const propertyId = route.query?.id
+onMounted(async () => {
+  const propertyId = route.query?.id
   
-//   if (!propertyId) return
-//   try {
-//     const response = await useApiFetch(`/property/${propertyId}`, { method: 'GET' })
-//     const property = response.data?.data || response.data
-//     mergeForm(property)
-//   } catch (err) {
-//     console.error(err)
-//     $toast.error(err?.message || "Failed to load property")
-//   }
-// })
+  if (!propertyId) return
+  try {
+    const response = await useApiFetch(`/property/${propertyId}`, { method: 'GET' })
+    const property = response.data?.data || response.data
+    mergeForm(property)
+  } catch (err) {
+    console.error(err)
+    $toast.error(err?.message || "Failed to load property")
+  }
+})
 </script>
 
 <style scoped>
@@ -793,4 +528,4 @@ await loadData()
 .tab.active{
   @apply border-blue-500 border bg-blue-50;
 }
-</style> 
+</style>

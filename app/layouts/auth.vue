@@ -6,7 +6,7 @@ const auth = useAuth()
   <div>
     <NavigationNavbar v-if="!auth" />
     <NavigationNavUser v-else />
-     
+   
     <slot />
 
     <NavigationFooter />

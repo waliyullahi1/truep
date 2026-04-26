@@ -17,7 +17,8 @@ const props = defineProps({
 /* ======================
 STATE
 ====================== */
-const previews = ref(Array(6).fill(null))
+const MAX_IMAGES = 10
+const previews = ref([null, null, null, null, null])
 const survey = ref(Array(3).fill(null))
 const titleDocs = ref(Array(3).fill(null))
 
@@ -34,7 +35,16 @@ function getState(type) {
 }
 
 function refillState(data) {
-  previews.value = Array.from({ length: 6 }, (_, i) => data.images?.[i] || null)
+  const imgs = data.images || []
+
+  // Fill previews with images first
+  previews.value = imgs.map(img => img)
+
+  // Add empty boxes if less than current length (so UI doesn't shrink)
+  while (previews.value.length < Math.max(imgs.length, 3)) {
+    previews.value.push(null)
+  }
+
   survey.value = Array.from({ length: 3 }, (_, i) => data.survey?.[i] || null)
   titleDocs.value = Array.from({ length: 3 }, (_, i) => data.titleDocs?.[i] || null)
 }
@@ -117,20 +127,46 @@ async function removeImage(index, type) {
   removingIndex.value = null
 }
 
+
+function addImageBox() {
+  if (previews.value.length >= MAX_IMAGES) {
+    $toast.error("Maximum 10 images allowed")
+    return
+  }
+  previews.value.push(null)
+}
+
+const loadMedia = async () => {
+   if (!propertyId) return
+    try {
+    const response = await useApiFetch(`/property/images/${propertyId}`, {
+      method: 'GET'
+    })
+
+         const data = response.data?.value || response.data
+    if (data) refillState(data)
+  } catch (err) {
+    
+    $toast.error("Failed to load property")
+  }
+}
+await loadMedia()
 /* ======================
 FETCH EXISTING
 ====================== */
 onMounted(async () => {
   if (!propertyId) return
 
-  try {
-    const res = await useApiFetch(`/property/images/${propertyId}`)
+  try {const res = await useApiFetch(`/property/images/${propertyId}`)
+    
     const data = res.data?.value || res.data
     if (data) refillState(data)
   } catch (err) {
     console.error(err)
   }
 })
+
+
 </script>
 
 <template>
@@ -139,52 +175,62 @@ onMounted(async () => {
     <div class="space-y-10">
  
       <!-- ================= LAND IMAGES ================= -->
-      <div>
-        <h2 class="section-title">Land Images (max 6)</h2>
-        <p class="text-gray-500 mb-6">Visual examples attract buyers.</p>
+      <div class="flex flex-wrap gap-6 items-start">
 
-        <div class="flex flex-wrap gap-6">
+        <!-- IMAGE BOXES -->
+        <div
+          v-for="(img,index) in previews"
+          :key="'img-'+index"
+          class="relative w-56 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center hover:border-black transition overflow-hidden"
+        >
+          <img v-if="img" :src="img.url" class="w-full h-full object-cover"/>
+
+          <div v-else class="text-center">
+            <img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
+            <p class="text-xs mt-2 text-gray-500">
+              <label :for="'upload-image-'+index" class="text-blue-600 underline cursor-pointer">
+                Browse
+              </label>
+            </p>
+          </div>
+
+          <input
+            type="file"
+            accept="image/*"
+            class="hidden"
+            :id="'upload-image-'+index"
+            @change="handleUpload($event,index,'image')"
+            :disabled="loadingIndex === `image-${index}` || removingIndex === `image-${index}`"
+          />
+
           <div
-            v-for="(img,index) in previews"
-            :key="'img-'+index"
-            class="relative w-56 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center hover:border-black transition overflow-hidden"
+            v-if="loadingIndex === `image-${index}` || removingIndex === `image-${index}`"
+            class="absolute inset-0 bg-black/40 flex items-center justify-center"
           >
-            <img v-if="img" :src="img.url" class="w-full h-full object-cover"/>
+            <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
 
-            <div v-else class="text-center">
-              <img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
-              <p class="text-xs mt-2 text-gray-500">
-                <label :for="'upload-image-'+index" class="text-blue-600 underline cursor-pointer">
-                  Browse
-                </label>
-              </p>
-            </div>
+          <button
+            v-if="img && loadingIndex !== `image-${index}`"
+            @click="removeImage(index,'image')"
+            class="absolute top-2 right-2 bg-slate-400/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
+          >
+            <img src="/image/icon/delete.svg" class="w-5"/>
+          </button>
+        </div>
 
-            <input
-              type="file"
-              accept="image/*"
-              class="hidden"
-              :id="'upload-image-'+index"
-              @change="handleUpload($event,index,'image')"
-              :disabled="loadingIndex === `image-${index}` || removingIndex === `image-${index}`"
-            />
-
-            <div
-              v-if="loadingIndex === `image-${index}` || removingIndex === `image-${index}`"
-              class="absolute inset-0 bg-black/40 flex items-center justify-center"
-            >
-              <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-
-            <button
-              v-if="img && loadingIndex !== `image-${index}`"
-              @click="removeImage(index,'image')"
-              class="absolute top-2 right-2 bg-black/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
-            >
-              <img src="/image/icon/delete.svg" class="w-5"/>
-            </button>
+        <!-- ➕ ADD BOX -->
+        <div
+          v-if="previews.length < MAX_IMAGES"
+          @click="addImageBox"
+          class="w-56 h-48 border-2 border-dashed border-gray-400 rounded-sm flex items-center justify-center cursor-pointer hover:border-black transition"
+        >
+          <div class="text-center text-gray-500">
+            <div class="text-4xl font-light">+</div>
+            <p class="text-xs">Add more</p>
           </div>
         </div>
+
       </div>
 
       <!-- ================= SURVEY PLAN ================= -->
@@ -228,7 +274,7 @@ onMounted(async () => {
             <button
               v-if="img && loadingIndex !== `survey-${index}`"
               @click="removeImage(index,'survey')"
-              class="absolute top-2 right-2 bg-black/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
+              class="absolute top-2 right-2   bg-slate-500 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
             >
               <img src="/image/icon/delete.svg" class="w-5"/>
             </button>
@@ -277,7 +323,7 @@ onMounted(async () => {
             <button
               v-if="img && loadingIndex !== `titleDocs-${index}`"
               @click="removeImage(index,'titleDocs')"
-              class="absolute top-2 right-2 bg-black/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
+              class="absolute top-2 right-2 bg-slate-400/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
             >
               <img src="/image/icon/delete.svg" class="w-5"/>
             </button>
