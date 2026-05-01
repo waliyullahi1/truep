@@ -1,5 +1,5 @@
 <template>
-  <button @click="$emit('logoClicked')" class="flex items-center font-bold gap-3 text-2xl text-secondary marcellus">
+  <button @click="$emit('logoClicked')" class="flex items-center font-bold gap-3 text-xl text-secondary marcellus">
     <!-- <img src="@/assets/images/unilorin.png" alt="Logo" class=" w-12 object-contain" /> -->
       Abanise
 

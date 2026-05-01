@@ -17,7 +17,34 @@ const search = ref('')
 const location = ref('')
 const category = ref('All')
 const visibleCount = ref(9)
+const isMap = ref(false)
 
+const isFixed = ref(false)
+const isShrink = ref(false)
+const searchRef = ref(null)
+const searchTop = ref(0)
+
+
+function handleScroll() {
+  const scrollY = window.scrollY
+
+  isFixed.value = scrollY > searchTop.value
+  isShrink.value = scrollY > searchTop.value + 100
+}
+
+onMounted(async () => {
+  await nextTick()
+
+  if (searchRef.value) {
+    searchTop.value = searchRef.value.offsetTop
+  }
+
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 /* =================================
    PROPERTY DATA
 ================================= */
@@ -465,59 +492,104 @@ watch([search, location, category], () => {
 <template>
 <div>
 
+      <div v-if="isFixed"   class="fixed  z-100 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
+        <div class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+          <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
+            
+            <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
+          </div>
+          <input
+            v-model="search"
+            placeholder="Search land, houses, agents..."
+            class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
+          />
+          <div class=" bg-secondary text-sm h-full  -0">
+            
+               <button class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                <p>Filters</p> 
+              </button>
+          </div>
+          
+
+        </div>
+        <div class="flex gap-3  overflow-x-auto  px-1 py-1 border-t-2 mt-1">
+            <button
+            v-for="c in categories"
+            :key="c"
+            @click="category = c"
+            class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
+            :class="category === c ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'"
+          >
+            {{ c }}
+          </button>
+        </div>
+    </div>
+
   <!-- HERO -->
-<section class="relative z-10  h-screen-80 flex items-center justify-center text-center">
+  <section class="relative z-10  h-screen-80 flex items-center justify-center text-center">
 
-  <img
-    src="/images/hero.jpg"
-    class="absolute inset-0 w-full h-full object-cover"
-  />
+    <img
+      src="/images/hero.jpg"
+      class="absolute inset-0 w-full h-full object-cover"
+    />
 
-  <div class="absolute inset-0 bg-black/60"></div>
+    <div class="absolute inset-0 bg-black/60"></div>
 
-  <div class="relative z-10 max-w-3xl px-6 text-white">
+    <div class="relative z-10 max-w-3xl px-6 text-white">
 
-    <h1 class="text-2xl md:text-4xl font-semibold leading-tight">
-      Find Your Perfect Property in Nigeria
-    </h1>
+      <h1 class="text-3xl md:text-4xl font-semibold leading-tight">
+        Find Your Perfect Property in Nigeria
+      </h1>
 
-    <p class="mt-1 text-lg text-gray-200">
-      Buy land • Sell houses • Rent apartments • Discover great deals
-    </p>
-
-    <!-- SEARCH -->
-
-    <div class="mt-8 bg-white rounded-lg shadow-xl p-2 flex flex-col md:flex-row gap-3">
-
-      <input
-        v-model="search"
-        placeholder="Search land, houses, agents..."
-        class="flex-1 px-2 py-1 outline-none text-gray-700"
-      />
-
-      <button
-        class=" bg-secondary text-white px-6 h-fit  py-2 rounded-lg font-medium hover:bg-secondary/80"
+      <p class="mt-1 text-sm  sm:text-lg text-gray-200">
+        Buy land • Sell houses • Rent apartments • Discover great deals
+      </p>
+          <!-- PLACEHOLDER -->
+      <div v-if="isFixed" class="h-[90px]"></div>
+      <!-- SEARCH -->
+      <div v-if="!isFixed"  class=""   ref="searchRef"
+          
       >
-        Search
-      </button>
+          <div class="mt-8     bg-white  overflow-hidden rounded-lg -xl shadow-xl p- flex ">
+            <div class="  w-8  flex justify-center items-center  h-12  -0">
+              
+              <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-5" srcset="">
+            </div>
+            <input
+              v-model="search"
+              placeholder="Search land, houses, agents..."
+              class="flex-1   outline-none text-gray-700"
+            />
+            <div class="  -0">
+              
+              <button  @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                  <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                  <p>Filter</p> 
+                </button>
+            </div>
+            
+
+          </div>
+          <div class="flex gap-3  items-center justify-center  flex-wrap mt-7">
+              <button
+              v-for="c in categories"
+              :key="c"
+              @click="category = c"
+              class="px-4 py-2 rounded text-sm"
+              :class="category === c ? 'bg-secondary text-white' : ' bg-white/40 text'"
+            >
+              {{ c }}
+            </button>
+          </div>
+      </div> 
+      
 
     </div>
-    <div class="flex gap-3  mt-7">
-      <button
-      v-for="c in categories"
-      :key="c"
-      @click="category = c"
-      class="px-4 py-2 rounded text-sm"
-      :class="category === c ? 'bg-secondary text-white' : ' bg-white/40 text'"
-    >
-      {{ c }}
-    </button>
-    </div>
-        
 
-  </div>
+  </section>
 
-</section>
+
 
   <!-- FILTERS -->
   <section class="p-6 flex flex-wrap gap-3">
@@ -533,82 +605,102 @@ watch([search, location, category], () => {
 
   <!-- CARDS -->
   <section class="">
-    <Container class="  grid md:grid-cols-3 gap-6">
-      <div
-        v-for="item in displayedResults"
-        :key="item.id"
-        class="border rounded-xl shadow hover:shadow-lg transition overflow-hidden"
-      >
+    <Container>
+      <div class=" text-secondary">
+        <UiTypographyH3><span class=" text-secondary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
+          <div  class=" flex justify-between items-center py-3">
+            <p  class="  sm:text-lg text-sm "> <span class="font-semibold ">10000</span> results </p> 
+            <div class=" flex ">
+              <div class="flex gap-3  overflow-x-auto  px-1 py-1 ">
+                  <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
+                    <img src="@/assets/images/icons/suggest.svg" class=" w-4" alt=""> Suggested
+                   </button>
 
-        <!-- IMAGE SLIDER -->
-        <div class="relative">
-
-          <!-- badge -->
-          <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
-            FOR {{ item.purpose.toUpperCase() }}
-          </span>
-
-          <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
-            {{ item.category }}
-          </span>
-
-          <Swiper
-            :modules="[Pagination]"
-            :pagination="{ clickable: true }"
-          >
-            <SwiperSlide v-for="img in item.images" :key="img">
-              <div
-                class="h-44 bg-cover bg-center"
-                :style="{ backgroundImage: `url(${img})` }"
-              />
-            </SwiperSlide>
-          </Swiper>
-
-        </div>
-
-        <!-- CONTENT -->
-        <div class="p-4 text-sm">
-          <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
-
-              <img
-                src="/image/profile.webp"
-                class="w-12 h-12 rounded-full object-cover"
-              />
-
-              <div class=" text-xs ">
-                <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
-                <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
-                
+                    <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
+                    <img src="@/assets/images/icons/map.svg" class=" w-4" alt=""> Map
+                   </button>
               </div>
-
             </div>
+          </div>
+      </div>
+             
+      <div class="  grid md:grid-cols-3 gap-6">
+        <div
+          v-for="item in displayedResults"
+          :key="item.id"
+          class="border rounded-xl shadow hover:shadow-lg transition overflow-hidden"
+        >
 
-          <h2 class="font-semibold">
-            {{ item.title }}
-          </h2>
+          <!-- IMAGE SLIDER -->
+          <div class="relative">
 
-          <p class="text-gray-500">
-            {{ getLocationLabel(item.location) }}
-          </p>
+            <!-- badge -->
+            <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
+              FOR {{ item.purpose.toUpperCase() }}
+            </span>
 
-          <p class="text-primary font-bold mt-1">
-            {{ getPriceLabel(item) }}
-          </p>
+            <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
+              {{ item.category }}
+            </span>
 
-          <!-- hide for land -->
-          <div
-            v-if="item.category !== 'Land'"
-            class="flex gap-3 mt-2 text-xs"
-          >
-            <span>{{ item.beds }} Beds</span>
-            <span>{{ item.baths }} Baths</span>
-            <span>{{ item.toilets }} Toilets</span>
+            <Swiper
+              :modules="[Pagination]"
+              :pagination="{ clickable: true }"
+            >
+              <SwiperSlide v-for="img in item.images" :key="img">
+                <div
+                  class="h-44 bg-cover bg-center"
+                  :style="{ backgroundImage: `url(${img})` }"
+                />
+              </SwiperSlide>
+            </Swiper>
+
           </div>
 
-          <button c[lass="mt-3 w-full bg-primary text-white py-2 rounded">
-            View Details
-          </button>
+          <!-- CONTENT -->
+          <div class="p-4 text-sm">
+            <!-- <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
 
+                <img
+                  src="/image/profile.webp"
+                  class="w-12 h-12 rounded-full object-cover"
+                />
+
+                <div class=" text-xs ">
+                  <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
+                  <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
+                  
+                </div>
+
+              </div> -->
+
+            <h2 class="font-semibold">
+              {{ item.title }}
+            </h2>
+
+            <p class="text-gray-500">
+              {{ getLocationLabel(item.location) }}
+            </p>
+
+            <p class="text-primary font-bold mt-1">
+              {{ getPriceLabel(item) }}
+            </p>
+
+            <!-- hide for land -->
+            <div
+              v-if="item.category !== 'Land'"
+              class="flex gap-3 mt-2 text-xs"
+            >
+              <span>{{ item.beds }} Beds</span>
+              <span>{{ item.baths }} Baths</span>
+              <span>{{ item.toilets }} Toilets</span>
+            </div>
+
+            <button c[lass="mt-3 w-full bg-primary text-white py-2 rounded">
+              View Details
+            </button>
+
+          </div>
         </div>
       </div>
     </Container>

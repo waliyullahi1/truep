@@ -1,7 +1,7 @@
 <template>
   <NuxtLink :to="url" v-if="url"
     :class="linkClasses"
-    class="py-2 px-5 text-white  font-normal text-base 2xl:text-lg justify-center  active:bg-primary outline-none"
+    class="py-1 px-5 rounded-sm text-white  font-normal text-base 2xl:text-lg justify-center  active:bg-primary outline-none"
     :style="(loading || disabled) ? '' : 'transition: background-color 500ms ease-in-out, opacity 500ms ease-in-out;'"
     :disabled="loading || disabled"
   >
@@ -56,7 +56,7 @@ export default {
     baseClasses() {
       return [
         // Layout
-        this.flexdisplay ? 'flex w-full items-center gap-3' : 'block w-fit'
+        this.flexdisplay ? 'flex rounded-xl w-full items-center gap-3' : 'block w-fit'
       ].filter(Boolean).join(' ')
     },
 
@@ -72,7 +72,7 @@ export default {
       return [
         this.baseClasses,
         // Normal state with hover effects
-        this.standout ? 'bg-primary hover:bg-opacity-80 focus:bg-opacity-80' : 'bg-secondary hover:bg-primary focus:bg-primary'
+        this.standout ? 'bg-primary hover:bg-opacity-80 focus:bg-opacity-80' : ' rounded-md bg-primary focus:bg-primary'
       ].filter(Boolean).join(' ')
     },
 
@@ -81,7 +81,7 @@ export default {
         return [
           this.baseClasses,
           // Disabled/loading state - no transitions, no hover effects
-          this.loading ? 'bg-primary cursor-wait' : 'bg-accent-300 text-accent-500 cursor-not-allowed pointer-events-none'
+          this.loading ? 'bg-primary cursor-wait' : ' bg-primary text-accent-500 cursor-not-allowed  pointer-events-none'
         ].filter(Boolean).join(' ')
       }
 

@@ -2,44 +2,45 @@
   <footer class="border-t bg-primary text-white border-accent-200 w-full">
 
     <Container :addTopBottomPadding="false" class="border-t border-accent-200 py-6 sm:flex block items-center justify-between">
-    <div class="grid md:grid-cols-4 sm:grid-cols-2  grid-cols-1   gap-4 ">
+    <div class="sm:grid md:flex sm:grid-cols-2  w-full  grid-cols-1  justify-between   gap-4 ">
 
-      <div class="  ">
+      <div to="/search"  class="  ">
         <img src="" />
-        <p class=" text-[16px] tracking-wide font-bold ">CONTACT INFORMATION</p>
+        <p class=" text-[17px] tracking-wide font-medium  "> Buyers & Renters</p>
         <div>
           
-          <div class="flex mt-4 gap-4">
-            <img src="@/assets/images/call.svg" class="w-3" />
-             <p class=" text-[15px]"> 090232345678</p>
-          </div>
+          <NuxtLink to="/search"  class="flex mt-4 gap-4">
+              <p class=" text-[15px]"> Search rental properties</p>
+          </NuxtLink>
 
-          <div class="flex mt-4 gap-4">
-            <img src="@/assets/images/message.svg" class="w-5" />
-             <p class=" text-[15px] font-bold"> info@unilorin.com</p>
-          </div>
+          <NuxtLink to="/auth?type=register-page"  class="flex mt-4 gap-4">
+          
+              <p class=" text-[15px] ">Create search agent</p>
+          </NuxtLink>
 
-          <div class="flex mt-4 gap-4">
-            <img src="@/assets/images/location.svg" class="w-4" />
-             <p class=" text-[14px] "> Km 12, Ilorin  Expressway, Ilroin, Kwara.</p>
-          </div>
+          <NuxtLink to="/search"  class="flex mt-4 gap-4">
+          
+              <p class=" text-[14px] "> FAQ</p>
+          </NuxtLink>
 
         </div>
       </div>
 
+      
+
       <div class="  ">
         
-        <p class=" text-[16px] tracking-wide font-bold ">ADMISSIONS</p>
+        <p class=" text-[16px] tracking-wide font-medium  ">Landlords & portals</p>
         <div>
           
-          <div class="flex mt-4 gap-4">
-             <p class=" text-[15px]"> Enquiries can be made from Monday to Friday between the hours of 8am to 5pm. Excluding public holidays.</p>
-          </div>
+          <NuxtLink to="/auth" class="flex mt-4 gap-4">
+             <p class=" text-[15px]"> Partnerships for portals</p>
+          </NuxtLink>
+           <NuxtLink to="/auth"  class="flex mt-4 gap-4">
+             <p class=" text-[15px]"> Partnerships for landlords</p>
+          </NuxtLink>
 
-          <div class="flex mt-4 gap-1">
-            <img src="@/assets/images/message.svg" class="w-5" />
-             <p class=" text-[15px] font-bold"> info@uniilorin.com</p>
-          </div>
+         
 
           
 
@@ -48,24 +49,26 @@
 
       <div class="   ">
         
-        <p class=" text-[16px] tracking-wide font-bold ">ABOUT US</p>
+        <p class=" text-[17px] tracking-wide font-medium ">About</p>
         <div class="mt-4 space-y-2">
           
           <div class="flex gap-4">
-             <p class=" text-[13px]"> FACILITIES</p>
+             <NuxtLink to="/about-us" class=" text-[13px]"> About us</NuxtLink>
           </div>
           <div class="flex gap-4"> 
-             <p class=" text-[13px]">  VISION & MISSION</p>
+             <NuxtLink  to="/terms-and-conditions" class=" text-[13px]"> Terms and conditions</NuxtLink>
           </div>
-          <div class="flex  gap-4"> 
-             <p class=" text-[13px]">  CORE VALUES</p>
-          </div>
-           <div class="flex4 gap-4"> 
-             <p class=" text-[13px]">  LEADERSHIP</p>
-          </div>
-           <div class="flex  gap-4"> 
-             <p class=" text-[13px]">  FAQs</p>
-          </div>
+          <NuxtLink to="/privacy-policy" class="flex  gap-4"> 
+             <p class=" text-[13px]">  Privacy policy</p>
+          </NuxtLink>
+           <NuxtLink to="/contact-us"  class="flex  gap-4"> 
+             <p class=" text-[13px]">  Contact us</p>
+          </NuxtLink>
+          
+
+          <NuxtLink to="/Privacy-policy" class="flex  gap-4"> 
+             <p class=" text-[13px]">  Cookie Settings</p>
+          </NuxtLink>
           
         
         </div>
@@ -73,22 +76,15 @@
 
        <div class="  ">
         
-        <p class=" text-[16px] tracking-wide font-bold ">ACADEMICS</p>
+        <p class=" text-[16px] tracking-wide font-medium  ">Language</p>
         <div class="mt-4 space-y-2">
           
           <div class="flex gap-4">
-             <p class=" text-[14px]"> Curriculum</p>
-          </div>
-          <div class="flex gap-4"> 
-             <p class=" text-[14px]"> Library</p>
+             <p class=" text-[14px]"> English</p>
           </div>
           
-           <div class="flex4 gap-4"> 
-             <p class=" text-[14px]">  Clubs</p>
-          </div>
-           <div class="flex  gap-4"> 
-             <p class=" text-[14px]">  Electives</p>
-          </div>
+          
+          
           
         
         </div>

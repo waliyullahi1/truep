@@ -695,7 +695,7 @@ const submit =  async() => {
   submitloading.value = true
         if (!verified.value) {
           
-        $toast.error("Pls Click Verify Identity or Business to before you can procced ")
+         $toast.error("Pls Click Verify Identity or Business to before you can procced ")
          submitloading.value = false
          return
       }

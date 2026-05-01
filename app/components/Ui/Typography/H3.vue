@@ -1,5 +1,5 @@
 <template>
-  <h3 :class="[color==='secondary' ? 'text-secondary' : color==='white' ? 'text-white' : color === 'primary' ? 'text-primary': 'text-neutral-800', size==='default' ? 'text-2xl' : 'text-2xl md:text-3xl 2xl:text-4xl']"><slot/></h3>
+  <h3 :class="[color==='secondary' ? 'text-secondary' : color==='white' ? 'text-white' : color === 'primary' ? 'text-primary': 'text-neutral-800', size==='default' ? 'text-md' : 'text-xl md:text-2xl 2xl:text-xl']"><slot/></h3>
 </template>
 <script>
   export default {

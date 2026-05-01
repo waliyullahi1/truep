@@ -1,8 +1,8 @@
 <script setup>
-definePageMeta({
-  layout: 'main',
-  fixed: false
-})
+// definePageMeta({
+//   layout: 'main',
+//   fixed: false
+// })
 
 import { ref, reactive, watch } from 'vue'
 import { useRouter, useRoute, useRuntimeConfig } from '#app'
@@ -235,22 +235,30 @@ watch(
     </div>
     
     <div class=" w-full min-h-screen    pb-6 l   bg-black/80 ">
-
-    
-      <div class=" pt-14 flex justify-center ">
-      <div v-if="!isregisterpage" class=" sm:max-w-md w-full px3   bg-white rounded-sm shadow-lg p-2 sm:p-8">
-          <div  v-if="!otpverify" >
         
-            <p class="text-xl font-semibold   ">
-            Sign in to your account
-            </p>
-            <p class=" mb-8 text-gray-600 text-sm">
-              Don’t have an account?  
+    
+      <div class="  h-full flex justify-end ">
+      <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3  min-h-screen  bg-white rounded-sm shadow-lg p-2 sm:p-8">
+          <div  v-if="!otpverify" >
+           
+          <NuxtLink to="/" >
+            <p class=" font-semibold  hover:text-primary cursor-pointer"> < Back </p>
+          </NuxtLink>
+             <div class=" flex flex-col justify-center items-center">
+                 <img src="/images/unilorin.png" alt="">
+               <p class="text-xl font-semibold   ">
+                Sign in to your account
+                </p>
+                 <p class=" mb-8 text-gray-600 text-sm">
+                  Don’t have an account?  
               
-              <button @click="handlechangepage" class=" text-left  underline cursor-pointer  hover:text-primary text-sm ">
+                   <button @click="handlechangepage" class=" text-left  underline cursor-pointer  hover:text-primary text-sm ">
                     Join here
                   </button>
-            </p>
+                  </p>
+              </div>
+           
+           
 
             <!-- Form -->
             <form @submit.prevent="handlelogin"  class="space-y-7">
@@ -327,18 +335,26 @@ watch(
           </div>
       </div>
 
-       <div v-if="isregisterpage" class=" sm:max-w-md w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
+       <div v-if="isregisterpage" class=" sm:max-w-xl  w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
         <div v-if="!otpverify" class="">
-           <p class="text-xl font-semibold   ">
-            Create a new account
-            </p>
-            <p class=" mb-8 text-gray-600 text-sm">
+           <NuxtLink to="/" >
+            <p class=" font-semibold  hover:text-primary cursor-pointer"> < Back </p>
+          </NuxtLink>
+          <div class=" flex justify-center items-center  flex-col">
+             <img src="/images/unilorin.png" alt="">
+              <p class="text-xl font-semibold   ">
+                Create a new account
+               </p>
+                <p class=" mb-8 text-gray-600 text-sm">
               Already have an account? 
               
               <button @click="handlechangepage" class=" text-left  underline cursor-pointer  hover:text-primary text-sm ">
                     Sign in
                   </button>
             </p>
+          </div>
+         
+           
 
             <!-- Form -->
             <form @submit.prevent="handleregister(1)" class="space-y-7">

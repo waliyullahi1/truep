@@ -1,198 +1,190 @@
-
 <template>
   <div class="p-4">
-    <Container>
-      <div class="masonry">
-        <div
-          v-for="image in images"
-          :key="image.id"
-          class="masonry-item group relative overflow-hidden rounded-xl"
-        >
-          <!-- IMAGE -->
-          <img
-            :src="image.src"
-            :alt="image.alt"
-            class="w-full object-cover rounded-xl"
-          />
+    
+    <div class="grid">
+      <button @click="router.push('/search')"
+        v-for="(image, index) in images"
+        :key="image.id"
+        :class="getCardClass(image, index)"
+      >
+        <!-- IMAGE -->
+        <img :src="image.src" :alt="image.state" />
 
-          <!-- OVERLAY -->
-          <div
-            class="absolute inset-0  
-                   group-hover:opacity-100 transition from-black/60 to-transparent duration-300
-                   "
-          >
-            <div class="p-4 flex from-black/50 bg-gradient-to-t to-transparent  flex-col  justify-between h-full  text-white">
-              <div class="text-sm -translate-y-10 group-hover:-translate-y-0 duration-200  w-full flex justify-between font-semibold">
-                <UiTypographyP ><span class="  text-xs">{{ image.category }}</span></UiTypographyP>
-                <img src="/image/icon/message.svg" alt="" class=" group-hover:scale-105 w-5" srcset="">
+        <!-- OVERLAY -->
+        <div class="overlay">
+          <div class=" flex flex-col sn:p-4 p-2  items-start  ">
+
+            <div class="flex  items-start justify-start gap-2 text-white text-sm">
+              <div class=" w-4 h-4">
+                <img src="@/assets/images/icons/location.svg" class="w-4 h-4" />
               </div>
-              <div class="  leading-3">
-                <p class="   text-xs/4  lea mt-1 text-gray-200">
-               <strong>Service :</strong> {{image.service}} 
-                  <br>
-                <span class=" translate-y-16">By <strong>  {{image.provider}}</strong>  </span>
-                </p>
-              </div>
-              
+              <UiTypographyP class=" text-left">{{ image.city }}</UiTypographyP>
             </div>
+
+            <span class=" text-white">
+              {{ image.state }}
+            </span>
+
           </div>
         </div>
-      </div>
-    </Container>
+      </button>
+    </div>
+   
   </div>
 </template>
-
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
+const isMobile = ref(false)
+
+const checkScreen = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+  checkScreen()
+  window.addEventListener('resize', checkScreen)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkScreen)
+})
+
+const getCardClass = (image, index) => {
+  if (isMobile.value) {
+    // 👉 mobile: only 3rd item becomes wide
+    return ['card', index === 2 ? 'wide' : '']
+  }
+
+  // 👉 desktop: use original layout
+  return ['card', image.layout]
+}
 
 const images = [
- 
+  {
+    id: 1,
+    src: "/image/ibadan.webp",
+    state: "Ibadan",
+    layout: "tall",
+    city: "The ancient city"
+  },
   {
     id: 2,
-    src: "/images/land2.jpg",
-    alt: "Plumbing work",
-    service: "Pipe Installation & Repair",
-    provider: "Samuel Plumbing",
-    category: "Plumber"
-  },
-  
-
- 
-  {
-    id: 6,
-    src: "/images/land1.jpg",
-    alt: "Carpentry work",
-    service: "Woodwork & Roofing",
-    provider: "Master Carpenter",
-    category: "Carpenter"
+    src: "/image/abuja.webp",
+    state: "Abuja",
+    layout: "wide",
+    city: "Federal Capital"
   },
   {
-    id: 7,
-    src: "/images/land2.jpg",
-    alt: "Bathroom plumbing",
-    service: "Bathroom Plumbing Setup",
-    provider: "AquaFix Services",
-    category: "Plumber"
-  },
-
-  {
-    id: 9,
-    src: "/images/land2.jpg",
-    alt: "Wardrobe furniture",
-    service: "Wardrobe & Cabinet Making",
-    provider: "Elite Furnish",
-    category: "Furniture"
-  },
-  
-  {
-    id: 12,
-    src: "/images/land2.jpg",
-    alt: "Water tank installation",
-    service: "Water Tank Installation",
-    provider: "FlowMaster",
-    category: "Plumber"
-  },
-  
-  {
-    id: 18,
-    src: "/images/land2.jpg",
-    alt: "CCTV installation",
-    service: "CCTV & Security Setup",
-    provider: "SecureTech",
-    category: "Electrician"
+    id: 3,
+    src: "/image/ph.png",
+    state: "Port Harcourt",
+    city: "Garden City of Nigeria",
+    layout: "tall"
   },
   {
-    id: 19,
-    src: "/images/land1.jpg",
-    alt: "Bed frame",
-    service: "Bed Frame & Interior Fit",
-    provider: "Comfort Wood",
-    category: "Furniture"
+    id: 4,
+    src: "/image/osun.png",
+    state: "Osun",
+    city: "Coal City State"
   },
   {
-    id: 20,
-    src: "/images/land1.jpg",
-    alt: "Wall finishing",
-    service: "Decorative Wall Finishing",
-    provider: "ArtWalls",
-    category: "Painter"
-  },
-
-  {
-    id: 21,
-    src: "/images/land1.jpg",
-    alt: "Bathroom tiles",
-    service: "Bathroom Tile Installation",
-    provider: "TilePro",
-    category: "Tiler"
-  },
-  {
-    id: 22,
-    src: "/images/land2.jpg",
-    alt: "Foundation work",
-    service: "Foundation Construction",
-    provider: "BuildRight",
-    category: "Bricklayer"
-  },
-  {
-    id: 23,
-    src: "/images/land1.jpg",
-    alt: "Door fixing",
-    service: "Door & Frame Installation",
-    provider: "FineCraft",
-    category: "Carpenter"
-  },
-  {
-    id: 24,
-    src: "/images/land2.jpg",
-    alt: "Roof repair",
-    service: "Roof Maintenance",
-    provider: "SafeCover",
-    category: "Roofer"
-  },
-  {
-    id: 25,
-    src: "/images/land1.jpg",
-    alt: "Meter installation",
-    service: "Prepaid Meter Installation",
-    provider: "PowerLink",
-    category: "Electrician"
-  },
- 
- 
-
-  
+    id: 5,
+    src: "/image/lagos.webp",
+    state: "Lagos",
+    city: "Nigeria's commercial hub"
+  }
 ]
-
-
 </script>
-
 <style scoped>
-.masonry {
-  column-count: 4;
-  column-gap: 1rem;
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  gap: 16px;
 }
 
-.masonry-item {
-  break-inside: avoid;
-  margin-bottom: 1rem;
+/* CARD */
+.card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-/* Responsive */
-@media (max-width: 1280px) {
-  .masonry {
-    column-count: 4;
+/* IMAGE */
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* OVERLAY */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+ 
+  transition: opacity 0.3s ease;
+}
+
+/* HOVER EFFECT */
+.card:hover .overlay {
+  opacity: 1;
+}
+
+/* CONTENT */
+.overlay-content {
+  padding: 16px;
+  width: 100%;
+}
+
+/* TEXT */
+.state {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+/* SLIDE UP TEXT */
+.card:hover .state {
+  transform: translateY(0);
+}
+
+/* LAYOUT VARIANTS */
+.tall {
+  grid-row: span 2;
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .masonry {
-    column-count: 2;
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 180px;
   }
 }
 
 @media (max-width: 480px) {
-  .masonry {
-    column-count: 1;
+  .grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
