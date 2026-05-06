@@ -1,193 +1,221 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
-/* ================= PROPS ================= */
+/* ======================
+   PROPS
+====================== */
 const props = defineProps({
-  modelValue: { type: Object, required: true }
+  type: {
+    type: String,
+    default: 'land'
+  },
+  house: {
+    type: Object,
+    default: () => ({})
+  },
+  features: {
+    type: Array,
+    default: () => []
+  }
 })
 
-const emit = defineEmits(["update:modelValue"])
-
-/* ================= STATE ================= */
-const previews = ref(Array(8).fill(null)) // max 8 house images
-const videoPreview = ref(null)
-const titlePreview = ref(null)
-
-/* ================= HELPERS ================= */
-const updateParent = (data) => {
-  emit("update:modelValue", {
-    ...props.modelValue,
-    ...data
-  })
-}
-
-/* ================= CONDITIONS ================= */
+const emit = defineEmits(['update:house', 'update:features'])
 
 
-/* ================= IMAGE UPLOAD ================= */
-function handleImage(e, index) {
-  const file = e.target.files[0]
-  if (!file) return
+/* ======================
+   FEATURES DATA
+====================== */
 
-  const reader = new FileReader()
+/* LAND FEATURES */
+/* LAND FEATURES */
+const landFeatures = [
+  { key: 'dry', label: 'Dry Land', icon: '🌵' },
+  { key: 'roadAccess', label: 'Good Road Access', icon: '🛣️' },
+  { key: 'tarredRoad', label: 'Tarred Road', icon: '🚧' },
+  { key: 'fenced', label: 'Fenced', icon: '🧱' },
+  { key: 'tableLand', label: 'Flat/Table Land', icon: '📏' },
+  { key: 'electricity', label: 'Electricity Available', icon: '⚡' },
+  { key: 'waterSupply', label: 'Water Supply Nearby', icon: '💧' },
+  { key: 'drainage', label: 'Drainage System', icon: '🚿' },
+  { key: 'boreholePossible', label: 'Borehole Possible', icon: '🕳️' },
+  { key: 'gatedEstate', label: 'Inside Estate', icon: '🏘️' },
+  { key: 'security', label: 'Security Area', icon: '🛡️' },
+  { key: 'cornerPiece', label: 'Corner Piece', icon: '📍' },
+  { key: 'developedArea', label: 'Developed Neighborhood', icon: '🏙️' },
+  { key: 'sandFilled', label: 'Sand Filled', icon: '🏖️' },
+  { key: 'floodFree', label: 'Flood Free', icon: '🌊' },
+  { key: 'cleared', label: 'Cleared/Ready to Build', icon: '🧹' },
+  { key: 'rocky', label: 'Rocky Soil', icon: '🪨' }
+]
 
-  reader.onload = () => {
-    previews.value[index] = reader.result
+/* HOUSE NUMBER FEATURES */
+const houseFeatures = [
+  { key: 'bedroom', label: 'Bedrooms', icon: '🛏️' },
+  { key: 'bathroom', label: 'Bathrooms', icon: '🛁' },
+  { key: 'sittingRoom', label: 'Living Rooms', icon: '🛋️' },
+  { key: 'parking', label: 'Parking', icon: '🚗' },
+  { key: 'toilet', label: 'Toilets', icon: '🚽' },
+  { key: 'swimmingPool', label: 'Swimming Pools', icon: '🏊' }
+]
 
-    const images = [...(props.modelValue.media?.images || [])]
-    images[index] = file
+/* HOUSE BOOLEAN FEATURES */
+const otherHouseFeatures = [
+  { key: 'airConditioning', label: 'Air Conditioning', icon: '❄️' },
+  { key: 'borehole', label: 'Borehole Water', icon: '💧' },
+  { key: 'popCeiling', label: 'POP Ceiling', icon: '🏠' },
+  { key: 'tiledFloor', label: 'Tiled Floor', icon: '🧱' },
+  { key: 'kitchenCabinet', label: 'Kitchen Cabinet', icon: '🍳' },
+  { key: 'electricity', label: 'Stable Electricity', icon: '⚡' },
+  { key: 'generator', label: 'Generator', icon: '🔌' },
+  { key: 'solarPower', label: 'Solar Power', icon: '☀️' },
+  { key: 'waterHeater', label: 'Water Heater', icon: '🔥' },
+  { key: 'drainage', label: 'Good Drainage', icon: '🚿' },
+  { key: 'wardrobe', label: 'Wardrobe', icon: '👕' },
+  { key: 'balcony', label: 'Balcony', icon: '🏡' },
+  { key: 'storeRoom', label: 'Store Room', icon: '📦' },
+  { key: 'security', label: 'Security Guard', icon: '🛡️' },
+  { key: 'cctv', label: 'CCTV Cameras', icon: '📹' },
+  { key: 'gatedEstate', label: 'Gated Estate', icon: '🏘️' }
+]
 
-    updateParent({
-      media: {
-        ...props.modelValue.media,
-        images
-      }
+/* ======================
+   COMPUTED
+====================== */
+const featuresList = computed(() =>
+  props.type === 'house' ? houseFeatures : landFeatures
+)
+
+/* ======================
+   METHODS
+====================== */
+
+/* TOGGLE BOOLEAN FEATURE */
+const toggleFeature = (feature) => {
+  const exists = props.features.find(f => f.key === feature.key)
+
+  let newFeatures = [...props.features]
+
+  if (exists) {
+    newFeatures = newFeatures.filter(f => f.key !== feature.key)
+  } else {
+    newFeatures.push({
+      key: feature.key,
+      label: feature.label,
+      icon: feature.icon,
+      value: true
     })
   }
 
-  reader.readAsDataURL(file)
+  emit('update:features', newFeatures)
 }
 
-/* ================= VIDEO ================= */
-function handleVideo(e) {
-  const file = e.target.files[0]
-  if (!file) return
+/* HANDLE NUMBER INPUT → HOUSE OBJECT */
+const handleNumberInput = (feature, value) => {
+  const newHouse = { ...props.house }
 
-  videoPreview.value = URL.createObjectURL(file)
-
-  updateParent({
-    media: {
-      ...props.modelValue.media,
-      video: file
-    }
-  })
-}
-
-/* ================= TITLE DOC ================= */
-function handleTitle(e) {
-  const file = e.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-
-  reader.onload = () => {
-    titlePreview.value = reader.result
-
-    updateParent({
-      documents: {
-        ...props.modelValue.documents,
-        titleDocument: file
-      }
-    })
+  if (value !== null && value !== '' && value >= 0) {
+    newHouse[feature.key] = value
+  } else {
+    delete newHouse[feature.key]
   }
 
-  reader.readAsDataURL(file)
-}
-
-/* ================= REMOVE ================= */
-function removeImage(index) {
-  previews.value[index] = null
-
-  const images = [...(props.modelValue.media?.images || [])]
-  images[index] = null
-
-  updateParent({
-    media: {
-      ...props.modelValue.media,
-      images
-    }
-  })
-}
-
-function removeVideo() {
-  videoPreview.value = null
-
-  updateParent({
-    media: {
-      ...props.modelValue.media,
-      video: null
-    }
-  })
-}
-
-function removeTitle() {
-  titlePreview.value = null
-
-  updateParent({
-    documents: {
-      ...props.modelValue.documents,
-      titleDocument: null
-    }
-  })
+  emit('update:house', newHouse)
 }
 </script>
+
+
 <template>
-<div class="space-y-10">
+  <div class="border w-full p-5 rounded-xl shadow space-y-6">
 
-  <!-- 🏠 HOUSE IMAGES -->
-  <div>
-    <h2 class="section-title">House Images (min 5)</h2>
-    <p class="text-gray-500 mb-6">
-      Living room, bedroom, kitchen, bathroom, exterior
-    </p>
+    <!-- TITLE -->
+    <h2 class="text-lg font-semibold">
+      {{ type === 'house' ? 'House Features' : 'Land Features' }}
+    </h2>
 
-    <div class="flex flex-wrap gap-6">
-      <div v-for="(img,index) in previews" :key="index"
-           class="relative w-60 h-48 border border-dashed rounded flex items-center justify-center">
-
-        <img v-if="img" :src="img" class="w-full h-full object-cover"/>
-
-        <div v-else class="text-center">
-          <p class="text-xs">Upload Image</p>
-        </div>
-
-        <input type="file" accept="image/*" class="hidden"
-               :id="'img-'+index"
-               @change="handleImage($event,index)" />
-
-        <label :for="'img-'+index" class="absolute inset-0 cursor-pointer"></label>
-
-        <button v-if="img" @click="removeImage(index)"
-                class="absolute top-2 right-2 bg-black text-white w-6 h-6 rounded-full">✕</button>
+    <!-- ================= LAND ================= -->
+    <div v-if="type === 'land'" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div
+        v-for="f in featuresList"
+        :key="f.key"
+        class="feature-card"
+        :class="{ active: features.some(v => v.key === f.key) }"
+        @click="toggleFeature(f)"
+      >
+        <span>{{ f.icon }} {{ f.label }}</span>
+        <span v-if="features.some(v => v.key === f.key)">✓</span>
       </div>
     </div>
-  </div>
 
-  <!-- 🎥 VIDEO -->
-  <div class="border-t pt-10">
-    <h2 class="section-title">Video (Optional)</h2>
+    <!-- ================= HOUSE ================= -->
+    <div v-if="type === 'house'" class="space-y-6">
 
-    <div class="w-60 h-48 border flex items-center justify-center relative">
-      <video v-if="videoPreview" :src="videoPreview" controls class="w-full h-full"/>
-      
-      <input type="file" accept="video/*" class="hidden" id="video"
-             @change="handleVideo"/>
+      <!-- NUMBER INPUTS -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div v-for="f in houseFeatures" :key="f.key">
+          <label class="text-sm text-gray-500">
+            {{ f.icon }} {{ f.label }}
+          </label>
 
-      <label for="video" class="absolute inset-0 cursor-pointer"></label>
+          <input
+            type="number"
+            min="0"
+            :value="house[f.key] || ''"
+            @input="handleNumberInput(f, $event.target.valueAsNumber)"
+            class="input mt-1"
+          />
+        </div>
+      </div>
 
-      <button v-if="videoPreview" @click="removeVideo"
-              class="absolute top-2 right-2 bg-black text-white w-6 h-6 rounded-full">✕</button>
+      <!-- BOOLEAN FEATURES -->
+      <div>
+        <h3 class="font-semibold mb-3">Other Features</h3>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div
+            v-for="f in otherHouseFeatures"
+            :key="f.key"
+            class="feature-card"
+            :class="{ active: features.some(v => v.key === f.key) }"
+            @click="toggleFeature(f)"
+          >
+            <span>{{ f.icon }} {{ f.label }}</span>
+            <span v-if="features.some(v => v.key === f.key)">✓</span>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
 
-  <!-- 📄 TITLE DOC (ONLY FOR SALE) -->
-  <div v-if="isSale" class="border-t pt-10">
-    <h2 class="section-title">Title Document (Required for Sale)</h2>
-
-    <div class="w-60 h-48 border flex items-center justify-center relative">
-
-      <img v-if="titlePreview" :src="titlePreview" class="w-full h-full object-cover"/>
-
-      <input type="file" accept="image/*,application/pdf"
-             class="hidden" id="title"
-             @change="handleTitle"/>
-
-      <label for="title" class="absolute inset-0 cursor-pointer"></label>
-
-      <button v-if="titlePreview" @click="removeTitle"
-              class="absolute top-2 right-2 bg-black text-white w-6 h-6 rounded-full">✕</button>
+    <!-- NO TYPE -->
+    <div
+      v-if="!type"
+      class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500"
+    >
+      <p class="text-lg font-medium">No property selected</p>
+      <p class="text-sm mt-1">Please select property type first.</p>
     </div>
-  </div>
 
-</div>
+  </div>
 </template>
+
+
+<style scoped>
+.input {
+  @apply w-full border rounded-lg px-4 py-2 text-sm
+         focus:outline-none focus:ring-2 focus:ring-black;
+}
+
+.feature-card {
+  @apply p-3 border rounded-lg cursor-pointer
+         flex justify-between items-center
+         bg-white transition;
+}
+
+.feature-card:hover {
+  @apply border-black;
+}
+
+.feature-card.active {
+  @apply bg-black text-white border-black;
+}
+</style>

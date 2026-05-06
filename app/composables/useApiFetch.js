@@ -9,7 +9,7 @@ export const useApiFetch = async (url, options = {}) => {
     const res = await $fetch(`${config.public.api_url}${url}`, {
       credentials: 'include',
       headers,
-      timeout: 20000,
+      timeout: 30000,
       retry: 0,
       ...options
     })

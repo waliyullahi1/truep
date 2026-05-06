@@ -9,6 +9,6 @@ const auth = useAuth()
    
     <slot />
 
-    <NavigationFooter />
+   
   </div>
 </template>

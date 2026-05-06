@@ -122,6 +122,9 @@
         </div>
       </Container>
     </section>
+
+
+  <NavigationFooter />
   </div>
 </template>
 

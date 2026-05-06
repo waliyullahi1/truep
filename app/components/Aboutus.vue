@@ -5,12 +5,12 @@ const current = ref(0)
 
 /* avatars (stay fixed) */
 const avatars = [
-  '/images/user1.jpg',
-  '/images/user2.jpg',
-  '/images/user3.jpg',
-  '/images/user4.jpg',
-  '/images/user5.jpg',
-  '/images/user6.jpg',
+  '/image/abuja.jpg',
+  '/image/bricklayer.jpg',
+  '/image/civil-servant.jpg',
+  '/image/electricians.jpg',
+  '/image/lagos.jpg',
+  '/image/painters.jpg',
 ]
 
 /* slides */

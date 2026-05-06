@@ -57,37 +57,7 @@
            <h2 class="  font-semibold text-2xl">Which type of  Property suits your needs?</h2>
 
              <div class=" flex  overflow-x-auto  gap-5 mt-4">
-                
-
-                 <button click="router.push('/search')"  class=" text-lg  gap-3 w-fit h-fit rounded-md p-3  bg-[#f9f9f9] items-center  flex ">
-                    <img  src="@/assets/images/icons/house_icon.svg" class=" w-8 text-red-600" alt=" House Icons"/>
-                    <p class=" text-[16px]  font-semibold">Houses</p>
-                </button>
-
-                 <button @click="router.push('/search')" class=" text-lg  gap-3 w-fit h-fit rounded-md p-3  bg-[#f9f9f9] items-center  flex ">
-                    <img  src="@/assets/images/icons/apartment.svg" class=" w-8 text-red-600" alt=" Apartment Icons"/>
-                    <p class=" text-[16px]  font-semibold">Apartments</p>
-                </button>
-
-                 <button @click="router.push('/search')" class=" text-lg  gap-3 w-fit h-fit rounded-md p-3  bg-[#f9f9f9] items-center  flex ">
-                    <img  src="@/assets/images/icons/room_icon.svg" class=" w-8 text-red-600" alt=" Rooms Icons"/>
-                    <p class=" text-[16px]  font-semibold">Rooms</p>
-                </button>
-
-                 <button @click="router.push('/search')"   class=" text-lg  gap-3 w-fit h-fit rounded-md p-3  bg-[#f9f9f9] items-center  flex ">
-                    <img  src="@/assets/images/icons/studios.svg" class=" w-8 text-red-600" alt=" Studio Icons"/>
-                    <p class=" text-[16px]  font-semibold">Studios</p>
-                </button>
-
-                 <button @click="router.push('/search')" class=" text-lg  gap-3 w-fit h-fit rounded-md p-3  bg-[#f9f9f9] items-center  flex ">
-                    <img  src="@/assets/images/icons/graduate_cap.svg" class=" w-8 text-red-600" alt=" graduate Icons"/>
-                    <p class=" text-[16px]  whitespace-nowrap  font-semibold">Student apartments</p>
-                </button>
-
-                <button  @click="router.push('/search')" class=" text-lg  gap-3 w-fit h-fit rounded-md p-3  bg-[#f9f9f9] items-center  flex ">
-                    <img  src="@/assets/images/icons/all-property.svg" class=" w-8 text-red-600" alt=" graduate Icons"/>
-                    <p class=" text-[16px]   whitespace-nowrap  font-semibold">All properties</p>
-                </button>
+                <DiscoverMore/>
              </div>
           </div>
         </Container>
@@ -295,7 +265,7 @@
 
     
 
-
+ <NavigationFooter />
        
   </div>
 </template>

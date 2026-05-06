@@ -8,12 +8,12 @@ const { $toast } = useNuxtApp()
 const propertyId = route.query?.id || ''
 
 const props = defineProps({
-
   purpose: {
     type: String,
     default: 'Sale'
   }
 })
+
 /* ======================
 STATE
 ====================== */
@@ -22,8 +22,21 @@ const previews = ref([null, null, null, null, null])
 const survey = ref(Array(3).fill(null))
 const titleDocs = ref(Array(3).fill(null))
 
-const loadingIndex = ref(null)
-const removingIndex = ref(null)
+// ✅ FIX: independent loaders
+const loadingMap = ref({})
+const removingMap = ref({})
+
+/* ======================
+CLOUDINARY OPTIMIZER
+====================== */
+function optimizeCloudinary(url, width = 600) {
+  if (!url || !url.includes('res.cloudinary.com')) return url
+
+  return url.replace(
+    '/upload/',
+    `/upload/f_auto,q_auto,w_${width},c_fill/`
+  )
+}
 
 /* ======================
 HELPER
@@ -34,23 +47,39 @@ function getState(type) {
   if (type === 'titleDocs') return titleDocs
 }
 
+/* ======================
+REFILL STATE
+====================== */
 function refillState(data) {
-  const imgs = data.images || []
+  const imgs = (data.images || []).map(f => ({
+    _id: f._id,
+    url: optimizeCloudinary(f.url),
+    original: f.url
+  }))
 
-  // Fill previews with images first
-  previews.value = imgs.map(img => img)
+  previews.value = imgs
 
-  // Add empty boxes if less than current length (so UI doesn't shrink)
   while (previews.value.length < Math.max(imgs.length, 3)) {
     previews.value.push(null)
   }
 
-  survey.value = Array.from({ length: 3 }, (_, i) => data.survey?.[i] || null)
-  titleDocs.value = Array.from({ length: 3 }, (_, i) => data.titleDocs?.[i] || null)
+  survey.value = Array.from({ length: 3 }, (_, i) => {
+    const item = data.survey?.[i]
+    return item
+      ? { _id: item._id, url: optimizeCloudinary(item.url) }
+      : null
+  })
+
+  titleDocs.value = Array.from({ length: 3 }, (_, i) => {
+    const item = data.titleDocs?.[i]
+    return item
+      ? { _id: item._id, url: optimizeCloudinary(item.url) }
+      : null
+  })
 }
 
 /* ======================
-UPLOAD
+UPLOAD (KEY FIX 🚀)
 ====================== */
 async function handleUpload(event, index, type) {
   const file = event.target.files[0]
@@ -64,11 +93,13 @@ async function handleUpload(event, index, type) {
   const state = getState(type)
   const key = `${type}-${index}`
 
-  loadingIndex.value = key
+  // ✅ independent loading
+  loadingMap.value[key] = true
 
-  // temp preview
+  // TEMP preview (isolated)
+  const tempUrl = URL.createObjectURL(file)
   state.value[index] = {
-    url: URL.createObjectURL(file),
+    url: tempUrl,
     temp: true
   }
 
@@ -81,10 +112,20 @@ async function handleUpload(event, index, type) {
       body: formData
     })
 
-    const data = res.data?.value || res.data
-    if (!data) throw new Error()
+    const response = res.data?.value || res.data
 
-    refillState(data)
+    // ✅ get latest uploaded item ONLY
+    const list = response?.data?.[type] || response?.data?.images || []
+    const latest = list[list.length - 1]
+
+    if (latest) {
+      state.value[index] = {
+        _id: latest._id,
+        url: optimizeCloudinary(latest.url),
+        original: latest.url
+      }
+    }
+
     $toast.success("Uploaded")
 
   } catch (err) {
@@ -93,11 +134,12 @@ async function handleUpload(event, index, type) {
     state.value[index] = null
   }
 
-  loadingIndex.value = null
+  loadingMap.value[key] = false
+  event.target.value = ''
 }
 
 /* ======================
-REMOVE
+REMOVE (KEY FIX 🚀)
 ====================== */
 async function removeImage(index, type) {
   const state = getState(type)
@@ -105,18 +147,17 @@ async function removeImage(index, type) {
   if (!img?._id) return
 
   const key = `${type}-${index}`
-  removingIndex.value = key
+  removingMap.value[key] = true
 
   try {
-    const res = await useApiFetch(`/property/image/${propertyId}`, {
+    await useApiFetch(`/property/image/${propertyId}`, {
       method: "DELETE",
       body: { id: img._id, type }
     })
 
-    const data = res.data?.value || res.data
-    if (!data) throw new Error()
+    // ✅ only clear that index (no reload!)
+    state.value[index] = null
 
-    refillState(data)
     $toast.success("Removed")
 
   } catch (err) {
@@ -124,10 +165,12 @@ async function removeImage(index, type) {
     $toast.error("Remove failed")
   }
 
-  removingIndex.value = null
+  removingMap.value[key] = false
 }
 
-
+/* ======================
+ADD IMAGE BOX
+====================== */
 function addImageBox() {
   if (previews.value.length >= MAX_IMAGES) {
     $toast.error("Maximum 10 images allowed")
@@ -136,39 +179,32 @@ function addImageBox() {
   previews.value.push(null)
 }
 
-const loadMedia = async () => {
-   if (!propertyId) return
-    try {
-    const response = await useApiFetch(`/property/images/${propertyId}`, {
-      method: 'GET'
-    })
-
-         const data = response.data?.value || response.data
-    if (data) refillState(data)
-  } catch (err) {
-    
-    $toast.error("Failed to load property")
-  }
-}
-await loadMedia()
 /* ======================
-FETCH EXISTING
+LOAD MEDIA
 ====================== */
-onMounted(async () => {
+const loadMedia = async () => {
   if (!propertyId) return
 
-  try {const res = await useApiFetch(`/property/images/${propertyId}`)
-    
-    const data = res.data?.value || res.data
-    if (data) refillState(data)
+  try {
+    const res = await useApiFetch(`/property/images/${propertyId}`)
+    const response = res.data?.value || res.data
+
+    if (response?.data) {
+      refillState(response.data)
+    }
+
   } catch (err) {
     console.error(err)
   }
+}
+
+/* ======================
+INIT
+====================== */
+onMounted(() => {
+  loadMedia()
 })
-
-
 </script>
-
 <template>
 <div class="min-h-screen py-10 px-4">
   <Container>
@@ -200,11 +236,11 @@ onMounted(async () => {
             class="hidden"
             :id="'upload-image-'+index"
             @change="handleUpload($event,index,'image')"
-            :disabled="loadingIndex === `image-${index}` || removingIndex === `image-${index}`"
+            :disabled="loadingMap[`image-${index}`] || removingMap[`image-${index}`]"
           />
 
           <div
-            v-if="loadingIndex === `image-${index}` || removingIndex === `image-${index}`"
+          v-if="loadingMap[`image-${index}`] || removingMap[`image-${index}`]"
             class="absolute inset-0 bg-black/40 flex items-center justify-center"
           >
             <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

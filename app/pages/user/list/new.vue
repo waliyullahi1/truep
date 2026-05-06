@@ -2,9 +2,9 @@
 <div>
   <div class="min-h-screen py-10 px-4">
     
-    
+    {{ form }}
   <Container>
-  {{form}}
+
       <!-- ✅ STEP PROGRESS -->
     <div class="mb-12 max-w-4xl mx-auto ">
       <div class="flex  items-center justify-between text-sm font-medium">
@@ -151,7 +151,7 @@
 
               <!-- FEATURES -->
               <div v-if="activeSection === 'features'">
-                <ListFeature :type="propertyType" v-model="form.features" />
+                <ListFeature :type="propertyType"  v-model:house="form.houseDetails" v-model="form.features" />
               </div>
 
               <!-- OTHERS -->
@@ -292,7 +292,7 @@
 
       <!-- ================= STEP 4 ================= -->
       <div v-if="step === 4">
-        <!-- <Webcan></Webcan> --> {{verify}}
+        <!-- <Webcan></Webcan> --> 
               <ListOwnershipSelector v-model:ownlistingType="form.ownership.listingType"  v-model:verified="verified"/> 
       </div>
 
@@ -384,7 +384,7 @@ ownership: {
   },
   paymentType: 'outright',
   landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
-  houseDetails: null,
+  houseDetails: {},
  
   media: { images: [], video: null },
   documents: { surveyPlan: null, titleDocument: null },
@@ -476,7 +476,7 @@ function onCategoryChange(e) {
   const value = e.target.value
   
     form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
-  form.value.houseDetails = null
+  form.value.houseDetails = {}
   form.value.features = []
   form.value.location.geometry = val === 'house' ? { type: 'Point', coordinates: [] } : { type: 'Polygon', coordinates: [] }
   form.value.pricing = { price: null, currency: "NGN", rentDuration: null, installment: false, installmentPlan: { months: null, monthlyAmount: null } }
@@ -637,7 +637,7 @@ const next = async () => {
       form.value.title = generatedTitle
     }
 
-    const response = await useApiFetch(`/property/${form.value.id || ''}`, {
+    const response = await useApiFetch(`/property/${form.value.id || 'undefine'}`, {
       method: 'POST',
       body: { details: form.value }
     })
@@ -647,10 +647,11 @@ const next = async () => {
           return
 
     }
-     console.log(response.data);
+     console.log(response.data.data);
      
      if (step.value === 3) {
-          const imageCount = response.data.media.files?.filter(f => f.type === 'image').length || 0
+
+          const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
           if (imageCount < 6) {
             return $toast.error("Please upload at least 6 images.")
           }

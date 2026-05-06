@@ -12,5 +12,5 @@ const fixed = computed(() => {
 <template>
   <NavigationNavbar :fixed="fixed" />
   <slot />
-  <NavigationFooter />
+
 </template>

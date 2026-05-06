@@ -214,6 +214,7 @@
        
       </Container>
     </section>
+   <NavigationFooter />
   </div>
 </template>
 

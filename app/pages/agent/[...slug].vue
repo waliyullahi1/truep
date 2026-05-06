@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { BadgeCheck, MapPin, Star } from 'lucide-vue-next'
+import statesData from '@/data/nigeria-states' // ✅ FIXED IMPORT
 
 definePageMeta({
   layout: 'main'
@@ -10,12 +11,22 @@ definePageMeta({
    STATE
 ============================= */
 const search = ref('')
-const location = ref('')
-const category = ref('All')
-const visibleCount = ref(9)
+const selectedSkill = ref('All')
+const selectedState = ref('')
+const selectedCity = ref('')
+
+const page = ref(1)
+const perPage = 9
 
 const results = ref([])
 
+
+const normalize = (str = '') =>
+  str
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[\s-_]+/g, '') // remove spaces, dash, underscore 
 /* =============================
    FETCH DATA
 ============================= */
@@ -34,60 +45,102 @@ const loadData = async () => {
 }
 
 /* =============================
-   LOCATION OPTIONS
+   SKILL OPTIONS
 ============================= */
-const locationOptions = computed(() =>
-  [...new Set(
-    results.value
-      .map(r => r.location?.state || r.location?.country)
-      .filter(Boolean)
-  )]
+const skillOptions = computed(() => [
+  'All',
+  ...new Set(
+    results.value.flatMap(r =>
+      (r.skills || []).map(s => s.name)
+    )
+  )
+])
+
+/* =============================
+   STATE OPTIONS (FROM FILE)
+============================= */
+const stateOptions = computed(() =>
+  statesData.map(s => s.name)
 )
 
 /* =============================
-   CATEGORY OPTIONS (DYNAMIC)
+   CITY OPTIONS (FROM FILE)
 ============================= */
-const categories = computed(() => [
-  'All',
-  ...new Set(results.value.map(i => i.role).filter(Boolean))
-])
+const cityOptions = computed(() => {
+  if (!selectedState.value) return []
+
+  const state = statesData.find(
+    s => s.name === selectedState.value
+  )
+
+  return state ? state.lgas : []
+})
 
 /* =============================
    FILTER LOGIC
 ============================= */
 const filteredResults = computed(() =>
   results.value.filter(item => {
-    const text = `${item.name} ${item.role}`.toLowerCase()
+    console.log(item);
+    
+    const text = `${item.name}`.toLowerCase()
 
+    const itemState = normalize(item.location?.state)
+    const itemCity = normalize(item.location?.city)
+
+    const selectedStateNorm = normalize(selectedState.value)
+    const selectedCityNorm = normalize(selectedCity.value)
+    const selectedSkillNorm = normalize(selectedSkill.value)
+        console.log(itemState, 'itemState');
+        console.log(itemCity, 'itemCity');
     return (
-      (!search.value || text.includes(search.value.toLowerCase())) &&
-      (!location.value ||
-        item.location?.state === location.value ||
-        item.location?.country === location.value) &&
-      (category.value === 'All' || item.role === category.value)
+      // 🔍 SEARCH
+      (!search.value ||
+        text.includes(search.value.toLowerCase())
+      ) &&
+
+      // 📍 STATE (normalized)
+      (!selectedState.value ||
+        itemState === selectedStateNorm
+      ) &&
+
+      // 📍 CITY (normalized)
+      (!selectedCity.value ||
+        itemCity === selectedCityNorm
+      ) &&
+
+      // 🛠 SKILL
+      (selectedSkill.value === 'All' ||
+        (item.skills || []).some(
+          s => normalize(s.name) === selectedSkillNorm
+        )
+      )
     )
   })
 )
 
 /* =============================
-   LOAD MORE
+   PAGINATION
 ============================= */
-const displayedResults = computed(() =>
-  filteredResults.value.slice(0, visibleCount.value)
-)
+const paginatedResults = computed(() => {
+  const start = (page.value - 1) * perPage
+  return filteredResults.value.slice(start, start + perPage)
+})
 
-function loadMore() {
-  visibleCount.value += 9
-}
+/* =============================
+   WATCH
+============================= */
+watch([search, selectedSkill, selectedState, selectedCity], () => {
+  page.value = 1
+})
 
-/* reset pagination */
-watch([search, location, category], () => {
-  visibleCount.value = 9
+/* RESET CITY WHEN STATE CHANGES */
+watch(selectedState, () => {
+  selectedCity.value = ''
 })
 
 onMounted(loadData)
 </script>
-
 <template>
 <div>
 
@@ -107,7 +160,7 @@ onMounted(loadData)
   <section>
     <Container>
 
-      <!-- CATEGORY (NOW SKILLS) -->
+      <!-- SKILLS -->
       <div>
         <button
           v-for="c in skillOptions"
@@ -160,11 +213,24 @@ onMounted(loadData)
   <section class="mt-4">
     <Container>
 
-      <!-- EMPTY STATE -->
+      <!-- EMPTY STATE (SMART FIX ✅) -->
       <div v-if="filteredResults.length === 0" class="text-center py-10 text-gray-500">
-        No agents found
+
+        <p v-if="selectedCity && selectedState">
+          No agents found in <b>{{ selectedCity }}, {{ selectedState }}</b>
+        </p>
+
+        <p v-else-if="selectedState">
+          No agents found in <b>{{ selectedState }}</b>
+        </p>
+
+        <p v-else>
+          No agents found
+        </p>
+
       </div>
 
+      <!-- CARDS GRID -->
       <div v-else class="grid md:grid-cols-3 gap-5">
 
         <div
@@ -188,7 +254,7 @@ onMounted(loadData)
             <div class="mt-3 text-xs flex flex-col text-left">
               <div class="flex items-center gap-3">
                 <h2 class="font-normal text-lg sm:text-xl">
-                  {{ item.name }}
+                  {{ item.name || (item.firstName + ' ' + item.lastName) }}
                 </h2>
                 <BadgeCheck class="text-green-600" />
               </div>
@@ -211,7 +277,8 @@ onMounted(loadData)
           <p class="text-sm flex gap-2 items-center text-gray-500">
             <MapPin class="w-4 text-gray-400" />
             {{ item.location?.state || '—' }},
-            {{ item.location?.city || '' }}
+            {{ item.location?.city || '' }},
+              {{ item.location?.address || '' }}
           </p>
 
           <!-- ABOUT -->
@@ -252,19 +319,6 @@ onMounted(loadData)
           :total="filteredResults.length"
           :perPage="perPage"
         />
-      </div>
-
-      <!-- LOAD MORE (OPTIONAL KEEP) -->
-      <div
-        v-if="visibleCount < filteredResults.length"
-        class="flex justify-center mt-8"
-      >
-        <button
-          @click="loadMore"
-          class="px-6 py-3 bg-primary text-white rounded-xl shadow hover:scale-105 transition"
-        >
-          View More
-        </button>
       </div>
 
     </Container>

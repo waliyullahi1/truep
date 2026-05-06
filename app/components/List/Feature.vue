@@ -9,19 +9,24 @@ const props = defineProps({
     type: String,
     default: 'land'
   },
-  modelValue: {
+  house: {
+    type: Object,
+    default: () => ({})
+  },
+  features: {
     type: Array,
     default: () => []
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:house', 'update:features'])
 
 
 /* ======================
    FEATURES DATA
 ====================== */
 
+/* LAND FEATURES */
 /* LAND FEATURES */
 const landFeatures = [
   { key: 'dry', label: 'Dry Land', icon: '🌵' },
@@ -76,7 +81,7 @@ const otherHouseFeatures = [
 /* ======================
    COMPUTED
 ====================== */
-const features = computed(() =>
+const featuresList = computed(() =>
   props.type === 'house' ? houseFeatures : landFeatures
 )
 
@@ -84,15 +89,16 @@ const features = computed(() =>
    METHODS
 ====================== */
 
-/* Toggle boolean feature */
+/* TOGGLE BOOLEAN FEATURE */
 const toggleFeature = (feature) => {
-  const exists = props.modelValue.find(f => f.key === feature.key)
-  let newArray = [...props.modelValue]
+  const exists = props.features.find(f => f.key === feature.key)
+
+  let newFeatures = [...props.features]
 
   if (exists) {
-    newArray = newArray.filter(f => f.key !== feature.key)
+    newFeatures = newFeatures.filter(f => f.key !== feature.key)
   } else {
-    newArray.push({
+    newFeatures.push({
       key: feature.key,
       label: feature.label,
       icon: feature.icon,
@@ -100,25 +106,23 @@ const toggleFeature = (feature) => {
     })
   }
 
-  emit('update:modelValue', newArray)
+  emit('update:features', newFeatures)
 }
 
-/* Handle number input */
+/* HANDLE NUMBER INPUT → HOUSE OBJECT */
 const handleNumberInput = (feature, value) => {
-  let newArray = props.modelValue.filter(f => f.key !== feature.key)
+  const newHouse = { ...props.house }
 
   if (value !== null && value !== '' && value >= 0) {
-    newArray.push({
-      key: feature.key,
-      label: feature.label,
-      icon: feature.icon,
-      value: value
-    })
+    newHouse[feature.key] = value
+  } else {
+    delete newHouse[feature.key]
   }
 
-  emit('update:modelValue', newArray)
+  emit('update:house', newHouse)
 }
 </script>
+
 
 <template>
   <div class="border w-full p-5 rounded-xl shadow space-y-6">
@@ -128,26 +132,26 @@ const handleNumberInput = (feature, value) => {
       {{ type === 'house' ? 'House Features' : 'Land Features' }}
     </h2>
 
-    <!-- LAND FEATURES -->
+    <!-- ================= LAND ================= -->
     <div v-if="type === 'land'" class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div
-        v-for="f in features"
+        v-for="f in featuresList"
         :key="f.key"
         class="feature-card"
-        :class="{ active: modelValue.some(v => v.key === f.key) }"
+        :class="{ active: features.some(v => v.key === f.key) }"
         @click="toggleFeature(f)"
       >
         <span>{{ f.icon }} {{ f.label }}</span>
-        <span v-if="modelValue.some(v => v.key === f.key)">✓</span>
+        <span v-if="features.some(v => v.key === f.key)">✓</span>
       </div>
     </div>
 
-    <!-- HOUSE FEATURES -->
+    <!-- ================= HOUSE ================= -->
     <div v-if="type === 'house'" class="space-y-6">
 
       <!-- NUMBER INPUTS -->
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div v-for="f in features" :key="f.key">
+        <div v-for="f in houseFeatures" :key="f.key">
           <label class="text-sm text-gray-500">
             {{ f.icon }} {{ f.label }}
           </label>
@@ -155,7 +159,7 @@ const handleNumberInput = (feature, value) => {
           <input
             type="number"
             min="0"
-            :value="modelValue.find(v => v.key === f.key)?.value || ''"
+            :value="house[f.key] || ''"
             @input="handleNumberInput(f, $event.target.valueAsNumber)"
             class="input mt-1"
           />
@@ -171,11 +175,11 @@ const handleNumberInput = (feature, value) => {
             v-for="f in otherHouseFeatures"
             :key="f.key"
             class="feature-card"
-            :class="{ active: modelValue.some(v => v.key === f.key) }"
+            :class="{ active: features.some(v => v.key === f.key) }"
             @click="toggleFeature(f)"
           >
             <span>{{ f.icon }} {{ f.label }}</span>
-            <span v-if="modelValue.some(v => v.key === f.key)">✓</span>
+            <span v-if="features.some(v => v.key === f.key)">✓</span>
           </div>
         </div>
       </div>
@@ -184,7 +188,7 @@ const handleNumberInput = (feature, value) => {
 
     <!-- NO TYPE -->
     <div
-      v-if="type === ''"
+      v-if="!type"
       class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500"
     >
       <p class="text-lg font-medium">No property selected</p>
@@ -193,6 +197,7 @@ const handleNumberInput = (feature, value) => {
 
   </div>
 </template>
+
 
 <style scoped>
 .input {

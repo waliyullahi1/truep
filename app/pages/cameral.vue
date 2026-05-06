@@ -1,15 +1,20 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation, Pagination } from 'swiper/modules'
-
+import { Pagination, Navigation } from 'swiper/modules'
 import 'swiper/css'
-import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+import loadstates from '@/data/nigeria-states.js'
+import { propertyTypes } from '@/data/property-types'
 
 definePageMeta({
   layout: 'auth'
-}) 
+})
+
+const route = useRoute()
+const router = useRouter()
+
 /* =================================
    STATE
 ================================= */
@@ -17,381 +22,372 @@ const search = ref('')
 const location = ref('')
 const category = ref('All')
 const visibleCount = ref(9)
+const isMap = ref(false)
+
+const isFixed = ref(false)
+const isShrink = ref(false)
+const searchRef = ref(null)
+const searchTop = ref(0)
+const selectedState = ref('')
+const selectedCity = ref('')
+
+const page = ref(1)
+const perPage = 20
+const showFilter = ref(false)
+const sortType = ref('suggested')
+
+const filters = ref({})
+
+const selectedFilter = ref({
+  type: '',
+  category: '',
+  city: '',
+  state: '',
+  purpose: ''
+})
 
 /* =================================
-   PROPERTY DATA
+   🔥 NORMALIZE (MASTER FIX)
 ================================= */
+const normalize = (str = '') =>
+  decodeURIComponent(str)
+    .toString()
+    .toLowerCase()
+    .replace(/[\s-_]/g, '') // removes space, dash, underscore
 
-const results = ref([
-  /* =============================
-     NORMAL HOUSES
-  ============================= */
+/* =================================
+   🔥 ROUTE SEGMENTS
+================================= */
+const segments = computed(() => {
+  const slug = route.params.slug
+  return Array.isArray(slug) ? slug : slug ? [slug] : []
+})
 
-  {
-    id: 1,
-    title: '3 Bedroom Fully Furnished Maisonette',
-    category: 'Flat / Apartment',
-    location: {
-      country: "Nigeria",
-      state: "Lagos",
-      lga: "Eti-Osa",
-      city: "Victoria Island",
-      address: "Victoria Island, Lagos",
-      source: "manual",
-      geometry: {
-        type: "Polygon",
-        coordinates: []
+/* =================================
+   STATE PARAM
+================================= */
+const stateParam = computed(() => {
+  return segments.value.find(seg =>
+    loadstates.some(s => normalize(s.name) === normalize(seg))
+  ) || ''
+})
+
+/* =================================
+   CITY PARAM
+================================= */
+const cityOptions = computed(() => {
+  if (!stateParam.value) return []
+
+  const state = loadstates.find(
+    s => normalize(s.name) === normalize(stateParam.value)
+  )
+
+  return state ? state.lgas : []
+})
+
+const cityParam = computed(() => {
+  if (!stateParam.value) return ''
+
+  return segments.value.find(seg =>
+    cityOptions.value.some(city => normalize(city) === normalize(seg))
+  ) || ''
+})
+
+/* =================================
+   TYPE PARAM
+================================= */
+const typeParam = computed(() =>
+  segments.value.find(s => ['land', 'house'].includes(normalize(s))) || ''
+)
+
+/* =================================
+   CATEGORY PARAM
+================================= */
+const categoryOptions = computed(() => {
+  const type = normalize(typeParam.value)
+  return propertyTypes[type] || []
+})
+
+const categoryParam = computed(() => {
+  return segments.value.find(seg =>
+    categoryOptions.value.some(c =>
+      normalize(c.key) === normalize(seg)
+    )
+  ) || ''
+})
+
+const finalCategory = computed(() => {
+  const found = categoryOptions.value.find(c =>
+    normalize(c.key) === normalize(categoryParam.value)
+  )
+  return found?.key || ''
+})
+
+/* =================================
+   PURPOSE PARAM
+================================= */
+const purposeParam = computed(() => {
+  return segments.value.find(seg =>
+    ['sale', 'rent'].includes(normalize(seg))
+  ) || ''
+})
+
+/* =================================
+   SORT
+================================= */
+const handleSort = (type) => {
+  sortType.value = type
+}
+
+/* =================================
+   🔥 FETCH DATA
+================================= */
+const { data: resultsData, pending, error, refresh } = await useAsyncData(
+  'properties',
+  () =>
+    useApiFetch('/property/all', {
+      method: 'GET',
+      params: {
+        purpose: purposeParam.value || undefined,
+        search: search.value || undefined,
+        type: typeParam.value || undefined,
+        category: finalCategory.value || undefined,
+        city: cityParam.value || undefined,
+        state: stateParam.value || undefined
       }
-    },
-    pricing: {
-      price: 30000000,
-      currency: "NGN",
-      rentDuration: "year",
-      installment: false,
-      installmentPlan: {
-        months: null,
-        monthlyAmount: null
-      }
-    },
-    features: [{ 'Bedrooms': 3, 'Bathrooms': 4, 'Living Room': 1, 'Kitchen': 1, 'Bowlroom': true }],
-    user: {
-      name: "Walheed Khinde",
-      phone: "",
-      location: "Lagos"
-    },
-    beds: 3,
-    baths: 4,
-    toilets: 4,
-    purpose: 'Rent',
-    images: ['/images/land1.jpg', '/images/land2.jpg']
-  },
-  {
-    id: 2,
-    title: '4 Bedroom Terrace Duplex With BQ',
-    category: 'Duplex',
-    location: {
-    country: "Nigeria",
-    state: "",
-    lga: "",
-    city: "",
-    address: "",
-    source: "gps",
+    }).then(res => res?.data?.data || [])
+)
 
-    geometry: {
-      type: "Polygon",
-      coordinates: []
+const results = computed(() => resultsData.value || [])
+
+/* =================================
+   🔥 SYNC ROUTE → STATE
+================================= */
+watch(
+  () => route.fullPath,
+  () => {
+    selectedFilter.value = {
+      type: typeParam.value || '',
+      category: finalCategory.value || '',
+      city: cityParam.value || '',
+      state: stateParam.value || '',
+      purpose: purposeParam.value || ''
     }
-  },
-     pricing: {
-    price: null,
-    currency: "NGN",
-    rentDuration: null,
-    installment: false,
-    installmentPlan: {
-      months: null,
-      monthlyAmount: null
-    }
-  },
-    features: [{' Bedrooms':4, ' Bathrooms':4, 'Living Room':4, '1 Kitchen':1, 'Bowlroom':true}],
-    user: {
-      name: "",
-      phone: "",
-      location: ""
-    },
-    purpose: 'Rent',
-    images: ['/images/land2.jpg','/images/land3.jpg']
-  },
 
-  /* =============================
-     LAND FOR SALE (NEW)
-  ============================= */
-
-  {
-    id: 100,
-    title: '700sqm Estate Plot At NNPC By Ochacho',
-    category: 'Land',
-    location: 'Life Camp Abuja',
-    price: '₦110,000,000',
-    beds: 0,
-    baths: 0,
-    toilets: 0,
-    purpose: 'Sale',
-    images: ['/images/land1.jpg','/images/land2.jpg']
+    refresh()
   },
-  {
-    id: 101,
-    title: 'Flat Land In NNPC Estate',
-    category: 'Land',
-    location: 'Life Camp Abuja',
-    price: '₦85,000,000',
-    beds: 0,
-    baths: 0,
-    toilets: 0,
-    purpose: 'Sale',
-    images: ['/images/land2.jpg','/images/land3.jpg']
-  },
-  {
-    id: 102,
-    title: 'Commercial Land Jahi',
-    category: 'Land',
-    location: 'Jahi Abuja',
-    price: '₦650,000,000',
-    beds: 0,
-    baths: 0,
-    toilets: 0,
-    purpose: 'Sale',
-    images: ['/images/land3.jpg','/images/land1.jpg']
-  },
-  {
-    id: 103,
-    title: '700sqm Land Akobo',
-    category: 'Land',
-    location: 'Ibadan Oyo',
-    price: '₦40,000',
-    beds: 0,
-    baths: 0,
-    toilets: 0,
-    purpose: 'Sale',
-    images: ['/images/land1.jpg','/images/land2.jpg']
-  },
+  { immediate: true }
+)
 
-  /* =============================
-     GENERATED LISTINGS (LAND & HOUSE)
-  ============================= */
+/* DEBUG */
+watchEffect(() => {
+  // console.log('SEGMENTS:', segments.value)
+  // console.log('STATE:', stateParam.value)
+  // console.log('CITY:', cityParam.value)
+  // console.log('TYPE:', typeParam.value)
+  // console.log('CATEGORY:', categoryParam.value)
+  // console.log('FINAL CATEGORY:', finalCategory.value)
+})
 
-  {
-    id: 10,
-    title: "2 Plot of Land For Sale",
-    description: "<p>Industrial land containing many mineral resources</p>",
-    type: "industrial_land",
-    category: "Land",
-    purpose: "Sell Land",
-    pricing: {
-      price: 8000000,
-      currency: "NGN",
-      rentDuration: null,
-      installment: false,
-      installmentPlan: { months: null, monthlyAmount: null }
-    },
-    location: {
-      country: "Nigeria",
-      state: "Ogun",
-      lga: "Sagamu",
-      city: "Sagamu",
-      address: "Sagamu, Ogun State",
-      source: "gps",
-      geometry: { type: "Polygon", coordinates: [] }
-    },
-    landDetails: {
-      unit: "plot",
-      size: 450,
-      quantity: 2,
-      totalSqm: 900,
-      fenced: false,
-      dry: true,
-      roadAccess: true,
-      price: 4000000
-    },
-    houseDetails: null,
-    media: { images: ['/images/land1.jpg', '/images/land2.jpg'], video: null },
-    documents: { surveyPlan: null, titleDocument: null },
-    features: [],
-    user: { name: "Naheem Jinde", phone: "08031234567", location: "Lagos" },
-    beds: 0, baths: 0, toilets: 0,
-    images: ['/images/land1.jpg', '/images/land2.jpg']
-  },
+/* =================================
+   FILTER
+================================= */
+const filteredResults = computed(() =>
+  results.value.filter(item => {
+    const loc = item.location?.state || item.location?.city || ''
+    const text = `${item.title} ${loc}`.toLowerCase()
 
-  {
-    id: 11,
-    title: "4 Plots of Land For Rent – Industrial Zone",
-    description: "<p>Spacious industrial land available for long-term lease</p>",
-    type: "industrial_land",
-    category: "Land",
-    purpose: "Rent Land",
-    pricing: {
-      price: 1200000,
-      currency: "NGN",
-      rentDuration: "year",
-      installment: false,
-      installmentPlan: { months: null, monthlyAmount: null }
-    },
-    location: {
-      country: "Nigeria",
-      state: "Lagos",
-      lga: "Ikorodu",
-      city: "Ikorodu",
-      address: "Ikorodu Industrial Layout, Lagos",
-      source: "gps",
-      geometry: { type: "Polygon", coordinates: [] }
-    },
-    landDetails: {
-      unit: "plot",
-      size: 450,
-      quantity: 4,
-      totalSqm: 1800,
-      fenced: true,
-      dry: true,
-      roadAccess: true,
-      price: 300000
-    },
-    houseDetails: null,
-    media: { images: ['/images/land2.jpg', '/images/land3.jpg'], video: null },
-    documents: { surveyPlan: null, titleDocument: null },
-    features: [],
-    user: { name: "Naheem Jinde", phone: "08031234567", location: "Lagos" },
-    beds: 0, baths: 0, toilets: 0,
-    images: ['/images/land2.jpg', '/images/land3.jpg']
-  },
-
-  {
-    id: 12,
-    title: "Modern 3 Bedroom Flat For Sale",
-    description: "<p>Beautifully finished modern flat in a serene environment</p>",
-    type: "flat",
-    category: "Flat / Apartment",
-    purpose: "Sell House",
-    pricing: {
-      price: 45000000,
-      currency: "NGN",
-      rentDuration: null,
-      installment: true,
-      installmentPlan: { months: 12, monthlyAmount: 3750000 }
-    },
-    location: {
-      country: "Nigeria",
-      state: "Osun",
-      lga: "Ife Central",
-      city: "Ile-Ife",
-      address: "Ife Central, Osun State",
-      source: "gps",
-      geometry: { type: "Point", coordinates: [4.520657, 7.519191] }
-    },
-    landDetails: null,
-    houseDetails: {
-      beds: 3,
-      baths: 3,
-      toilets: 4,
-      floors: 1,
-      parking: true,
-      furnished: false
-    },
-    media: { images: ['/images/land3.jpg', '/images/land1.jpg'], video: null },
-    documents: { surveyPlan: null, titleDocument: null },
-    features: ["POP Ceiling", "Tiled Floors", "Pre-paid Meter"],
-    user: { name: "Naheem Jinde", phone: "08031234567", location: "Osun" },
-    beds: 3, baths: 3, toilets: 4,
-    images: ['/images/land3.jpg', '/images/land1.jpg']
-  },
-
-  {
-    id: 13,
-    title: "3 Bedroom Flat For Rent – Ife Central",
-    description: "<p>Well-maintained 3 bedroom flat available for annual rent</p>",
-    type: "flat",
-    category: "Flat / Apartment",
-    purpose: "Rent House",
-    pricing: {
-      price: 600000,
-      currency: "NGN",
-      rentDuration: "year",
-      installment: false,
-      installmentPlan: { months: null, monthlyAmount: null }
-    },
-    location: {
-      country: "Nigeria",
-      state: "Osun",
-      lga: "Ife Central",
-      city: "Ile-Ife",
-      address: "Mayfair Estate, Ife Central, Osun",
-      source: "gps",
-      geometry: { type: "Point", coordinates: [4.521000, 7.520000] }
-    },
-    landDetails: null,
-    houseDetails: {
-      beds: 3,
-      baths: 2,
-      toilets: 3,
-      floors: 1,
-      parking: false,
-      furnished: false
-    },
-    media: { images: ['/images/land1.jpg', '/images/land3.jpg'], video: null },
-    documents: { surveyPlan: null, titleDocument: null },
-    features: ["Running Water", "Pre-paid Meter", "Security"],
-    user: { name: "Naheem Jinde", phone: "08031234567", location: "Osun" },
-    beds: 3, baths: 2, toilets: 3,
-    images: ['/images/land1.jpg', '/images/land3.jpg']
-  },
-
-  {
-    id: 14,
-    title: "Commercial Land For Sale – Abuja",
-    description: "<p>Prime commercial land in a high traffic business district</p>",
-    type: "commercial_land",
-    category: "Land",
-    purpose: "Sell Land",
-    pricing: {
-      price: 120000000,
-      currency: "NGN",
-      rentDuration: null,
-      installment: false,
-      installmentPlan: { months: null, monthlyAmount: null }
-    },
-    location: {
-      country: "Nigeria",
-      state: "FCT",
-      lga: "Abuja Municipal",
-      city: "Wuse 2",
-      address: "Wuse 2, Abuja FCT",
-      source: "gps",
-      geometry: { type: "Polygon", coordinates: [] }
-    },
-    landDetails: {
-      unit: "sqm",
-      size: 1200,
-      quantity: 1,
-      totalSqm: 1200,
-      fenced: true,
-      dry: true,
-      roadAccess: true,
-      price: 120000000
-    },
-    houseDetails: null,
-    media: { images: ['/images/land2.jpg', '/images/land1.jpg'], video: null },
-    documents: { surveyPlan: null, titleDocument: null },
-    features: ["C of O", "Road Frontage", "Corner Piece"],
-    user: { name: "Naheem Jinde", phone: "08031234567", location: "Abuja" },
-    beds: 0, baths: 0, toilets: 0,
-    images: ['/images/land2.jpg', '/images/land1.jpg']
-  },
-
-  /* =============================
-     AUTO GENERATE MANY
-  ============================= */
-
-  ...Array.from({ length: 40 }, (_, i) => {
-    const types = ['House','Flat / Apartment','Duplex']
-    const cities = ['Ilorin','Abuja','Lagos','Ibadan','Port Harcourt']
-
-    return {
-      id: i + 200,
-      title: `${Math.floor(Math.random()*4)+2} Bedroom ${types[i%3]}`,
-      category: types[i%3],
-      location: cities[i%5],
-      price: `₦${(Math.random()*90+10).toFixed(0)},000,000`,
-      beds: Math.floor(Math.random()*5)+1,
-      baths: Math.floor(Math.random()*4)+1,
-      toilets: Math.floor(Math.random()*4)+1,
-      purpose: 'Sale',
-      images: ['/images/land1.jpg','/images/land2.jpg','/images/land3.jpg']
-    }
+    return (
+      (!search.value || text.includes(search.value.toLowerCase())) &&
+      (!location.value || loc === location.value) &&
+      (!selectedFilter.value.type || item.type === selectedFilter.value.type) &&
+      (!selectedFilter.value.category || item.category === selectedFilter.value.category)
+    )
   })
-])
+)
+
+/* =================================
+   SORTED RESULTS (FIXED ORDER)
+================================= */
+const sortedResults = computed(() => {
+  let data = [...filteredResults.value]
+
+  switch (sortType.value) {
+    case 'newest':
+      return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    case 'cheapest':
+      return data.sort((a, b) => getPrice(a) - getPrice(b))
+
+    case 'expensive':
+      return data.sort((a, b) => getPrice(b) - getPrice(a))
+
+    case 'smallest':
+      return data.sort((a, b) => (a.size || 0) - (b.size || 0))
+
+    case 'biggest':
+      return data.sort((a, b) => (b.size || 0) - (a.size || 0))
+
+    default:
+      return data
+  }
+})
+
+/* =================================
+   PAGINATION (NOW USE SORTED ✅)
+================================= */
+const paginatedResults = computed(() => {
+  const start = (page.value - 1) * perPage
+  return sortedResults.value.slice(start, start + perPage)
+})
+
+const displayedResults = computed(() =>
+  sortedResults.value.slice(0, visibleCount.value)
+)
+
+function loadMore() {
+  visibleCount.value += 9
+}
+
+/* =================================
+   RESET FILTERS
+================================= */
+const handleResetFilters = () => {
+  search.value = ''
+  location.value = ''
+  sortType.value = 'suggested'
+  selectedFilter.value = {
+    type: '',
+    category: '',
+    city: '',
+    state: '',
+    purpose: ''
+  }
+
+  router.push('/search')
+}
+
+/* =================================
+   SCROLL
+================================= */
+function handleScroll() {
+  const scrollY = window.scrollY
+  isFixed.value = scrollY > searchTop.value
+  isShrink.value = scrollY > searchTop.value + 100
+}
+
+/* =================================
+   CATEGORY CLICK
+================================= */
+const selectCategory = (c) => {
+  let type = ''
+  let cat = ''
+
+  if (c === 'Land') type = 'land'
+  else if (c === 'House') type = 'house'
+  else if (c === 'Flat / Apartment') {
+    type = 'house'
+    cat = 'flat'
+  } else if (c !== 'All') {
+    cat = normalize(c)
+  }
+
+  const path = [
+    stateParam.value,
+    cityParam.value,
+    type,
+    cat
+  ].filter(Boolean).join('/')
+
+  router.push(`/search/${path}`)
+}
+
+const isActive = (c) => {
+  if (c === 'All') return !typeParam.value && !categoryParam.value
+  if (c === 'Land') return normalize(typeParam.value) === 'land'
+  if (c === 'House') return normalize(typeParam.value) === 'house' && !categoryParam.value
+  if (c === 'Flat / Apartment') {
+    return normalize(typeParam.value) === 'house' && normalize(categoryParam.value) === 'flat'
+  }
+  return normalize(categoryParam.value) === normalize(c)
+}
+
+/* =================================
+   LOCATION OPTIONS
+================================= */
+const locationOptions = computed(() =>
+  [...new Set(results.value.map(r =>
+    r.location?.state || r.location?.city || r.location?.address
+  ).filter(Boolean))]
+)
+
+/* =================================
+   HELPERS
+================================= */
+const getPrice = (item) => {
+  if (!item?.pricing) return 0
+  if (item.pricing.paymentType === 'outright') return item.pricing.price || 0
+  if (item.pricing.paymentType === 'installment') return item.pricing.installment?.monthlyAmount || 0
+  if (item.pricing.paymentType === 'rent') return item.pricing.price || 0
+  return 0
+}
+
+const getPriceLabel = (item) => {
+  const pricing = item?.pricing || {}
+
+  if (item?.type === 'house') {
+    if (item?.purpose === 'sale') {
+      return pricing.paymentType === 'installment' ? '/month' : '/outright'
+    }
+
+    if (item?.purpose === 'rent') {
+      return pricing.rent?.duration ? `/${pricing.rent.duration}` : ''
+    }
+  }
+
+  if (item?.type === 'land') {
+    if (pricing.paymentType === 'outright') {
+      return item.landDetails?.unit ? `/per ${item.landDetails.unit}` : ''
+    }
+
+    if (pricing.paymentType === 'installment') {
+      return `/per ${item.landDetails?.unit || 'plot'} /monthly`
+    }
+  }
+
+  return ''
+}
+
+const smartMoney = (value) => {
+  const num = Number(value || 0)
+
+  if (num >= 1_000_000_000) return "₦" + (num / 1_000_000_000).toFixed(1) + "B"
+  if (num >= 1_000_000) return "₦" + (num / 1_000_000).toFixed(1) + "M"
+  if (num >= 1_000) return "₦" + (num / 1_000).toFixed(1) + "K"
+
+  return "₦" + num.toLocaleString()
+}
+
+/* =================================
+   MOUNT
+================================= */
+onMounted(async () => {
+  await nextTick()
+
+  if (searchRef.value) {
+    searchTop.value = searchRef.value.offsetTop
+  }
+
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 
 /* =================================
    FILTER OPTIONS
 ================================= */
-
 const categories = [
   'All',
   'Land',
@@ -399,132 +395,157 @@ const categories = [
   'Flat / Apartment',
   'Duplex'
 ]
-
-const locationOptions = computed(() =>
-  [...new Set(results.value.map(r => {
-    // Handle both string and object location formats
-    if (typeof r.location === 'object') {
-      return r.location.address || r.location.city || r.location.state || ''
-    }
-    return r.location
-  }).filter(Boolean))]
-)
-
-/* =================================
-   FILTER LOGIC
-================================= */
-
-const filteredResults = computed(() =>
-  results.value.filter(item => {
-    // Normalize location for filtering
-    const locationStr = typeof item.location === 'object'
-      ? (item.location.address || item.location.city || '')
-      : item.location
-
-    const text = `${item.title} ${locationStr}`.toLowerCase()
-
-    return (
-      (!search.value || text.includes(search.value.toLowerCase())) &&
-      (!location.value || locationStr === location.value) &&
-      (category.value === 'All' || item.category === category.value)
-    )
-  })
-)
-
-// Helper to display location as a string in the template
-function getLocationLabel(loc) {
-  if (typeof loc === 'object') {
-    return loc.address || loc.city || loc.state || 'Unknown'
-  }
-  return loc
-}
-
-// Helper to display price from either flat price string or pricing object
-function getPriceLabel(item) {
-  if (item.pricing?.price) {
-    const formatted = item.pricing.price.toLocaleString('en-NG')
-    const duration = item.pricing.rentDuration ? ` / ${item.pricing.rentDuration}` : ''
-    return `₦${formatted}${duration}`
-  }
-  return item.price || 'Price on request'
-}
-
-const displayedResults = computed(() =>
-  filteredResults.value.slice(0, visibleCount.value)
-)
-
-function loadMore() {
-  visibleCount.value += 9
-}
-
-watch([search, location, category], () => {
-  visibleCount.value = 9
-})
 </script>
-
 <template>
 <div>
 
-  <!-- HERO -->
-<section class="relative z-10  h-screen-80 flex items-center justify-center text-center">
+      <div v-if="isFixed"   class="fixed  z-100 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
+        <div class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+          <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
+            
+            <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
+          </div>
+          <input
+            v-model="search"
+            placeholder="Search land, houses, agents..."
+            class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
+          />
+          <div class=" bg-secondary text-sm h-full  -0">
+              <PropertyFilterModal
+              v-model="showFilter"
+              :initialFilters="filters"
+              @apply="(data) => {
+                filters = data
+               
+              }"
+            />
+               <button @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                <p>Filters</p> 
+              </button>
+          </div>
+          
 
-  <img
-    src="/images/hero.jpg"
-    class="absolute inset-0 w-full h-full object-cover"
-  />
-
-  <div class="absolute inset-0 bg-black/60"></div>
-
-  <div class="relative z-10 max-w-3xl px-6 text-white">
-
-    <h1 class="text-2xl md:text-4xl font-semibold leading-tight">
-      Find Your Perfect Property in Nigeria
-    </h1>
-
-    <p class="mt-1 text-lg text-gray-200">
-      Buy land • Sell houses • Rent apartments • Discover great deals
-    </p>
-
-    <!-- SEARCH -->
-
-    <div class="mt-8 sticky top-0 pl-1    bg-white  overflow-hidden rounded-lg -xl shadow-xl p- flex flex-col md:flex-row">
-      <div class="  w-8  flex justify-center items-center  h-12  -0">
-        
-        <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-5" srcset="">
-      </div>
-      <input
-        v-model="search"
-        placeholder="Search land, houses, agents..."
-        class="flex-1   outline-none text-gray-700"
-      />
-      <div class="  -0">
-        
-        <button class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
-            <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
-            <p>Filter</p> 
+        </div>
+        <div class="flex gap-3  overflow-x-auto  px-1 py-1 border-t-2 mt-1">
+            <button
+            v-for="c in categories"
+            :key="c"
+            @click="selectCategory(c)"
+            class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
+            :class="isActive(c) ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'"
+          >
+            {{ c }}
           </button>
-      </div>
+        </div>
+    </div>
+    
+          <Container    class="  z-100 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
+              <div v-if="!isFixed"  ref="searchRef" class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+                <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
+                  
+                  <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
+                </div>
+                <input
+                  v-model="search"
+                  placeholder="Search land, houses, agents..."
+                  class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
+                />
+                <div class=" bg-secondary text-sm h-full  -0">
+                    <PropertyFilterModal
+                    v-model="showFilter"
+                    :initialFilters="filters"
+                    @apply="(data) => {
+                      filters = data
+                    
+                    }"
+                  />
+                    <button @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                      <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                      <p>Filters</p> 
+                    </button>
+                </div>
+                
+
+              </div>
+              <div class="flex gap-3  overflow-x-auto  px-1 py-1 border-t-2 mt-1">
+                  <button
+                  v-for="c in categories"
+                  :key="c"
+                  @click="selectCategory(c)"
+                  class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
+                  :class="isActive(c) ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'"
+                >
+                  {{ c }}
+                </button>
+              </div>
+
+             
+          </Container>
+  <!-- HERO -->
+  <section class="relative z-10 hidden  h-screen-80 flex items-center justify-center text-center">
+
+    <img
+      src="/images/hero.jpg"
+      class="absolute inset-0 w-full h-full object-cover"
+    />
+
+    <div class="absolute inset-0 bg-black/60"></div>
+
+    <div class="relative z-10 max-w-3xl px-6 text-white">
+
+      <h1 class="text-3xl md:text-4xl font-semibold leading-tight">
+        Find Your Perfect Property in Nigeria
+      </h1>
+
+      <p class="mt-1 text-sm  sm:text-lg text-gray-200">
+        Buy land • Sell houses • Rent apartments • Discover great deals
+      </p>
+          <!-- PLACEHOLDER -->
+      <div v-if="isFixed" class="h-[90px]"></div>
+      <!-- SEARCH -->
+      <div v-if="!isFixed"  class=""   ref="searchRef"
+          
+      >
+          <div class="mt-8     bg-white  overflow-hidden rounded-lg -xl shadow-xl p- flex ">
+            <div class="  w-8  flex justify-center items-center  h-12  -0">
+              
+              <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-5" srcset="">
+            </div>
+            <input
+              v-model="search"
+              placeholder="Search land, houses, agents..."
+              class="flex-1   outline-none text-gray-700"
+            />
+            <div class="  -0">
+              
+              <button  @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                  <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                  <p>Filter</p> 
+                </button>
+            </div>
+            
+
+          </div>
+          <div class="flex gap-3  items-center justify-center  flex-wrap mt-7">
+              <button
+              v-for="c in categories"
+              :key="c"
+             @click="selectCategory(c)"
+              class="px-4 py-2 rounded text-sm"
+              :class="isActive(c) ? 'bg-secondary text-white' : ' bg-white/40 text'"
+            >
+              {{ c }} 
+            </button>
+          </div>
+      </div> 
       
 
     </div>
-    <div class="flex gap-3  mt-7">
-        <button
-        v-for="c in categories"
-        :key="c"
-        @click="category = c"
-        class="px-4 py-2 rounded text-sm"
-        :class="category === c ? 'bg-secondary text-white' : ' bg-white/40 text'"
-      >
-        {{ c }}
-      </button>
-    </div>
-        
 
-  </div>
+  </section>
 
-</section>
 
-s
 
   <!-- FILTERS -->
   <section class="p-6 flex flex-wrap gap-3">
@@ -537,89 +558,124 @@ s
     </select>
 
   </section>
-
+<div add v-if="filteredResults.length === 0">
+  <EmptyPropertyState @reset="handleResetFilters" />
+</div>
   <!-- CARDS -->
-  <section class="">
-    <Container class="  grid md:grid-cols-3 gap-6">
-      <div
-        v-for="item in displayedResults"
-        :key="item.id"
-        class="border rounded-xl shadow hover:shadow-lg transition overflow-hidden"
-      >
+  <section v-else class="">
+    <Container>
+      <div class=" text-secondary">
+        <UiTypographyH3><span class=" text-secondary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
+          <div  class=" flex justify-between items-center py-3">
+            <p  class="  sm:text-lg text-sm "> <span class="font-semibold ">10000</span> results </p> 
+            <div class=" flex ">
+               
+              <div class="flex gap-3   px-1 py-1 ">
+                <SortDropdown @update="handleSort" />
 
-        <!-- IMAGE SLIDER -->
-        <div class="relative">
 
-          <!-- badge -->
-          <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
-            FOR {{ item.purpose.toUpperCase() }}
-          </span>
-
-          <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
-            {{ item.category }}
-          </span>
-
-          <Swiper
-            :modules="[Pagination]"
-            :pagination="{ clickable: true }"
-          >
-            <SwiperSlide v-for="img in item.images" :key="img">
-              <div
-                class="h-44 bg-cover bg-center"
-                :style="{ backgroundImage: `url(${img})` }"
-              />
-            </SwiperSlide>
-          </Swiper>
-
-        </div>
-
-        <!-- CONTENT -->
-        <div class="p-4 text-sm">
-          <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
-
-              <img
-                src="/image/profile.webp"
-                class="w-12 h-12 rounded-full object-cover"
-              />
-
-              <div class=" text-xs ">
-                <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
-                <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
-                
+                    <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
+                    <img src="@/assets/images/icons/map.svg" class=" w-4" alt=""> Map
+                   </button>
               </div>
-
             </div>
+          </div>
+      </div>
+            
+      <div class="  grid md:grid-cols-3 gap-6">
+       
+        <NuxtLink :to="`/property/${item.slug}`"
+          v-for="item in paginatedResults"
+          :key="item._id"
+          class="border rounded-xl  transition overflow-hidden"
+        >
+       
+          <!-- IMAGE SLIDER -->
+          <div class="relative">
 
-          <h2 class="font-semibold">
-            {{ item.title }}
-          </h2>
+            <!-- badge -->
+            <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
+              FOR {{ item.purpose.toUpperCase() }} 
+            </span>
 
-          <p class="text-gray-500">
-            {{ getLocationLabel(item.location) }}
-          </p>
-
-          <p class="text-primary font-bold mt-1">
-            {{ getPriceLabel(item) }}
-          </p>
-
-          <!-- hide for land -->
-          <div
-            v-if="item.category !== 'Land'"
-            class="flex gap-3 mt-2 text-xs"
-          >
-            <span>{{ item.beds }} Beds</span>
-            <span>{{ item.baths }} Baths</span>
-            <span>{{ item.toilets }} Toilets</span>
+            <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
+              {{ item.category }} 
+            </span>
+            <ClientOnly>
+              <Swiper
+                :modules="[Pagination, Navigation]"
+                :pagination="{ clickable: true }"
+                :navigation="true"
+                class="property-swiper"
+              >
+              <!-- <SwiperSlide v-for="img in (item?.media?.files?.filter(f => f.type === 'image' && f.url) || [{ url: '/image/osun.png' }])" :key="img.url"> -->
+                <SwiperSlide 
+                 v-for="img in (
+                      item?.media?.files?.filter(f => f.type === 'image' && f.url)?.length
+                        ? item.media.files.filter(f => f.type === 'image' && f.url)
+                        : [{ url: '/image/no-image.png' }]
+                    )"
+                   :key="img">
+                  <div
+                    class="h-44 bg-cover bg-center"
+                    :style="{
+                      backgroundImage: `url(${img.url || '/image/no-image.png'})`
+                    }"
+                  />
+                </SwiperSlide>
+              </Swiper>
+            </ClientOnly>
           </div>
 
-          <button c[lass="mt-3 w-full bg-primary text-white py-2 rounded">
-            View Details
-          </button>
+          <!-- CONTENT -->
+          <div class="p-4 text-sm">
+            <!-- <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
 
-        </div>
+                <img
+                  src="/image/profile.webp"
+                  class="w-12 h-12 rounded-full object-cover"
+                />
+
+                <div class=" text-xs ">
+                  <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
+                  <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
+                  
+                </div>
+
+              </div> -->
+
+            <h2 class="font-semibold">
+              {{ item.title }}
+            </h2>
+
+            <p class="text-gray-500">
+             {{item.location.address}}, {{item.location.city}}, {{item.location.state}}
+            </p> 
+
+            <p class="text-primary text-lg font-bold mt-1">
+               {{smartMoney(item.pricing.price || 0) }} {{ getPriceLabel(item) }}
+            </p>
+
+            <!-- hide for land -->
+             
+            <div
+              v-if="item.type !== 'land'"
+              class="flex gap-3 mt-2 text-xs"
+            >
+              <span>{{ item.houseDetails?.bathroom }} Beds</span>
+              <span>{{ item.houseDetails?.bedroom }} Baths</span>
+              <span>{{ item.houseDetails?.toilet }} Toilets</span>
+            </div>
+
+           
+
+          </div>
+        </NuxtLink>
       </div>
     </Container>
   </section>
+
+  <Paginat v-model="page" :total="filteredResults.length" :perPage="perPage"/>
 
   <!-- LOAD MORE -->
   <div
@@ -634,15 +690,47 @@ s
     </button>
   </div>
 
+
+   <NavigationFooter />
 </div>
 </template>
 
 <style scoped>
-:deep(.swiper-pagination-bullet) {
-  background: white;
-  opacity: 0.5;
+/* make arrows small circle */
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
 }
-:deep(.swiper-pagination-bullet-active) {
-  opacity: 1;
+
+/* smaller arrow icon */
+:deep(.swiper-button-prev::after),
+:deep(.swiper-button-next::after) {
+  font-size: 12px;
+  font-weight: bolder;
+}
+
+/* spacing */
+:deep(.swiper-button-prev) {
+  left: 6px;
+}
+
+:deep(.swiper-button-next) {
+  right: 6px;
+}
+
+/* hover effect */
+:deep(.swiper-button-prev:hover),
+:deep(.swiper-button-next:hover) {
+  background: rgba(0, 0, 0, 0.7);
 }
 </style>
