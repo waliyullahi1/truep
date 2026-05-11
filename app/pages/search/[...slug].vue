@@ -9,7 +9,7 @@ import loadstates from '@/data/nigeria-states.js'
 import { propertyTypes } from '@/data/property-types'
 
 definePageMeta({
-  layout: 'auth'
+  layout: 'main'
 })
 
 const route = useRoute()

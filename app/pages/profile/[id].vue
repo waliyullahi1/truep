@@ -24,46 +24,46 @@ const loadData = async () => {
     console.error('API ERROR:', err)
   }
 }
-loadData()
+ await loadData()
 /* =============================
    SAMPLE DATA (REPLACE WITH API)
 ============================= */
-const agents = ref({
-  name: "AnuOluwapo Makinde",
-  company: "Freeman Urban Homes",
-  bn: "6978",
-  rating: 0.0,
-  reviews: 0,
-  yearsExperience: 5,
-  totalProperties: 1,
-  location: {
-    city: "Abeokuta",
-    state: "Ogun"
-  },
-  about: `Rotarian Makinde Anuoluwapo is my name. MD of Freeman Urban Homes. I'm a Real Estate Investor, Consultant, Agent, Broker and Entrepreneur in Ogun State, Nigeria.
+// const agents = ref({
+//   name: "AnuOluwapo Makinde",
+//   company: "Freeman Urban Homes",
+//   bn: "6978",
+//   rating: 0.0,
+//   reviews: 0,
+//   yearsExperience: 5,
+//   totalProperties: 1,
+//   location: {
+//     city: "Abeokuta",
+//     state: "Ogun"
+//   },
+//   about: `Rotarian Makinde Anuoluwapo is my name. MD of Freeman Urban Homes. I'm a Real Estate Investor, Consultant, Agent, Broker and Entrepreneur in Ogun State, Nigeria.
 
-We Help You Find Your Perfect Home, Invest And Build Wealth, We are Expert in high-end real estate in Nigeria Offering bespoke luxury properties that captivate senses. We are registered company, incorporated with cooperate affairs commission of federal republic of Nigeria to carry out the business of real estate.`,
-  skills: [
-    "Residential",
-    "Commercial",
-    "Land",
-    "Luxury",
-    "Investment",
-    "Property Management",
-    "New Developments",
-    "Rentals"
-  ],
-  avatar: "/image/profile.webp"
-})
+// We Help You Find Your Perfect Home, Invest And Build Wealth, We are Expert in high-end real estate in Nigeria Offering bespoke luxury properties that captivate senses. We are registered company, incorporated with cooperate affairs commission of federal republic of Nigeria to carry out the business of real estate.`,
+//   skills: [
+//     "Residential",
+//     "Commercial",
+//     "Land",
+//     "Luxury",
+//     "Investment",
+//     "Property Management",
+//     "New Developments",
+//     "Rentals"
+//   ],
+//   avatar: "/image/profile.webp"
+// })
 
-const activeTab = ref('reviews')
+const activeTab = ref('about')
 </script>
 
 <template>
 <div class="mt-20">
 
   <Container>
-
+    <NavigationBackArrow/>
     <!-- HEADER -->
     <div class="flex flex-col md:flex-row gap-6 items-start">
 
@@ -136,7 +136,7 @@ const activeTab = ref('reviews')
     </div>
 
     <!-- STATS -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-10">
 
       <div class="border rounded-lg p-6 text-center">
         <h2 class="text-2xl font-bold">
@@ -193,7 +193,7 @@ const activeTab = ref('reviews')
     </div>
 
     <!-- CONTENT -->
-    <div class="border rounded-lg p-10 mt-4 text-center">
+    <div class="border rounded-lg sm:p-10 p-4 mt-4 text-center">
 
       <!-- REVIEWS -->
       <div v-if="activeTab === 'reviews'">
@@ -203,35 +203,35 @@ const activeTab = ref('reviews')
           <p class="font-medium">No reviews yet</p>
           <p class="text-sm">Be the first to review this agent.</p>
 
-          <button class="mt-4 bg-green-600 text-white px-4 py-2 rounded">
+          <NuxtLink  to="/auth?type=register-page"  class="mt-4 bg-green-600 text-white px-4 py-2 rounded">
             Write a Review
-          </button>
+          </NuxtLink>
         </div>
 
       </div>
 
       <!-- ABOUT TAB -->
       <div v-if="activeTab === 'about'" class="text-left">
-        <p class="text-gray-600 leading-relaxed">
-          {{ agent?.about }}
-        </p>
+       
+         <AgentInfoCard :agent="agent" />
+        
       </div>
 
       <!-- PROPERTIES TAB -->
       <div v-if="activeTab === 'properties'">
-        <p class="text-gray-500">
-          No properties uploaded yet.
-        </p>
-         
-         <div  class="grid md:grid-cols-3 gap-6">
-          
-            <PropertyCard
-            v-for="item in agent.properties"
-            :key="item._id"
-            :item="item"
-          />
+        <!-- NO PROPERTIES -->
+          <p v-if="!agent?.properties?.length" class="text-gray-500">
+            No properties uploaded yet.
+          </p>
 
-        </div>
+          <!-- HAS PROPERTIES -->
+          <div v-else class="grid md:grid-cols-3 gap-6">
+            <PropertyCard
+              v-for="item in agent.properties"
+              :key="item._id"
+              :item="item"
+            />
+          </div>
       </div>
 
     </div>

@@ -8,7 +8,7 @@ import { ref, reactive, watch } from 'vue'
 import { useRouter, useRoute, useRuntimeConfig } from '#app'
 
 const { $toast } = useNuxtApp()
-
+const auth = useAuth()
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -173,7 +173,7 @@ const handlelogin = async () => {
 
   loginloading.value = true
   try {
-    const response = await fetch(`${config.public.api_url}/auth/login`, {
+    const response = await fetch(`${config.public.api_url}/auth/login/local`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -198,7 +198,11 @@ const handlelogin = async () => {
 
       return
     }
-
+    
+     auth.value.user = data?.data || null
+    auth.value.authenticated = true
+    auth.value.checked = true
+    auth.value.serverError = false
     /* SUCCESS */
 
     $toast.success(data.message || 'Login successful')
@@ -208,6 +212,42 @@ const handlelogin = async () => {
       console.log('otp processed');
        router.push('/search')
     }, 800)
+
+  } catch (err) {
+    
+    loginloading.value = false
+    $toast.error(err.message || 'An error occurred')
+  } finally {
+    loginloading.value = false
+  }
+}
+
+const handleloginwithGoogle = async () => {
+
+  loginloading.value = true
+  try {
+    const response = await fetch(`${config.public.api_url}/auth/login/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      $toast.error(data.message || 'Login failed')
+    
+        
+
+      return
+    }
+
+  
+   
+    console.log(data.url,'hhhh');
+    
+    
+     window.location.href = data.url
 
   } catch (err) {
     
@@ -239,11 +279,10 @@ watch(
     
       <div class="  h-full flex justify-end ">
       <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3  min-h-screen  bg-white rounded-sm shadow-lg p-2 sm:p-8">
+        <NavigationBackArrow/>
           <div  v-if="!otpverify" >
            
-          <NuxtLink to="/" >
-            <p class=" font-semibold  hover:text-primary cursor-pointer"> < Back </p>
-          </NuxtLink>
+          
              <div class=" flex flex-col justify-center items-center">
                  <img src="/images/unilorin.png" alt="">
                <p class="text-xl font-semibold   ">
@@ -307,7 +346,7 @@ watch(
                   </div>
                   <div class=" w-full  h-[1px] bg-slate-300"></div>
               </div>
-                <button
+                <button type="button" @click="handleloginwithGoogle"
                 
                   class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-4 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
                 >
@@ -330,12 +369,13 @@ watch(
             </div>
           </div>
 
-          <div v-if="otpverify" >
+          <div v-if="otpverify" class="  sm:max-w-xl  w-full px3  min-h-screen flex justify-center    items-center " >
              <AuthEmailVerifcation :email=" loginData.email " />
           </div>
       </div>
 
        <div v-if="isregisterpage" class=" sm:max-w-xl  w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
+        <NavigationBackArrow/>
         <div v-if="!otpverify" class="">
            <NuxtLink to="/" >
             <p class=" font-semibold  hover:text-primary cursor-pointer"> < Back </p>
@@ -410,7 +450,7 @@ watch(
                   <div class=" w-full  h-[1px] bg-slate-300"></div>
               </div>
                 <button
-                
+                 @click="handleloginwithGoogle"
                   class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-6 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
                 >
                   <img src="/image/icon/gmail.svg" class=" w-6" alt="">
@@ -429,7 +469,7 @@ watch(
             </div>
         </div>
 
-       <div v-if="otpverify" class="  ">
+       <div v-if="otpverify" class="  sm:max-w-xl  w-full px3  min-h-screen flex justify-center    items-center ">
        <AuthEmailVerifcation :email=" registerData.email " />
        </div>
         <!-- Title -->

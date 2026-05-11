@@ -4,7 +4,11 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Pagination, Navigation } from 'swiper/modules'
 
 import 'swiper/css'
-import 'swiper/css/pagination' 
+import 'swiper/css/pagination'
+
+/* ===============================
+   PROPS
+================================ */
 const props = defineProps({
   item: {
     type: Object,
@@ -15,6 +19,63 @@ const props = defineProps({
 /* ===============================
    HELPERS
 ================================ */
+
+/* price value */
+const getPrice = (item) => {
+  if (!item?.pricing) return 0
+
+  if (item.pricing.paymentType === 'outright') {
+    return item.pricing.price || 0
+  }
+
+  if (item.pricing.paymentType === 'installment') {
+    return item.pricing.installment?.monthlyAmount || 0
+  }
+
+  if (item.pricing.paymentType === 'rent') {
+    return item.pricing.price || 0
+  }
+
+  return 0
+}
+
+/* price label */
+const getPriceLabel = (item) => {
+  const pricing = item?.pricing || {}
+
+  if (item?.type === 'house') {
+    if (item?.purpose === 'sale') {
+      return pricing.paymentType === 'installment' ? '/month' : '/outright'
+    }
+
+    if (item?.purpose === 'rent') {
+      return pricing.rent?.duration ? `/${pricing.rent.duration}` : ''
+    }
+  }
+
+  if (item?.type === 'land') {
+    if (pricing.paymentType === 'outright') {
+      return item.landDetails?.unit ? `/per ${item.landDetails.unit}` : ''
+    }
+
+    if (pricing.paymentType === 'installment') {
+      return `/per ${item.landDetails?.unit || 'plot'} /monthly`
+    }
+  }
+
+  return ''
+}
+
+/* smart money format */
+const smartMoney = (value) => {
+  const num = Number(value || 0)
+
+  if (num >= 1_000_000_000) return "₦" + (num / 1_000_000_000).toFixed(1) + "B"
+  if (num >= 1_000_000) return "₦" + (num / 1_000_000).toFixed(1) + "M"
+  if (num >= 1_000) return "₦" + (num / 1_000).toFixed(1) + "K"
+
+  return "₦" + num.toLocaleString()
+}
 
 /* fallback images */
 const images = computed(() => {
@@ -29,33 +90,22 @@ const images = computed(() => {
     : [{ url: '/image/no-image.png' }]
 })
 
-/* price */
-const smartMoney = (num = 0) => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0
-  }).format(num)
-}
-
-/* label */
-const getPriceLabel = (item) => {
-  if (item?.purpose === 'rent') return '/yr'
-  return ''
-}
-
 /* location */
 const locationLabel = computed(() => {
   const loc = props.item?.location || {}
-  return `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''}`
+
+  return [
+    loc.address,
+    loc.city,
+    loc.state
+  ].filter(Boolean).join(', ')
 })
 </script>
-
 <template>
   
        
      <NuxtLink :to="`/property/${item.slug}`"
-          class="border rounded-xl  transition overflow-hidden"
+          class="border rounded-xl  text-left  transition overflow-hidden"
         >
        
           <!-- IMAGE SLIDER -->
@@ -142,3 +192,43 @@ const locationLabel = computed(() => {
     
 
 </template>
+
+<style scoped>
+/* make arrows small circle */
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+/* smaller arrow icon */
+:deep(.swiper-button-prev::after),
+:deep(.swiper-button-next::after) {
+  font-size: 12px;
+  font-weight: bolder;
+}
+
+/* spacing */
+:deep(.swiper-button-prev) {
+  left: 6px;
+}
+
+:deep(.swiper-button-next) {
+  right: 6px;
+}
+
+/* hover effect */
+:deep(.swiper-button-prev:hover),
+:deep(.swiper-button-next:hover) {
+  background: rgba(0, 0, 0, 0.7);
+}
+</style>

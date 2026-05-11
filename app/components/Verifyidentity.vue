@@ -1,12 +1,14 @@
 <template>
   <div>
 
-   {{isVerify}}
+  <!-- {{ isVerify }}
+{{ isBusinessVerify }}
+{{ isFaceVerify }} -->
     <!-- OPEN BUTTON -->
 <button
   :disabled="verifyLabel === 'Loading...' || verifyLabel === 'verified'"
   @click="startverification"
-  class="bg-slate-800 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 justify-center"
+  class="bg-slate-800  text-white px-5 py-2.5 rounded-xl flex items-center gap-2 justify-center"
 >
   <!-- Spinner -->
   <svg
@@ -206,7 +208,7 @@
                 @completed="handleFaceResult"
               />
           </div> 
-          <div v-show="onVerify"  class="h-48 flex flex-col  justify-center items-center  w-full ">
+          <div v-show="!onVerify"  class="h-48 flex flex-col  justify-center items-center  w-full ">
               <div class=" mr-6"><img src="@/assets/images/icons/loading.svg" class=" w-10"/></div>
                <p> Processing.....</p>
           </div>
@@ -276,10 +278,19 @@ const config = useRuntimeConfig()
 const { $toast } = useNuxtApp()
 const props = defineProps({
   kycType: { type: String, default: 'individual' },
-  isVerify:{type: Boolean, default: false }
+
+  isVerify: { type: Boolean, default: false },
+
+  isBusinessVerify: { type: Boolean, default: false },
+
+  isFaceVerify: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update:isVerify'])
+const emit = defineEmits([
+  'update:isVerify',
+  'update:isBusinessVerify',
+  'update:isFaceVerify'
+])
 const verifyLabel = ref('')
 const isLoading = ref(false)
 const onVerify = ref(true)
@@ -308,18 +319,22 @@ const form = ref({
 
 
 watch(
-  () => props.kycType,
-  (newType, oldType) => {
-    // ✅ do something here when kycType changes
- 
-    verifyLabel.value = newType === 'individual' ? 'Verify Identity' : 'Verify Business'
-    // example actions:
-    step.value = 'form'
-    open.value = false
-  },
-  { immediate: true } // runs once on mount too
-)
+  () => props.isVerify,
+  (val) => {
+    if (val) {
+      verifyLabel.value = 'verified'
+      kycStatus.value = 'verified'
+    } else {
+      verifyLabel.value =
+        props.kycType === 'individual'
+          ? 'Verify Identity'
+          : 'Verify Business'
 
+      kycStatus.value = 'idle'
+    }
+  },
+  { immediate: true }
+)
 
 const isDisabled = computed(() =>
   kycStatus.value === 'loading' || kycStatus.value === 'verified'
@@ -373,10 +388,19 @@ const startverification = async () => {
     }
 
      if (data?.data?.nin && data?.data?.phone && data?.data?.ninImage && data?.data?.faceImage) {
-      emit('update:isVerify', true) 
-      verifyLabel.value = 'verified'
-      emit('update:isVerify', true)
+      console.log();
       
+      emit('update:isVerify', true)
+      emit('update:isFaceVerify', true) 
+      
+      
+
+      
+      // emit('update:isVerify', true)
+      if (props.kycType === 'business' && res?.data?.business?.name) {
+        console.log('riche 2');
+        emit('update:isBusinessVerify', true)
+      }
       return
       
     }

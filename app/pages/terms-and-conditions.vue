@@ -167,6 +167,7 @@ const terms = [
 
 <template>
   <section class="px-6 lg:px-16 my-6">
+    <NavigationBackArrow/>
     <div class="mx-auto max-w-container">
       
       <h1 class="text-2xl font-bold mb-6">

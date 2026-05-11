@@ -96,7 +96,7 @@ const submitForm = async () => {
            
             <div>
               <button  :disabled="loading"  class="w-full mt-5 bg-slate-800 text-white py-2  text-sm  font-medium hover:bg-slate-600 rounded-sm transition disabled:opacity-60" >
-                {{ loading ? 'Logging in...' : 'Reset password' }}
+                {{ loading ? 'loading....' : 'Reset password' }}
               </button>
             </div>
           

@@ -75,13 +75,33 @@ const reverseGeocode = async (lng, lat) => {
       address: ""
     }
 
-    data.features.forEach((f) => {
-      if (f.place_type.includes("country")) place.country = f.text
-      if (f.place_type.includes("region")) place.state = f.text
-      if (f.place_type.includes("place")) place.city = f.text
-      if (f.place_type.includes("district")) place.lga = f.text
-      if (f.place_type.includes("locality")) place.address = f.text
-    })
+   data.features.forEach((f) => {
+  if (f.place_type.includes("country")) {
+    place.country = f.text
+  }
+
+  if (f.place_type.includes("region")) {
+    place.state = f.text
+  }
+
+  if (f.place_type.includes("place")) {
+    place.city = f.text
+  }
+
+  if (f.place_type.includes("district")) {
+    place.lga = f.text
+  }
+
+  // AREA / ADDRESS
+  if (
+    f.place_type.includes("locality") ||
+    f.place_type.includes("neighborhood") ||
+    f.place_type.includes("address") ||
+    f.place_type.includes("poi")
+  ) {
+    place.address = f.place_name || f.text
+  }
+})
 
     return place
   } catch (err) {
@@ -318,40 +338,192 @@ const hasExistingPolygon = computed(() => {
 </script>
 
 <template>
-<ClientOnly>
-  <div class="p-4 space-y-4">
+  <ClientOnly>
+    <div class="p-4 space-y-4">
 
-    <div class="font-bold">
-      Accuracy: {{ accuracy }} m
-    </div>
-
-    <div v-if="accuracy > REQUIRED_ACCURACY" class="text-red-600">
-      Waiting for better GPS accuracy...
-    </div>
-
-    <div v-else class="text-green-600">
-      GPS Ready ✓
-    </div>
-
-    <div class="flex gap-2">
-      <button @click="addCorner"  :disabled="hasExistingPolygon" class="bg-green-600 text-white px-4 py-2 rounded">
-        Add Corner
-      </button>
-
-      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
-        Reset
-      </button>
-    </div>
-
-    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
-
-    <div class="text-sm text-gray-600">
-      <div>Corners: {{ corners.length }}</div>
-      <div v-if="area">
-        Area: {{ area }} m² (~{{ plots }} plots)
+      <!-- ACCURACY -->
+      <div class="font-bold">
+        Accuracy: {{ accuracy }} m
       </div>
-    </div>
 
-  </div>
-</ClientOnly>
+      <!-- GPS STATUS -->
+      <div
+        v-if="accuracy > REQUIRED_ACCURACY"
+        class="text-red-600"
+      >
+        Waiting for better GPS accuracy...
+      </div>
+
+      <div
+        v-else
+        class="text-green-600"
+      >
+        GPS Ready ✓
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex gap-2">
+        <button
+          @click="addCorner"
+          :disabled="hasExistingPolygon"
+          class="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          Add Corner
+        </button>
+
+        <button
+          @click="resetPlot"
+          class="bg-red-600 text-white px-4 py-2 rounded"
+        >
+          Reset
+        </button>
+      </div>
+
+      <!-- MAP -->
+      <div
+        ref="mapRef"
+        class="w-full h-[500px] rounded-xl border shadow"
+      ></div>
+
+      <!-- LOCATION DETAILS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- STATE -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            State
+          </label>
+
+          <input
+            type="text"
+            :value="props.modelValue?.location?.state || ''"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+        <!-- CITY -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            City
+          </label>
+
+          <input
+            type="text"
+            :value="props.modelValue?.location?.city || ''"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+        <!-- AREA -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            Area
+          </label>
+
+          <input
+            type="text"
+            :value="props.modelValue?.location?.address || ''"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+      </div>
+
+      <!-- EXTRA LOCATION -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- COUNTRY -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            Country
+          </label>
+
+          <input
+            type="text"
+            :value="props.modelValue?.location?.country || ''"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+        <!-- LGA -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            LGA
+          </label>
+
+          <input
+            type="text"
+            :value="props.modelValue?.location?.lga || ''"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+      </div>
+
+      <!-- LAND INFO -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- AREA SIZE -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            Total Area (m²)
+          </label>
+
+          <input
+            type="text"
+            :value="area || 0"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+        <!-- PLOTS -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">
+            Estimated Plots
+          </label>
+
+          <input
+            type="text"
+            :value="plots || 0"
+            readonly
+            disabled
+            class="w-full border rounded-xl px-4 py-3 bg-gray-100 text-gray-700 cursor-not-allowed"
+          />
+        </div>
+
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="text-sm text-gray-600 border rounded-xl p-4 bg-gray-50">
+        <div>
+          Corners Added:
+          <span class="font-semibold">
+            {{ corners.length }}
+          </span>
+        </div>
+
+        <div v-if="area">
+          Land Area:
+          <span class="font-semibold">
+            {{ area }} m²
+          </span>
+
+          (~{{ plots }} plots)
+        </div>
+      </div>
+
+    </div>
+  </ClientOnly>
 </template>

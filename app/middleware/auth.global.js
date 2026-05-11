@@ -1,64 +1,77 @@
 export default defineNuxtRouteMiddleware(async () => {
   const config = useRuntimeConfig()
   const auth = useAuth()
-
-  // already checked before
-  if (auth.value !== null) return
-
-  // console.log('Checking authentication...')
-
-  // default state so page can continue rendering
-  auth.value = false
-
-  // SSR cookies only
+ console.log(auth.value);
+  console.log('Middleware started')
+  console.log(auth.value);
+  
+  // Prevent multiple checks
+  if (auth.value.checked) {
+    return
+  }
+   console.log('is not been check');
+   
+  // SSR cookies
   const headers = process.server
     ? useRequestHeaders(['cookie'])
-    : {}
-
+    : undefined
+ 
+  
   try {
-    const { data, error } = await useAsyncData(
-      'auth-check',
-      () =>
-        $fetch(`${config.public.api_url}/auth/protected`, {
-          credentials: 'include',
-          headers,
-          timeout: 2500,
-          retry: 0
-        }),
+    // SERVER SIDE FETCH
+    const data = await $fetch(
+      `${config.public.api_url}/auth/protected`,
       {
-        server: true,
-        lazy: true,
-        default: () => null
+        credentials: 'include',
+        headers,
+        timeout: 2500,
+        retry: 0
       }
     )
 
-    // request failed
-    if (error.value) {
-      // console.log('Auth check failed:', error.value?.message || error.value)
-      auth.value = false
-    } else {
-      auth.value = !!data.value
-    }
+    console.log('AUTH SUCCESsS', data)
+
+    // auth.value.user = data?.data || null
+    // auth.value.authenticated = true
+    // auth.value.checked = true
 
   } catch (err) {
-    // console.log('Auth middleware error:', err?.message || err)
-    auth.value = false
-  }
+    console.log('SSR AUTH FAILED', err)
 
-  // retry silently in browser after page loads
-  if (process.client && auth.value === false) {
-    setTimeout(async () => {
-      try {
-        const res = await $fetch(`${config.public.api_url}/auth/protected`, {
-          credentials: 'include',
-          timeout: 2500,
-          retry: 0
-        })
+    // Default guest state
+    auth.value.user = null
+    auth.value.authenticated = false
+    auth.value.checked = false
 
-        auth.value = !!res
-      } catch {
-        // stay guest mode silently
-      }
-    }, 2500)
+    // CLIENT RETRY AFTER HTML RENDER
+    if (process.client) {
+      setTimeout(async () => {
+        try {
+          console.log('Retrying auth fetch...')
+
+          // const retryData = await $fetch(
+          //   `${config.public.api_url}/auth/protected`,
+          //   {
+          //     credentials: 'include',
+          //     timeout: 2500,
+          //     retry: 0
+          //   }
+          // )
+
+          // console.log('RETRY SUCCESS', retryData)
+
+          // auth.value.user = retryData?.data || null
+          auth.value.authenticated = false
+          auth.value.checked = false
+
+        } catch (retryErr) {
+          console.log('Retry failed', retryErr)
+
+          auth.value.user = null
+          auth.value.authenticated = false
+          auth.value.checked = false
+        }
+      }, 1500)
+    }
   }
 })

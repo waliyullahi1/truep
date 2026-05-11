@@ -1,202 +1,277 @@
+<template>
+  <div class="min-h-screen bg-slate-50 py-6">
+    <ContainerUser>
+
+      <!-- HEADER -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-900">
+          Dashboard
+        </h1>
+
+        <p class="text-sm text-slate-500 mt-1">
+          Welcome back 👋
+        </p>
+      </div>
+
+      <!-- GRID -->
+      <div class="grid grid-cols-12 gap-6">
+
+        <!-- ======================================
+             SIDEBAR
+        ======================================= -->
+        <aside class="col-span-12 lg:col-span-4 xl:col-span-3">
+
+          <!-- PROFILE CARD -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6">
+
+            <div class="flex flex-col items-center text-center">
+
+              <img
+                :src="data?.avatar || defaultAvatar"
+                class="w-24 h-24 rounded-full object-cover border"
+              />
+
+              <h2 class="mt-4 font-semibold text-lg text-slate-900">
+                {{ fullName }}
+              </h2>
+
+              <p class="text-sm text-slate-500">
+                {{ data?.roles || 'User' }}
+              </p>
+
+              <div
+                class="mt-3 inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium"
+              >
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                Online
+              </div>
+
+              <button
+                class="w-full mt-5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium hover:bg-slate-100 transition"
+              >
+                View Profile
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- QUICK STATS -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
+
+            <h3 class="font-semibold text-slate-800 mb-4">
+              Overview
+            </h3>
+
+            <div class="space-y-4">
+
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                  Properties
+                </p>
+
+                <p class="font-semibold">
+                  0
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                  Orders
+                </p>
+
+                <p class="font-semibold">
+                  0
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                  Rating
+                </p>
+
+                <div class="flex items-center gap-1">
+                  <Star class="w-4 h-4 text-yellow-400" />
+                  <p class="font-semibold">
+                    0.0
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </aside>
+
+        <!-- ======================================
+             MAIN CONTENT
+        ======================================= -->
+        <main class="col-span-12 lg:col-span-8 xl:col-span-9 space-y-6">
+
+          <!-- TOP CARDS -->
+          <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5"
+            >
+              <p class="text-sm text-slate-500">
+                Earnings
+              </p>
+
+              <h3 class="text-2xl font-bold mt-2">
+                ₦0
+              </h3>
+            </div>
+
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5"
+            >
+              <p class="text-sm text-slate-500">
+                Messages
+              </p>
+
+              <h3 class="text-2xl font-bold mt-2">
+                0
+              </h3>
+            </div>
+
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5"
+            >
+              <p class="text-sm text-slate-500">
+                Active Orders
+              </p>
+
+              <h3 class="text-2xl font-bold mt-2">
+                0
+              </h3>
+            </div>
+
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5"
+            >
+              <p class="text-sm text-slate-500">
+                Reviews
+              </p>
+
+              <h3 class="text-2xl font-bold mt-2">
+                0
+              </h3>
+            </div>
+
+          </div>
+
+          <!-- CTA -->
+          <div
+            class="bg-black text-white rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5"
+          >
+
+            <div>
+              <h3 class="text-xl font-semibold">
+                Complete your profile
+              </h3>
+
+              <p class="text-sm text-slate-300 mt-2">
+                Add your information and verification details to build trust.
+              </p>
+            </div>
+
+            <NuxtLink
+              to="/user/profile"
+              class="px-5 py-3 rounded-xl bg-white text-black text-sm font-semibold w-fit"
+            >
+              Update Profile
+            </NuxtLink>
+
+          </div>
+
+          <!-- RECENT ACTIVITY -->
+          <div
+            class="bg-white rounded-2xl border border-slate-200 p-6"
+          >
+
+            <div class="flex items-center justify-between mb-5">
+
+              <h3 class="font-semibold text-slate-900">
+                Recent Activity
+              </h3>
+
+              <button
+                class="text-sm text-primary font-medium"
+              >
+                View all
+              </button>
+
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div
+              class="border border-dashed border-slate-300 rounded-2xl py-14 text-center"
+            >
+
+              <p class="text-slate-500 text-sm">
+                No recent activity yet
+              </p>
+
+            </div>
+
+          </div>
+
+        </main>
+
+      </div>
+
+    </ContainerUser>
+  </div>
+</template>
+
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { Star } from 'lucide-vue-next'
 
-const mapRef = ref(null)
-
-let map
-let L
-let myMarker
-let polygon = null
-let baseLayers = {}
-
-const currentLayer = ref('Hybrid')
-
-const corners = ref([])
-const watchId = ref(null)
-
-const form = ref({
-  area: 0,
-  plots: 0
+definePageMeta({
+  layout: 'auth'
 })
 
-/* ================= GPS ================= */
-const startLivePosition = () => {
-  if (!navigator.geolocation) return alert('GPS not supported')
+const data = ref({})
+const defaultAvatar = '/image/icon/avatar.svg'
 
-  watchId.value = navigator.geolocation.watchPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords
-
-      if (!myMarker) {
-        myMarker = L.circleMarker([latitude, longitude], {
-          radius: 8,
-          color: 'blue',
-          fillColor: 'blue',
-          fillOpacity: 0.8
-        }).addTo(map)
-      } else {
-        myMarker.setLatLng([latitude, longitude])
-      }
-
-      map.setView([latitude, longitude], 22)
-    },
-    () => alert('Enable GPS + High accuracy'),
-    { enableHighAccuracy: true }
-  )
-}
-
-/* ================= ADD CORNER ================= */
-const addCorner = () => {
-  if (!myMarker) return
-
-  const pos = myMarker.getLatLng()
-  corners.value.push([pos.lat, pos.lng])
-  drawPolygon()
-}
-
-/* ================= POLYGON ================= */
-const drawPolygon = () => {
-  if (polygon) map.removeLayer(polygon)
-
-  if (corners.value.length < 2) return
-
-  polygon = L.polygon(corners.value, {
-    color: 'red',
-    weight: 3,
-    fillOpacity: 0.2
-  }).addTo(map)
-
-  map.fitBounds(polygon.getBounds(), { padding: [40, 40] })
-
-  form.value.area = Math.round(geodesicAreaMeters(corners.value))
-  form.value.plots = Math.round(form.value.area / 450)
-}
-
-/* ================= AREA ================= */
-const geodesicAreaMeters = (coords) => {
-  if (coords.length < 3) return 0
-
-  const rad = Math.PI / 180
-  const latRef = coords[0][0] * rad
-
-  const meters = coords.map(([lat, lng]) => {
-    const x = lng * 111320 * Math.cos(latRef)
-    const y = lat * 110540
-    return [x, y]
-  })
-
-  let area = 0
-  for (let i = 0; i < meters.length; i++) {
-    const [x1, y1] = meters[i]
-    const [x2, y2] = meters[(i + 1) % meters.length]
-    area += x1 * y2 - x2 * y1
-  }
-
-  return Math.abs(area / 2)
-}
-
-/* ================= RESET ================= */
-const resetPlot = () => {
-  corners.value = []
-  if (polygon) map.removeLayer(polygon)
-  polygon = null
-  form.value.area = 0
-  form.value.plots = 0
-}
-
-/* ================= LAYER SWITCH ================= */
-const changeLayer = (type) => {
-  Object.values(baseLayers).forEach(l => map.removeLayer(l))
-  baseLayers[type].addTo(map)
-  currentLayer.value = type
-}
-
-/* ================= INIT MAP ================= */
-onMounted(async () => {
-  if (!process.client) return
-  await nextTick()
-
-  L = (await import('leaflet')).default
-  await import('leaflet/dist/leaflet.css')
-
-  map = L.map(mapRef.value, {
-    zoomControl: true,
-    maxZoom: 22
-  })
-
-  /* ===== ESRI LAYERS ===== */
-
-  const satellite = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-  )
-
-  const labels = L.tileLayer(
-    'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
-  )
-
-  const streets = L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-  )
-
-  const hybrid = L.layerGroup([satellite, labels])
-
-  baseLayers = {
-    Satellite: satellite,
-    Hybrid: hybrid,
-    Map: streets
-  }
-
-  hybrid.addTo(map)
-
-  map.invalidateSize()
-
-  startLivePosition()
+/* =========================================
+   FULL NAME
+========================================= */
+const fullName = computed(() => {
+  return `${data.value?.firstName || ''} ${data.value?.lastName || ''}`.trim()
 })
 
-onUnmounted(() => {
-  if (watchId.value) navigator.geolocation.clearWatch(watchId.value)
+/* =========================================
+   LOAD PROFILE
+========================================= */
+const loadProfile = async () => {
+  try {
+
+    const response = await useApiFetch('/profile/me', {
+      method: 'GET'
+    })
+
+    data.value =
+      response?.data?.data ||
+      response?.data ||
+      {}
+
+    console.log(data.value)
+    const propertyResponse = await useApiFetch('/profile/property', {
+      method: 'GET'
+    })
+    data.value.property = propertyResponse?.data?.data || propertyResponse?.data || {}
+  } catch (err) {
+
+    console.error('Load Profile Error:', err)
+
+  }
+}
+
+onMounted(() => {
+  loadProfile()
 })
 </script>
-
-<template>
-<ClientOnly>
-  <div class="p-4 space-y-4">
-
-    <!-- Buttons -->
-    <div class="flex gap-2 flex-wrap">
-
-      <button @click="addCorner" class="bg-green-600 text-white px-4 py-2 rounded">
-        ➕ Add Corner
-      </button>
-
-      <button @click="resetPlot" class="bg-red-600 text-white px-4 py-2 rounded">
-        🔄 Reset
-      </button>
-
-      <!-- 🔥 Layer Toggle -->
-      <button @click="changeLayer('Hybrid')" class="bg-blue-600 text-white px-3 py-2 rounded">
-        Hybrid
-      </button>
-
-      <button @click="changeLayer('Satellite')" class="bg-gray-700 text-white px-3 py-2 rounded">
-        Satellite
-      </button>
-
-      <button @click="changeLayer('Map')" class="bg-yellow-600 text-white px-3 py-2 rounded">
-        Map
-      </button>
-    </div>
-
-    <!-- Map -->
-    <div ref="mapRef" class="w-full h-[500px] rounded-xl border shadow"></div>
-
-    <!-- Info -->
-    <div class="text-sm text-gray-700">
-      Corners: {{ corners.length }} |
-      Area: {{ form.area }} m² (~{{ form.plots }} plots) |
-      Mode: {{ currentLayer }}
-    </div>
-
-  </div>
-</ClientOnly>
-</template>

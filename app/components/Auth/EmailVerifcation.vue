@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 
 const { $toast } = useNuxtApp()
 const router = useRouter()
-
+const auth = useAuth()
 
 const props = defineProps({
   email: {
@@ -81,6 +81,10 @@ const verifyCode = async () => {
       return
     }
     $toast.success(data.message || 'Email verified successfully')
+    auth.value.user = data?.data || null
+    auth.value.authenticated = true
+    auth.value.checked = true
+    auth.value.serverError = false
     setTimeout(() => {
       console.log('otp processed');
       router.push('/user/dashboard')
@@ -133,7 +137,7 @@ const resendCode = async () => {
 </script>
 
 <template>
-<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
+<div class="max-w-md mx-auto h-fit bg-white p-8 rounded-lg shadow">
 
   <h2 class="text-xl font-semibold">
     Confirm your email

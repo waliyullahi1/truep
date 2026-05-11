@@ -2,11 +2,161 @@
 <div>
   <div class="min-h-screen py-10 px-4">
     
-    {{ form }}
-  <Container>
+   <div v-if="error">
+  <NetworkError
+  :error="error"
+  @retry="refreshData"
+/>
+   </div>
+
+    <!-- ================= PAGE SKELETON ================= -->
+    <div
+     v-else-if="pending"
+      class="min-h-screen py-10 px-4 animate-pulse"
+    >
+      <Container>
+
+        <!-- STEP PROGRESS -->
+        <div class="mb-12 max-w-4xl mx-auto">
+          <div class="flex items-center justify-between">
+            <div
+              v-for="i in 4"
+              :key="i"
+              class="h-4 w-24 bg-gray-200 rounded"
+            ></div>
+          </div>
+
+          <div class="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full w-1/3 bg-gray-300"></div>
+          </div>
+        </div>
+
+        <!-- MAIN CARD -->
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl border shadow-sm space-y-8">
+
+          <!-- HEADER -->
+          <div class="text-center space-y-3">
+            <div class="h-8 w-72 bg-gray-300 rounded mx-auto"></div>
+            <div class="h-4 w-full max-w-xl bg-gray-200 rounded mx-auto"></div>
+            <div class="h-4 w-3/4 bg-gray-200 rounded mx-auto"></div>
+          </div>
+
+          <!-- PURPOSE + CATEGORY -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div class="space-y-3">
+              <div class="h-5 w-24 bg-gray-300 rounded"></div>
+              <div class="h-12 bg-gray-200 rounded-lg"></div>
+            </div>
+
+            <div class="space-y-3">
+              <div class="h-5 w-24 bg-gray-300 rounded"></div>
+              <div class="h-12 bg-gray-200 rounded-lg"></div>
+            </div>
+
+          </div>
+
+          <!-- TABS -->
+          <div class="space-y-6">
+
+            <div class="flex gap-3">
+              <div
+                v-for="i in 3"
+                :key="i"
+                class="h-12 flex-1 bg-gray-200 rounded"
+              ></div>
+            </div>
+
+            <!-- LOCATION CARD -->
+            <div class="border rounded-xl p-5 space-y-5">
+
+              <!-- BUTTONS -->
+              <div class="flex gap-3">
+                <div class="h-10 w-28 bg-gray-300 rounded"></div>
+                <div class="h-10 w-36 bg-gray-200 rounded"></div>
+              </div>
+
+              <!-- MAP -->
+              <div class="h-[350px] bg-gray-200 rounded-xl"></div>
+
+              <!-- INPUTS -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div
+                  v-for="i in 4"
+                  :key="i"
+                  class="space-y-2"
+                >
+                  <div class="h-4 w-24 bg-gray-300 rounded"></div>
+                  <div class="h-11 bg-gray-200 rounded-lg"></div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- FEATURES -->
+          <div class="space-y-4">
+
+            <div class="h-6 w-40 bg-gray-300 rounded"></div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div
+                v-for="i in 6"
+                :key="i"
+                class="h-16 bg-gray-200 rounded-xl"
+              ></div>
+            </div>
+
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="space-y-4">
+
+            <div class="flex justify-between items-center">
+              <div class="h-6 w-40 bg-gray-300 rounded"></div>
+              <div class="h-10 w-40 bg-gray-200 rounded-lg"></div>
+            </div>
+
+            <div class="h-40 bg-gray-200 rounded-xl"></div>
+
+          </div>
+
+          <!-- MEDIA -->
+          <div class="space-y-4">
+
+            <div class="h-6 w-32 bg-gray-300 rounded"></div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div
+                v-for="i in 8"
+                :key="i"
+                class="aspect-square bg-gray-200 rounded-xl"
+              ></div>
+            </div>
+
+          </div>
+
+          <!-- FOOTER BUTTONS -->
+          <div class="flex justify-between pt-4">
+
+            <div class="h-11 w-28 bg-gray-200 rounded-lg"></div>
+
+            <div class="h-11 w-36 bg-gray-300 rounded-lg"></div>
+
+          </div>
+
+        </div>
+
+      </Container>
+    </div>
+
+  <Container v-else>
 
       <!-- ✅ STEP PROGRESS -->
-    <div class="mb-12 max-w-4xl mx-auto ">
+    <div class="mb-12  max-w-4xl mx-auto ">
       <div class="flex  items-center justify-between text-sm font-medium">
         <div :class="step >= 1 ? 'text-black' : 'text-gray-400'">Basic Info</div>
         <div :class="step >= 2 ? 'text-black' : 'text-gray-400'">Details</div>
@@ -151,7 +301,11 @@
 
               <!-- FEATURES -->
               <div v-if="activeSection === 'features'">
-                <ListFeature :type="propertyType"  v-model:house="form.houseDetails" v-model="form.features" />
+                <ListFeature
+                  :type="propertyType"
+                  v-model:house="form.houseDetails"
+                  v-model:features="form.features"
+                />
               </div>
 
               <!-- OTHERS -->
@@ -318,6 +472,7 @@ const ownershipType = ref('')
 const agentName = ref('')
 const router = useRouter()
 const route = useRoute()
+const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
 
 definePageMeta({ layout: 'auth' })
@@ -470,6 +625,11 @@ function generateRandomLand() {
       coordinates: [corners]
     }
   }
+}
+
+const refreshData = async (stopLoading) => {
+  await refresh()   // or your API call
+  stopLoading()     // tell child to stop loading
 }
 
 function onCategoryChange(e) {
@@ -692,6 +852,8 @@ const back = () => { if (step.value > 1) {
         })
   step.value--
    }}
+
+   
 const submit =  async() => { 
   submitloading.value = true
         if (!verified.value) {
@@ -731,33 +893,86 @@ const submit =  async() => {
 
 
 /* ================= LOAD EXISTING FORM ================= */
+const { data, pending, error, refresh } = await useAsyncData(
+  `property-${route.params.id}`,
+  async () => {
+    try {
+      const propertyId = route.query?.id
+      if (!propertyId)  return
 
-const loadData = async () => {
-  try {
-    const response = await useApiFetch(`/property/${propertyId}`, {
-      method: 'GET'
-    })
+      const res = await useApiFetch(`/property/${propertyId}`)
 
-    // If your API returns wrapped response
-    const property = response?.data?.data || response?.data || null
-
-    if (!property) {
-      console.warn('No property found')
-      return
+      if (!res.success) {
+        throw new Error(res.message || 'Failed')
+      }
+       const safe = res?.data?.data || res?.data || null
+       mergeForm(safe)
+      return res.data?.data || null
+    } catch (err) {
+      throw err
     }
+  },
+  { lazy: true, server: true }
+)
+// const { data, pending, error } = await useAsyncData(
+//   `property-${route.params.id}`,
+//   async () => {
+//     try {
+//        const propertyId = route.query?.id
+//       if (!propertyId) return null
 
-    console.log(property)
-    mergeForm(property)
+//       const res = await useApiFetch(`/property/${propertyId}`)
+//           console.log(res,'res');
+          
+//             if (!res.success) {
+//               console.log(res.success, 'res.success');
+              
+//               throw createError({
+//                 statusCode: res.status || 500,
+//                 statusMessage: res.message || 'Failed to load properties'
+//               })
+//             }
+//       // ✅ Extract ONLY plain JSON
+//       const safe = res?.data?.data || res?.data || null
+//             mergeForm(safe)
+//       // ✅ Prevent "non-POJO" error
+//       return JSON.parse(JSON.stringify(safe))
+//     } catch (err) {
+//       console.error('Fetch failed:', err)
+//       return null
+//     }
+//   },
+//    {
+//     lazy: true,
+//     server: true
+//   }
+// )
+// const loadData = async () => {
+//   try {
+//     const response = await useApiFetch(`/property/${propertyId}`, {
+//       method: 'GET'
+//     })
 
-  } catch (err) {
-    console.error('LoadData Error:', err)
+//     // If your API returns wrapped response
+//     const property = response?.data?.data || response?.data || null
 
-    // ✅ show ONE clear message
-    $toast.error('Server unavailable. Try again.')
-  }
-}
+//     if (!property) {
+//       console.warn('No property found')
+//       return
+//     }
 
-await loadData()
+//     console.log(property)
+//     mergeForm(property)
+
+//   } catch (err) {
+//     console.error('LoadData Error:', err)
+
+//     // ✅ show ONE clear message
+//     $toast.error('Server unavailable. Try again.')
+//   }
+// }
+
+// await loadData()
 
 //  mergeForm(data.value.data)
 // onMounted(async () => {

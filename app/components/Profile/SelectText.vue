@@ -1,9 +1,12 @@
 <template>
-  <div class="flex items-center gap-1">
+  <div class="flex w-full items-center gap-1">
 
     <!-- VIEW MODE -->
-    <div v-if="!editing" class="flex items-center gap-1">
-
+    <button
+      v-if="!editing"
+      @click="openSelect"
+      class="flex w-full items-center gap-1"
+    >
       <h4
         class="text-md font-medium"
         :class="!modelValue ? 'text-gray-400 italic' : ''"
@@ -11,12 +14,15 @@
         {{ modelValue || placeholder }}
       </h4>
 
-      <button class="w-6 h-5" @click="openSelect">
-        <img src="/image/icon/edit.svg" class="w-3" />
-      </button>
-
-    </div>
-
+      <!-- EDIT ICON -->
+      <div class="w-6 h-5 flex items-center justify-center">
+        <img
+          src="/image/icon/edit.svg"
+          class="w-3"
+          alt="edit"
+        />
+      </div>
+    </button>
 
     <!-- SELECT MODE -->
     <div v-else class="flex items-center gap-2">
@@ -36,7 +42,6 @@
         >
           {{ option }}
         </option>
-
       </select>
 
       <button
@@ -62,7 +67,10 @@
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  modelValue: String,
+  modelValue: {
+    type: String,
+    default: ''
+  },
 
   options: {
     type: Array,
@@ -78,11 +86,14 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const editing = ref(false)
-const localValue = ref(props.modelValue)
+const localValue = ref(props.modelValue || '')
 
-watch(() => props.modelValue, (val) => {
-  localValue.value = val
-})
+watch(
+  () => props.modelValue,
+  (val) => {
+    localValue.value = val || ''
+  }
+)
 
 const openSelect = () => {
   editing.value = true
@@ -94,7 +105,7 @@ const save = () => {
 }
 
 const cancel = () => {
-  localValue.value = props.modelValue
+  localValue.value = props.modelValue || ''
   editing.value = false
 }
 </script>
