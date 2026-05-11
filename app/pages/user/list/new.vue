@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div class="min-h-screen py-10 px-4">
+  <div class="min-h-screen py-10 px-0 md:px-4">
     
    <div v-if="error">
   <NetworkError
@@ -32,7 +32,7 @@
         </div>
 
         <!-- MAIN CARD -->
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl border shadow-sm space-y-8">
+        <div class="max-w-4xl mx-auto bg-white md:p-6 p-2 rounded-xl border shadow-sm space-y-8">
 
           <!-- HEADER -->
           <div class="text-center space-y-3">
@@ -57,7 +57,7 @@
           </div>
 
           <!-- TABS -->
-          <div class="space-y-6">
+          <div class="md:space-y-6 space-x-2">
 
             <div class="flex gap-3">
               <div
@@ -68,7 +68,7 @@
             </div>
 
             <!-- LOCATION CARD -->
-            <div class="border rounded-xl p-5 space-y-5">
+            <div class="border rounded-xl md:p-5 p-0 space-y-5">
 
               <!-- BUTTONS -->
               <div class="flex gap-3">
@@ -174,7 +174,7 @@
    
     <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
-      <div v-if="step === 1" class="max-w-4xl list-disc mx-auto space-y-4">
+      <div v-if="step === 1" class="md:max-w-4xl w-full list-disc mx-auto space-y-4">
         <div class="bg-white p-5 rounded shadow space-y-6">
           <div class="text-center space-y-2 mb-8">
             <h1 class="text-2xl font-bold">Basic Property Information</h1>

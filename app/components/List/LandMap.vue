@@ -339,7 +339,7 @@ const hasExistingPolygon = computed(() => {
 
 <template>
   <ClientOnly>
-    <div class="p-4 space-y-4">
+    <div class="md:p-4 sm:p-0 space-y-4">
 
       <!-- ACCURACY -->
       <div class="font-bold">
