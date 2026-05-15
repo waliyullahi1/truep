@@ -618,34 +618,90 @@ onBeforeUnmount(() => {
                 </span>
               </div>
 
-              <!-- ACTION -->
-              <div class="col-span-1 flex justify-end relative">
-                <button
-                  @click.stop="toggleMenu(item._id)"
-                  class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                >
-                  ⋮
-                </button>
+            
+            
 
                 <!-- DROPDOWN -->
-                <div
-                  v-if="openMenuId === item._id"
-                  class="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-lg text-sm z-50"
-                >
-                  <button v-if="item.status !== 'draft'" @click.stop="viewProperty(item._id)" class="block w-full text-left px-4 py-2 hover:bg-gray-100">
-                    View
-                  </button>
-                  <button   @click.stop="editproper(item._id)" class="block w-full text-left px-4 py-2 hover:bg-gray-100">
-                    Edit
-                  </button>
+               <!-- ACTION -->
+                <div class="col-span-1 flex justify-end relative">
+
                   <button
-                    @click.stop="removeItem(item._id)"
-                    class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                    @click.stop="toggleMenu(item._id)"
+                    class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
                   >
-                    Delete
+                    ⋮
                   </button>
+
+                  <!-- DROPDOWN -->
+                  <div
+                    v-if="openMenuId === item._id"
+                    class="absolute right-0 top-10 w-52 bg-white border rounded-md shadow-lg text-sm z-50 overflow-hidden"
+                  >
+
+                    <!-- VIEW -->
+                    <button
+                      v-if="item.status !== 'draft'"
+                      @click.stop="viewProperty(item._id)"
+                      class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      View
+                    </button>
+
+                    <!-- EDIT -->
+                    <button
+                      @click.stop="editproper(item._id)"
+                      class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Edit
+                    </button>
+
+                    <!-- STATUS SECTION -->
+                    <div
+                      v-if="getAllowedStatuses(item.status).length"
+                      class="border-t"
+                    >
+
+                      <div class="px-4 py-2 text-[11px] uppercase text-gray-400 font-semibold">
+                        Change Status
+                      </div>
+
+                      <button
+                        v-for="status in getAllowedStatuses(item.status)"
+                        :key="status"
+                        @click.stop="changeStatus(item, status)"
+                        :disabled="changingStatus === item._id"
+                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 capitalize disabled:opacity-50"
+                      >
+
+                        <span
+                          v-if="changingStatus === item._id"
+                        >
+                          Updating...
+                        </span>
+
+                        <span v-else>
+
+                          Mark as
+                          {{ status.replace('_', ' ') }}
+
+                        </span>
+
+                      </button>
+
+                    </div>
+
+                    <!-- DELETE -->
+                    <button
+                      @click.stop="removeItem(item._id)"
+                      class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 border-t"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
                 </div>
-              </div>
+             
 
             </div>
 

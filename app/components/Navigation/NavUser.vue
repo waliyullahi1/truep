@@ -2,7 +2,7 @@
 
 
 <template>
-  <div  class=" h-16  z-150 relative    w-full "> 
+  <div  class=" h-16  z-[150] relative    w-full "> 
    
     <nav
       :class="[
@@ -99,7 +99,7 @@
 
       <div
         v-if="menuRevealed"
-        class="fixed top-0 left-0 h-screen w-[70%] overflow-y-auto max-w-[320px] bg-white z-auto md:hidden px-6 py-8 shadow-2xl"
+        class="fixed  z-[150]  top-6 left-0 h-screen w-[70%] overflow-y-auto max-w-[320px] bg-white  md:hidden px-6 py-8 shadow-2xl"
       >
 
         <!-- HEADER -->

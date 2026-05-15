@@ -470,7 +470,7 @@ const categories = [
 <template>
 <div>
 
-      <div v-if="isFixed"   class="fixed  z-100 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
+      <div v-if="isFixed"   class="fixed  z-20 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
         <div class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
           <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
             
@@ -511,7 +511,7 @@ const categories = [
         </div>
     </div>
     
-          <Container    class="  z-100 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
+          <div    class="  mt-5  w-full   backdrop-blur bg-white/90"   ref="searchRef">
               <div v-if="!isFixed"  ref="searchRef" class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
                 <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
                   
@@ -552,7 +552,7 @@ const categories = [
               </div>
 
              
-          </Container>
+            </div>
   <!-- HERO -->
   <section class="relative z-10 hidden  h-screen-80 flex items-center justify-center text-center">
 

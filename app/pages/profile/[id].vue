@@ -97,7 +97,7 @@ const shareProfile = async () => {
 useSeoMeta({
   title: () =>
     agent.value?.name
-      ? `${agent.value.name} | Verified ${agent.value.name} in ${agent.value?.location?.state || 'Nigeria'}`
+      ? `${agent.value.name} | Verified ${agent.value.roles} in ${agent.value?.location?.state || 'Nigeria'}`
       : `${agent.value.name} Profile`,
 
   description: () =>

@@ -63,10 +63,10 @@
             >
               @{{ data.firstName }}
             </p>
-
+           
             <div class="flex justify-center items-center">
               <NuxtLink
-                to="/user/profile/edit"
+                :to="`/profile/${data._id}`"
                 class="border border-slate-300 duration-300 rounded-md font-medium hover:bg-primary/10 text-sm w-full mt-3 py-2"
               >
                 View Profile
@@ -406,6 +406,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Star } from 'lucide-vue-next'
+import auth from '~/middleware/auth'
 
 definePageMeta({
   layout: 'auth',
