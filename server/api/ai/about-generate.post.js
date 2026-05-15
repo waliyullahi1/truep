@@ -22,15 +22,17 @@ export default defineEventHandler(async (event) => {
       model: "gemini-2.5-flash",
 
       contents: `
-Generate a professional short About Me section.
+Generate a professional first-person About Me section.
 
 USER DATA:
 ${JSON.stringify(user)}
 
 RULES:
+- Write in FIRST PERSON
+- Use words like: "I am", "I have", "I specialize", "I enjoy"
 - Maximum 100 words
 - Professional and friendly
-- Human sounding
+- Human sounding and natural
 - Mention skills naturally
 - No markdown
 - Return ONLY plain text
@@ -40,8 +42,17 @@ RULES:
         systemInstruction: `
 You are a professional bio writer.
 
-Write modern About sections for professionals.
-Keep it concise and natural.
+Write modern first-person About Me sections.
+
+The bio MUST sound like the user is describing themselves directly.
+
+Good example:
+"I am a frontend developer with experience building modern web applications..."
+
+Bad example:
+"He is a frontend developer..."
+
+Keep it concise, natural, and professional.
 Return only plain text.
 `
       }

@@ -1,14 +1,13 @@
 <!-- pages/dashboard/analytics.vue -->
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
-       <OverlayMaintanance /> 
     <!-- Header -->
     <div
       class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
     >
       <div>
         <h1 class="text-4xl font-bold text-gray-900">
-          Property Analytics
+          Orders Analytics
         </h1>
 
         <p class="mt-2 text-gray-500">
@@ -361,6 +360,11 @@
         </div>
       </div>
     </div>
+    <div > 
+       <OverlayMaintanance /> 
+    </div>
+     
+    
   </div>
 </template>
 

@@ -26,12 +26,12 @@ const props = defineProps({
 
           <div class="flex items-center  t gap-2 text-gray-700 mb-2">
             <Phone class="w-4 h-4" />
-            <span>{{ agent.phone  || "07068393706"  }}</span>
+            <span>{{ agent.whatsapp_no  || "07068393706"  }}</span>
           </div>
 
           <div class="flex   items-center gap-2 text-gray-800">
             <MessageCircle class="w-3" />
-            <span>WhatsApp: {{ agent.whatsapp || agent.phone || "07068393706"   }}</span>
+            <span>WhatsApp: {{ agent.whatsapp_no || agent.phone || "07068393706"   }}</span>
           </div>
         </div>
 
@@ -50,7 +50,7 @@ const props = defineProps({
 
           <div class="flex items-center gap-2 text-gray-700">
             <Calendar class="w-4 h-4" />
-            <span>Experience: {{ agent.experience || 0 }} years</span>
+            <span>Experience: {{ agent.yearOfExperience || `3 year` }} </span>
           </div>
         </div>
 
@@ -95,15 +95,31 @@ const props = defineProps({
         <div>
           <h3 class="font-medium mb-3">Social Media & Website</h3>
 
-          <div class="flex gap-4 text-gray-600">
-            <a v-if="agent.socials?.instagram" :href="agent.socials.instagram" target="_blank">
-              <i class="i-lucide-instagram text-xl"></i>
+             <div class="mt-6 flex gap-6 text-2xl">
+
+          <a v-if="agent.social_media.facebook" :href="agent.social_media.facebook" target="_blank">
+            <Icon name="mdi:facebook" class="hover:text-blue-600" />
+          </a>
+
+          <a v-if="agent.social_media.instagram" :href="agent.social_media.instagram" target="_blank">
+            <Icon name="mdi:instagram" class="hover:text-pink-600" />
+          </a>
+
+            <a v-if="agent.social_media.tiktok" :href="agent.social_media.tiktok" target="_blank">
+            <Icon name="simple-icons:tiktok" class="text-black" />
             </a>
 
-            <a v-if="agent.socials?.linkedin" :href="agent.socials.linkedin" target="_blank">
-              <i class="i-lucide-linkedin text-xl"></i>
-            </a>
-          </div>
+          <a v-if="agent.social_media.youtube" :href="agent.social_media.youtube" target="_blank">
+            <Icon name="mdi:youtube" class="hover:text-red-600" />
+          </a>
+
+          <a v-if="agent.social_media.whatsapp" :href="agent.social_media.whatsapp" target="_blank">
+            <Icon name="mdi:whatsapp" class="hover:text-green-600" />
+          </a>
+
+        
+
+        </div>
         </div>
 
       </div>

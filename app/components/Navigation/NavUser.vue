@@ -25,6 +25,37 @@
                 
             </div>
          </div>
+
+         <div class="hidden  md:flex gap-3 text-sm font-medium  items-center flex-shrink-0">
+        
+          <NuxtLink to="/auth?type=register-page" >
+            <p class="   hover:text-primary hidden cursor-pointer"> Projects </p>
+          </NuxtLink>
+          <NuxtLink to="/search" >
+            <p class="  hover:text-primary cursor-pointer"> Properties </p>
+          </NuxtLink>
+          <NuxtLink to="/agent" >
+            <p class="  hover:text-primary cursor-pointer"> Agents </p>
+          </NuxtLink>
+
+          <NuxtLink to="/about-us" >
+            <p class="  hover:text-primary cursor-pointer"> About Us </p>
+          </NuxtLink>
+
+          <NuxtLink to="/contact-us" >
+            <p class="  hover:text-primary cursor-pointer"> Contact Us </p>
+          </NuxtLink>
+
+
+          <NuxtLink to="/privacy-policy">
+            <p class="    hover:text-primary cursor-pointer"> Privacy Policy</p>
+          </NuxtLink>
+
+
+          
+
+         
+        </div>
         
 
         <!-- Desktop Navigation -->
@@ -49,6 +80,8 @@
               
           
           </div>
+
+
          
 
 
@@ -62,7 +95,73 @@
        :isOpen="menuRevealed" 
          @revealMenu="toggleMenu" 
         />
+        <Transition name="slide">
 
+      <div
+        v-if="menuRevealed"
+        class="fixed top-0 left-0 h-screen w-[70%] overflow-y-auto max-w-[320px] bg-white z-auto md:hidden px-6 py-8 shadow-2xl"
+      >
+
+        <!-- HEADER -->
+        <div class="flex sm:hidden  items-center  mb-10">
+           <button @click="toggleMoreMenu" class="flex items-end group">
+
+              <div class="flex rounded-full overflow-hidden h-10 w-10 border transition group-hover:scale-105">
+                <img
+                  :src="preview || defaultAvatar"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              <div class="relative right-3 border-2 border-white w-3 h-3 rounded-full bg-green-500"></div>
+
+            </button>
+            <div  class=" leading-tight">
+              <p class="leading-tight text-sm font-semibold">@{{ auth.user.firstName }}</p>
+               <p class=" leading-tight text-sm font-medium">{{ auth.user.roles }}</p>
+            </div>
+
+        </div>
+
+        <!-- MENU LINKS -->
+        <div class="flex flex-col gap-7 text-slate-700 font-medium">
+          
+        
+           <NuxtLink to="/auth?type=register-page" >
+            <p class="   hover:text-primary hidden cursor-pointer"> Projects </p>
+          </NuxtLink>
+          <NuxtLink to="/search" >
+            <p class="  hover:text-primary cursor-pointer"> Properties </p>
+          </NuxtLink>
+          <NuxtLink to="/agent" >
+            <p class="  hover:text-primary cursor-pointer"> Agents </p>
+          </NuxtLink>
+
+          <NuxtLink to="/about-us" >
+            <p class="  hover:text-primary cursor-pointer"> About Us </p>
+          </NuxtLink>
+
+          <NuxtLink to="/contact-us" >
+            <p class="  hover:text-primary cursor-pointer"> Contact Us </p>
+          </NuxtLink>
+
+
+          <NuxtLink to="/privacy-policy">
+            <p class="    hover:text-primary cursor-pointer"> Privacy Policy</p>
+          </NuxtLink>
+
+
+         
+
+         
+
+         
+
+        </div>
+
+      </div>
+
+    </Transition>
 
         <!-- Mobile Menu -->
       
@@ -85,17 +184,24 @@
 
                   </button>
                   <div>
-                    <p></p>     
+                     <p class="  text-xs font-medium">@{{auth.user.firstName}}</p>   
+                    <p class="  text-xs font-medium">{{hiddenEmail}}</p>
+                       
                   </div>
                
                </div>
 
               
                 <div class=" px-2 border-t  border- py-3 space-y-3 mt-1">
-                   <div>
-                   <NuxtLink to="/profile" class="">
-                      <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer">  Upgrade Account</p>
-                  </NuxtLink>
+                   <div v-if=" auth.user.roles === 'user'">
+                    <NuxtLink to="/user/profile/edit" class="">
+                        <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer">  Upgrade Account</p>
+                    </NuxtLink>
+                 </div>
+                  <div v-if=" auth.user.roles !== 'user'">
+                    <NuxtLink to="/user/dashboard" class="">
+                        <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer">  Dashborad </p>
+                    </NuxtLink>
                  </div>
                 
                  <div>
@@ -112,7 +218,7 @@
                  </div>
 
                  <div class="">
-                   <NuxtLink to="/profile" class="">
+                   <NuxtLink to="/user/settings" class="">
                       <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer"> 
                        Setting
                          </p>
@@ -125,9 +231,9 @@
 
                 <div class=" px-2 border-t  border- py-3 space-y-3 mt-1">
                    <div>
-                   <NuxtLink to="/profile" class="">
+                   <button @click="handlelogout" class="">
                       <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer"> log out</p>
-                  </NuxtLink>
+                  </button>
                  </div>
                 
                  
@@ -146,16 +252,17 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 const defaultAvatar = '/image/icon/avatar.svg'
 import { useRuntimeConfig } from '#app'
-
+const { $toast } = useNuxtApp()
 const config = useRuntimeConfig()
 const router = useRouter()
 const route = useRoute()
 const preview = ref('')
+const auth = useAuth()
+
 // States
 const menuRevealed = ref(false)
 const isScrolled = ref(false)
-const menuAbout = ref(false)
-const admissionMenu = ref(false)
+
 const moreMenu = ref(false)
 //Poppins
 defineProps({
@@ -181,17 +288,61 @@ const handleLogoClick = () => {
   router.push('/')
 }
 
-function toggleAbout() {
-  menuAbout.value = !menuAbout.value
-}
+const hiddenEmail = computed(() => {
+  if(!auth?.value?.user?.email) return 'none'
+  const [name, domain] = auth.value?.user?.email?.split('@')
+  
+  // keep first 4 characters
+  const visiblePart = name.slice(0, 4)
 
-function toggleadmission() {
-  admissionMenu.value = !admissionMenu.value
-}
+  // replace remaining with *****
+  const hiddenPart = '*'.repeat(Math.max(name.length - 4, 5))
+
+  return `${visiblePart}${hiddenPart}@${domain}`
+})
+
 
 // Scroll detection
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
+}
+
+const handlelogout = async () => {
+  try {
+    const response = await fetch(`${config.public.api_url}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      $toast.error(data.message || 'Login failed')
+      return
+    }
+    
+     auth.value.user =  null
+    auth.value.authenticated = false
+    auth.value.checked = false
+    auth.value.serverError = false
+    /* SUCCESS */
+
+    $toast.success(data.message || 'logout successful')
+    
+    
+    setTimeout(() => {
+      console.log('otp processed');
+       router.push('/')
+    }, 800)
+
+  } catch (err) {
+    
+    loginloading.value = false
+    $toast.error(err.message || 'An error occurred')
+  } finally {
+    loginloading.value = false
+  }
 }
 
 onMounted(async () => {

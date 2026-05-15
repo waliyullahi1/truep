@@ -112,8 +112,9 @@
       </p>
     </div>
     <div v-else class="v-else">
-       <div v-if="isOwner">
-            <div  v-if="isPreview"  class=" flex max-w-6xl px-3  pt-6 justify-between mx-auto ">
+     
+       <div v-if="showPreviewBar">
+            <div   class=" flex max-w-6xl px-3  pt-6 justify-between mx-auto ">
                 <div class=" font-semibold ">
                   Status : 
                   <span 
@@ -129,17 +130,17 @@
                     {{form.status}}
                 </span>
                 </div >
-              <div   class="flex  ">
+              <div   class="flex  gap-3 ">
                   <UiButtonsPrimary @click="back">Edit</UiButtonsPrimary>
-                  <UiButtonsSecondary >Publish</UiButtonsSecondary>
+                  <UiButtonsSecondary v-if=" form.status === 'draft'" :disabled="loading" @click="updateStatus">{{loading ? 'Updating...' : 'Go Live'}}</UiButtonsSecondary>
               </div>
 
           </div>
         </div>
+        
     <Container>
-    <!-- <button @click="$router.back()" class="flex items-center mb-5 justify-between text-xl font-semibold  gap-2 text-gray-900">
-            <  Back
-     </button> -->
+   
+      <NavigationBackArrow/>
      <div class="flex  flex-col lg:flex-row gap-10">
        
         <!-- ================= LEFT ================= -->
@@ -346,23 +347,23 @@
           
               <div class="  border   bg-white rounded-xl    p-6 space-y-6">
                   <!-- AGENT -->
-                  <div> 
+                  <button @click="goToAgentProfile" class="flex items-center gap-3"> 
                     <div class="flex items-center gap-3">
                       <img  :src="form.user?.avatar || '/images/default-agent.png'" class=" w-16 h-16 rounded-full object-cover" />
                     <div>
 
-                    <p class=" text-xs   text-gray-700"> Listed By</p>
-                    <p class=" text-sm">{{ `${form.user?.firstName}  ${form.user?.lastName}` || 'Unknown Agent' }}</p>
-                  </div>
-              </div>
-                  </div>
+                      <p class=" text-xs   text-gray-700"> Listed By</p>
+                      <p class=" text-sm">{{ `${form.user?.firstName}  ${form.user?.lastName}` || 'Unknown Agent' }}</p>
+                    </div>
+                   </div>
+                  </button>
               
 
                   <!-- ACTIONS -->
-                  <button class="w-fit flex gap-1  items-center tm text-xs border py-2 px-4 rounded-lg">
-                    <MessageSquareText class=" w-5" />
-                    Contact  Agent
-                  </button>
+                 <a v-if="whatsappLink"  :href="whatsappLink" target="_blank"                class="w-fit flex gap-1 items-center text-xs border py-2 px-4 rounded-lg">
+                    <MessageSquareText class="w-5" />
+                    Contact Agent
+                  </a>
               </div>
               
               <PropertyInquiry :title="form.title" :price="formattedPrice" :propertyId="property?._id"/>
@@ -392,12 +393,12 @@ import { ref, computed, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MapPin,House, Toilet,  MapPinned, Share2, MessageSquareText, Home, Bed, Bath, Heart } from 'lucide-vue-next' 
 definePageMeta({
-  layout: 'auth'
+  layout: 'auth',
 })
 
 const router = useRouter()
 const route = useRoute()
-
+const { $toast } = useNuxtApp()
 /* ================= FORM STATE ================= */
 const form = ref({
   title: '',
@@ -428,41 +429,37 @@ const showFull = ref(false)
 const isWishlisted = ref(false)
 const activeTab = ref('Details')
 const tabs = ['Details', 'Area Guide']
-
+const loading = ref(false)
 /* ================= FETCH (SSR SAFE) ================= */
 const { data, pending, error } = await useAsyncData(
   `property-${route.params.slogan}`,
   async () => {
-    try {
-      const slogan = route.params.slogan
-      if (!slogan) return null
+    const slogan = route.params.slogan
+    if (!slogan) return null
 
-      const res = await useApiFetch(`/property/${slogan}`)
+    const res = await useApiFetch(`/property/${slogan}`)
 
-      // ✅ Extract ONLY plain JSON
-      const safe = res?.data?.data || res?.data || null
-
-      // ✅ Prevent "non-POJO" error
-      return JSON.parse(JSON.stringify(safe))
-    } catch (err) {
-      console.error('Fetch failed:', err)
-      return null
+    return {
+      property: JSON.parse(JSON.stringify(res.data.data)),
+      isOwner: res.data.isOwner
     }
   }
 )
 
 /* ================= COMPUTED ================= */
-const property = computed(() => data.value || null)
 
-const isOwner = computed(() => {
-  return data.value?.isOwner || false
-})
+const property = computed(() => data.value?.property || null)
+const isOwner = computed(() => data.value?.isOwner || false)
+// const isOwner = computed(() => {
+//   console.log(data, 'data was console' );
+  
+//   return data.value?.isOwner || false
+// })
 
 const isPreview = computed(() => {
   const q = route.query.preview
   return q === '' || q === 'true' || q === '1'
 })
-
 const formattedPrice = computed(() => {
   const housePrice = form.value.houseDetails?.price
   const landPrice = form.value.landDetails?.price
@@ -476,6 +473,9 @@ const formattedPrice = computed(() => {
   return 'Price Not Set'
 })
 
+const showPreviewBar = computed(() => {
+  return isOwner.value && isPreview.value
+})
 const shortText = computed(() =>
   form.value.description
     ? form.value.description.slice(0, 350) + '...'
@@ -486,9 +486,43 @@ const mapUrl = computed(() =>
   `https://maps.google.com/maps?q=${form.value.location?.city || ''}&output=embed`
 )
 
-const whatsappLink = computed(() =>
-  `https://wa.me/2348000000000?text=Hi I am interested in ${form.value.title}`
-)
+const whatsappLink = computed(() => {
+  const social = property.value.userId?.social_media || {}
+  const phone = property.value.userId?.whatsapp_no || ''
+
+  const title = property.value?.title || 'this property'
+  const price = property.value?.pricing?.price
+    ? `₦${Number(property.value.pricing.price).toLocaleString()}`
+    : ''
+
+  const location = `${property.value?.location?.city || ''}, ${property.value?.location?.state || ''}`
+
+  const message = encodeURIComponent(
+    `Hi, I'm interested in ${title} ${price} located at ${location}. Please share more details.`
+  )
+
+  // 1) If full WhatsApp link already saved by agent
+  if (social.whatsapp) {
+    return `${social.whatsapp}?text=${message}`
+  }
+
+  // 2) If only phone number exists → convert to WhatsApp
+  if (phone) {
+    let cleaned = phone.replace(/\D/g, '')
+
+    // convert 080xxxx → 23480xxxx
+    if (cleaned.startsWith('0')) {
+      cleaned = '234' + cleaned.slice(1)
+    }
+
+    return `https://wa.me/${cleaned}?text=${message}`
+  }
+
+  return null
+})
+// const whatsappLink = computed(() =>
+//   `https://wa.me/2348000000000?text=Hi I am interested in ${form.value.title}`
+// )
 
 /* ================= HELPERS ================= */
 const capitalizeFirstLetter = (text) => {
@@ -499,9 +533,6 @@ const capitalizeFirstLetter = (text) => {
   return lower.replace(/[a-z]/i, (char) => char.toUpperCase()) // ✅ step 2: capitalize first letter
 }
 
-const getHouseValue = (key) => {
-  return form.value.features?.find(i => i.key === key)?.value ?? 0
-}
 
 const formattedPricingDetails = computed(() => {
   const pricing = form.value.pricing
@@ -559,9 +590,7 @@ const toggleWishlist = () => {
   isWishlisted.value = !isWishlisted.value
 }
 
-const shareProperty = () => {
-  navigator.clipboard.writeText(window.location.href)
-}
+
 
 const back = () => {
   router.push({
@@ -628,12 +657,122 @@ const mergeForm = (data) => {
 
   form.value.features = data.features || []
 }
+const goToAgentProfile = () => {
+ router.push(`/profile/${property.value.userId._id}`)
+}
 
+const updateStatus = async ()=>{
+  
+  try {
+
+    loading.value = true
+   
+
+    const response = await useApiFetch(`/property/${form.value.id}/status`, {
+     method: 'PATCH',
+      body: { status: 'approved' }
+    })
+    
+    if (!response.success) {
+          $toast.error("An Error occur")
+          console.log(toastClient.error);
+          
+            loading.value = false
+          return
+
+    }
+
+
+
+    $toast.success(response.message || 'Property is now live!')
+    router.push('/user/list')
+  } catch (err) {
+
+    console.error('Load Profile Error:', err)
+
+    error.value ='Failed to load profile'
+
+  } finally {
+
+    loading.value = false
+
+  }
+
+}
 /* ================= WATCH ================= */
 watchEffect(() => {
   if (!property.value) return
   mergeForm(property.value)
 })
+
+
+
+
+useSeoMeta({
+  title: () => {
+    if (!form.value.title) return 'Property Listing'
+    return `${form.value.title} for ${capitalizeFirstLetter(form.value.purpose)} in ${form.value.location.city}, ${form.value.location.state}`
+  },
+
+  description: () =>
+    form.value.description?.replace(/<[^>]*>/g, '').slice(0, 160) ||
+    'View property details, images, price, and contact agent.',
+
+  ogTitle: () => form.value.title,
+  ogDescription: () =>
+    form.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
+  ogImage: () => form.value.media.images?.[0],
+  ogType: 'product',
+  ogUrl: () => `https://yourdomain.com${route.fullPath}`,
+
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => form.value.title,
+  twitterDescription: () =>
+    form.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
+  twitterImage: () => form.value.media.images?.[0],
+})
+
+useHead({
+  link: [
+    {
+      rel: 'canonical',
+      href: `https://yourdomain.com${route.fullPath}`
+    }
+  ]
+})
+
+const shareProperty = async () => {
+  try {
+    const url = window.location.href
+
+    const title =
+      form.value?.title || 'Property Listing'
+
+    const price =
+      form.value?.pricing?.price
+        ? `₦${Number(form.value.pricing.price).toLocaleString()}`
+        : ''
+
+    const location = `${form.value?.location?.city || ''}, ${form.value?.location?.state || ''}`
+
+    const text = `Check out this property: ${title} ${price} located at ${location}`
+
+    // Native mobile share (best experience)
+    if (navigator.share) {
+      await navigator.share({
+        title,
+        text,
+        url
+      })
+    } else {
+      // Fallback: copy link
+      await navigator.clipboard.writeText(url)
+      alert('Property link copied to clipboard')
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}
 </script>
 <style scoped>
 

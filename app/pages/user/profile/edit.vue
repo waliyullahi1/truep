@@ -78,7 +78,7 @@
             <div class="w-full max-w-5xl mt-9">
 
               <div
-                class="bg-white rounded-3xl border border-slate-200 p-6 lg:p-8"
+                class="bg-white rounded-3xl border border-slate-200 sm:p-6 p-3 lg:p-8"
               >
 
                 <!-- HEADER -->
@@ -190,36 +190,89 @@
                       </div>
 
                     </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5" >
+ 
+                   
+                        <!-- LANGUAGES -->
+                        <div>
+                           <label
+                            class="block mb-2 text-sm font-medium text-slate-700"
+                          >
+                            Language Speaking
+                          </label>
+                          <ProfileLanguage
+                            v-model="user.languages"
+                          />
+                        </div>
 
-                    <!-- LANGUAGES -->
-                    <div>
-                      <ProfileLanguage
-                        v-model="user.languages"
-                      />
-                    </div>
+                        <!-- EXPERIENCE -->
+                        <div>
 
-                    <!-- EXPERIENCE -->
-                    <div>
+                          <label
+                            class="block mb-2 text-sm font-medium text-slate-700"
+                          >
+                            Year of Experience
+                          </label>
 
-                      <label
-                        class="block mb-2 text-sm font-medium text-slate-700"
-                      >
-                        Year of Experience
-                      </label>
+                          <ProfileSelectText
+                            v-model="user.yearOfExperience"
+                            placeholder="Select Year of Experience"
+                            :options="[
+                              '0-1 years',
+                              '1-3 years',
+                              '3-5 years',
+                              '5-10 years',
+                              '10+ years'
+                            ]"
+                          />
 
-                      <ProfileSelectText
-                        v-model="user.yearOfExperience"
-                        placeholder="Select Year of Experience"
-                        :options="[
-                          '0-1 years',
-                          '1-3 years',
-                          '3-5 years',
-                          '5-10 years',
-                          '10+ years'
-                        ]"
-                      />
+                          
 
-                    </div>
+                        </div>
+                     </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" >
+ 
+                   
+                        <!-- LANGUAGES -->
+                        <div>
+                           <label
+                            class="block mb-2 text-sm font-medium text-slate-700"
+                          >
+                           Whatsapp Number 
+                          </label>
+                           <ProfileEditText
+                          v-model="user.whatsapp_no"
+                          placeholder="Enter whatsapp number"
+                        />
+                        </div>
+
+                        <!-- EXPERIENCE -->
+                        <div>
+
+                          <label
+                            class="block mb-2 text-sm font-medium text-slate-700"
+                          >
+                            Year of Experience
+                          </label>
+
+                          <ProfileSelectText
+                            v-model="user.yearOfExperience"
+                            placeholder="Select Year of Experience"
+                            :options="[
+                              '0-1 years',
+                              '1-3 years',
+                              '3-5 years',
+                              '5-10 years',
+                              '10+ years'
+                            ]"
+                          />
+
+                          
+
+                        </div>
+                     </div>
+                     
 
                   </div>
 
@@ -236,6 +289,10 @@
               <!-- SKILLS -->
               <ProfileSkills
                 v-model="user.skills"
+              />
+               <ProfileSocialMedial
+                 v-model="user.social_media"
+               
               />
 
               <!-- SAVE -->
@@ -390,9 +447,9 @@
 
 <script setup>
 definePageMeta({
-  layout: 'seller'
+  layout: 'auth',
+  access: 'seller'
 })
-
 import {
   ref,
   computed,
@@ -446,6 +503,7 @@ const user = ref({
     city: '',
     address: ''
   },
+  whatsapp_no: '',
 
   languages: [],
   about: '',
@@ -460,6 +518,14 @@ const user = ref({
     country: '',
     latitude: null,
     longitude: null
+  },
+   social_media: {
+    tiktok: '',
+    facebook: '',
+    instagram: '',
+    whatsapp: '',
+    youtube: '',
+
   },
 
   workExperience: [],

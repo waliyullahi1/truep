@@ -474,8 +474,10 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-
-definePageMeta({ layout: 'auth' })
+definePageMeta({
+  layout: 'auth',
+  access: 'seller'
+})
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -598,34 +600,7 @@ const options = computed(() => {
 watch(propertyType, type => {
   form.value.location.geometry.type = type === 'house' ? 'Point' : 'Polygon'
 })
-function generateRandomLand() {
-  // Iwo, Osun base coordinates
-  const baseLng = 4.18 + (Math.random() - 0.5) * 0.02
-  const baseLat = 7.63 + (Math.random() - 0.5) * 0.02
 
-  const size = 0.001 + Math.random() * 0.001
-
-  const corners = [
-    [baseLng, baseLat],
-    [baseLng + size, baseLat],
-    [baseLng + size, baseLat + size],
-    [baseLng, baseLat + size],
-    [baseLng, baseLat]
-  ]
-
-  return {
-    country: "Nigeria",
-    state: "Osun",
-    lga: "Iwo",
-    city: "Iwo",
-    address: "Iwo Test Land (Near Bowen Area)",
-    source: "manual",
-    geometry: {
-      type: "Polygon",
-      coordinates: [corners]
-    }
-  }
-}
 
 const refreshData = async (stopLoading) => {
   await refresh()   // or your API call
@@ -697,7 +672,7 @@ function mergeForm(property) {
     formSelection.value = { purpose: property.purpose, type: property.type }
   }
    originalForm.value = JSON.parse(JSON.stringify(form.value))
-  form.value.location = generateRandomLand()
+  form.value.location = form.value.location || { country: "", state: "", lga: "", city: "", address: "", source: "gps", geometry: form.value.location.geometry }
 }
 
 const safeClone = (obj) => JSON.parse(JSON.stringify(obj))
@@ -749,9 +724,7 @@ function generateTitle(data){
 
 }
 
-function isFormChanged() {
-  return JSON.stringify(form.value) !== JSON.stringify(originalForm.value)
-}
+
 /* ================= NAVIGATION ================= */
 const next = async () => {
   if (submitloading.value) return
@@ -807,7 +780,7 @@ const next = async () => {
           return
 
     }
-     console.log(response.data.data);
+  
      
      if (step.value === 3) {
 
@@ -864,9 +837,11 @@ const submit =  async() => {
       }
   
    submitloading.value = true
+   console.log( form.value);
+   
     try {
     const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })
-    console.log(res);
+    
     
       if (!res.success) {
 
@@ -877,9 +852,8 @@ const submit =  async() => {
 
 
        router.push({
-       path: '/property',
+       path: `/property/${form.value.slug}`,
         query: {
-         slog: form.value.slog,
          preview: true,
          },
        })
@@ -907,13 +881,21 @@ const { data, pending, error, refresh } = await useAsyncData(
       }
        const safe = res?.data?.data || res?.data || null
        mergeForm(safe)
-      return res.data?.data || null
+      // return res.data?.data || null
     } catch (err) {
       throw err
     }
   },
   { lazy: true, server: true }
 )
+
+// watch(data, (newData) => {
+//   if (newData) {
+//     console.log('fffff', newData);
+    
+//     mergeForm(newData)
+//   }
+// })
 // const { data, pending, error } = await useAsyncData(
 //   `property-${route.params.id}`,
 //   async () => {

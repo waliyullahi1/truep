@@ -65,7 +65,7 @@
     
              <div class=" mt-8"></div> <input
           v-model="location.address"
-          placeholder="School name"
+          placeholder="Adress name"
           class="border w-full p-2 rounded"
         />
     </div>

@@ -24,7 +24,7 @@
       <!-- skill name -->
       <input
         v-model="skillForm.name"
-        placeholder="Skill name (e.g. CSS, Vue, Python)"
+        placeholder="Skill name (e.g. Real Estate Engineering, Survey, POP)"
         class="border w-full p-2 rounded"
       />
 

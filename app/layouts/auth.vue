@@ -1,19 +1,26 @@
 <script setup>
+const route = useRoute()
 const auth = useAuth()
+const access = computed(() => route.meta.access)
+// const isUserNavPage = computed(() => route.meta.userNav === true)
 </script>
 
 <template>
   <div>
-     <NavigationNavbar v-if="!auth.authenticated" />
+    <!-- FORCE USER NAV ON CERTAIN PAGES -->
+         <!-- <NavigationSellerNavBar
+        -->
+    
+    <NavigationSellerNavBar
+       v-if="auth.authenticated && auth.user?.roles !== 'user' && access == 'seller'"
+    />
+    <NavigationNavUser
+      v-else-if="auth.authenticated"
+    />
 
-    <div v-else>  
-       <NavigationNavUser v-if="auth.user.roles === 'user'" />
-         <NavigationSellerNavBar  v-else />
-    </div>
-   
+    
+    <NavigationNavbar v-else /> 
    
     <slot />
-
-   
   </div>
 </template>

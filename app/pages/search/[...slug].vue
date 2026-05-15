@@ -8,10 +8,10 @@ import 'swiper/css/pagination'
 import loadstates from '@/data/nigeria-states.js'
 import { propertyTypes } from '@/data/property-types'
 
-definePageMeta({
-  layout: 'main'
-})
 
+definePageMeta({
+  layout: 'auth'
+})
 const route = useRoute()
 const router = useRouter()
 
@@ -146,10 +146,21 @@ const stateOptions = computed(() =>
 /* =================================
    🔥 FETCH DATA
 ================================= */
-const { data: resultsData, pending, error, refresh } = await useAsyncData(
+/* =================================
+   🔥 FETCH DATA
+================================= */
+
+
+const {
+  data: resultsData,
+  pending,
+  error,
+  refresh
+} = await useAsyncData(
   'properties',
-  () =>
-    useApiFetch('/property/all', {
+  async () => {
+
+    const res = await useApiFetch('/property/all', {
       method: 'GET',
       params: {
         purpose: purposeParam.value || undefined,
@@ -159,8 +170,33 @@ const { data: resultsData, pending, error, refresh } = await useAsyncData(
         city: cityParam.value || undefined,
         state: stateParam.value || undefined
       }
-    }).then(res => res?.data?.data || [])
+    })
+
+    // throw error properly
+    if (!res?.success) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: res?.message || 'Failed to fetch properties'
+      })
+    }
+
+    const safe = res?.data?.data || res?.data || []
+    console.log(safe);
+    
+    
+
+    return safe
+  },
+  {
+    lazy: true,
+    server: true
+  }
 )
+
+const refreshData = async (stopLoading) => {
+  await refresh()   // or your API call
+  stopLoading()     // tell child to stop loading
+}
 
 const results = computed(() => resultsData.value || [])
 
@@ -580,150 +616,237 @@ const categories = [
 
   </section>
 
+     <div v-if="error">
+      <NetworkError
+      :error="error"
+      @retry="refreshData"
+    />
+    </div>
 
+    <!-- SKELETON -->
+<section v-if="pending" class="">
+  <Container>
 
-  <!-- FILTERS -->
-  <section class="p-6 flex flex-wrap gap-3">
+    <!-- TOP TEXT -->
+    <div class="mb-4">
+      <div class="h-6 w-72 bg-gray-200 rounded animate-pulse mb-3"></div>
 
-    <div class="flex gap-3 flex-wrap">
+      <div class="flex justify-between items-center">
+        <div class="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
 
-      <select v-model="selectedState" class="px-4 h-11 border rounded">
-        <option value="">All States</option>
-        <option v-for="s in stateOptions" :key="s" :value="s">
-          {{ s }}
-        </option>
-      </select>
+        <div class="flex gap-3">
+          <div class="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+          <div class="h-10 w-28 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    </div>
 
-      <!-- CITY -->
-      <select v-model="selectedCity" class="px-4 h-11 border rounded">
-        <option value="">All Cities</option>
-        <option v-for="c in cityOptions" :key="c" :value="c">
-          {{ c }}
-        </option>
-      </select>
+    <!-- PROPERTY GRID -->
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <div
+        v-for="i in 9"
+        :key="i"
+        class="border rounded-xl overflow-hidden"
+      >
+
+        <!-- IMAGE -->
+        <div class="relative">
+          <div class="h-44 w-full bg-gray-200 animate-pulse"></div>
+
+          <!-- BADGES -->
+          <div class="absolute top-2 left-2 h-6 w-20 bg-gray-300 rounded animate-pulse"></div>
+
+          <div class="absolute top-2 right-2 h-6 w-16 bg-gray-300 rounded animate-pulse"></div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="p-4">
+
+          <!-- PROFILE -->
+          <div class="flex gap-3 items-center mb-4">
+
+            <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+
+            <div class="flex-1">
+              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+
+          </div>
+
+          <!-- TITLE -->
+          <div class="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+
+          <!-- LOCATION -->
+          <div class="h-4 w-full bg-gray-200 rounded animate-pulse mb-3"></div>
+
+          <!-- PRICE -->
+          <div class="h-6 w-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+
+          <!-- DETAILS -->
+          <div class="flex gap-3">
+
+            <div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+
+            <div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+
+            <div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
 
-  </section>
-<div add v-if="filteredResults.length === 0">
-  <EmptyPropertyState @reset="handleResetFilters" />
-</div>
-  <!-- CARDS -->
-  <section v-else class="">
-    <Container>
-      <div class=" text-secondary">
-        <UiTypographyH3><span class=" text-secondary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
-          <div  class=" flex justify-between items-center py-3">
-            <p  class="  sm:text-lg text-sm "> <span class="font-semibold ">10000</span> results </p> 
-            <div class=" flex ">
-               
-              <div class="flex gap-3   px-1 py-1 ">
-                <SortDropdown @update="handleSort" />
+  </Container>
+</section>
+    <div v-else class="v-else">
+  <!-- FILTERS -->
+      <section class="p-6 flex flex-wrap gap-3">
 
+        <div class="flex gap-3 flex-wrap">
 
-                    <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
-                    <img src="@/assets/images/icons/map.svg" class=" w-4" alt=""> Map
-                   </button>
-              </div>
-            </div>
-          </div>
-      </div>
-            
-      <div class="  grid md:grid-cols-3 gap-6">
-       
-        <NuxtLink :to="`/property/${item.slug}`"
-          v-for="item in paginatedResults"
-          :key="item._id"
-          class="border rounded-xl  transition overflow-hidden"
-        >
-       
-          <!-- IMAGE SLIDER -->
-          <div class="relative">
+          <select v-model="selectedState" class="px-4 h-11 border rounded">
+            <option value="">All States</option>
+            <option v-for="s in stateOptions" :key="s" :value="s">
+              {{ s }}
+            </option>
+          </select>
 
-            <!-- badge -->
-            <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
-              FOR {{ item.purpose.toUpperCase() }} 
-            </span>
+          <!-- CITY -->
+          <select v-model="selectedCity" class="px-4 h-11 border rounded">
+            <option value="">All Cities</option>
+            <option v-for="c in cityOptions" :key="c" :value="c">
+              {{ c }}
+            </option>
+          </select>
 
-            <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
-              {{ item.category }} 
-            </span>
-            <ClientOnly>
-              <Swiper
-                :modules="[Pagination, Navigation]"
-                :pagination="{ clickable: true }"
-                :navigation="true"
-                class="property-swiper"
-              >
-              <!-- <SwiperSlide v-for="img in (item?.media?.files?.filter(f => f.type === 'image' && f.url) || [{ url: '/image/osun.png' }])" :key="img.url"> -->
-                <SwiperSlide 
-                 v-for="img in (
-                      item?.media?.files?.filter(f => f.type === 'image' && f.url)?.length
-                        ? item.media.files.filter(f => f.type === 'image' && f.url)
-                        : [{ url: '/image/no-image.png' }]
-                    )"
-                   :key="img">
-                  <div
-                    class="h-44 bg-cover bg-center"
-                    :style="{
-                      backgroundImage: `url(${img.url || '/image/no-image.png'})`
-                    }"
-                  />
-                </SwiperSlide>
-              </Swiper>
-            </ClientOnly>
-          </div>
+        </div>
 
-          <!-- CONTENT -->
-          <div class="p-4 text-sm">
-            <!-- <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
-
-                <img
-                  src="/image/profile.webp"
-                  class="w-12 h-12 rounded-full object-cover"
-                />
-
-                <div class=" text-xs ">
-                  <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
-                  <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
+      </section>
+    <div  v-if="!filteredResults.length">
+      <EmptyPropertyState @reset="handleResetFilters" />
+    </div>
+    
+      <!-- CARDS -->
+      <section  class="">
+        <Container>
+          <div class=" text-secondary">
+            <UiTypographyH3><span class=" text-secondary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
+              <div  class=" flex justify-between items-center py-3">
+                <p  class="  sm:text-lg text-sm "> <span class="font-semibold ">10000</span> results </p> 
+                <div class=" flex ">
                   
+                  <div class="flex gap-3   px-1 py-1 ">
+                    <SortDropdown @update="handleSort" />
+
+
+                        <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
+                        <img src="@/assets/images/icons/map.svg" class=" w-4" alt=""> Map
+                      </button>
+                  </div>
+                </div>
+              </div>
+          </div>
+                
+          <div class="  grid md:grid-cols-3 gap-6">
+          
+            <NuxtLink :to="`/property/${item.slug}`"
+              v-for="item in paginatedResults"
+              :key="item._id"
+              class="border rounded-xl  transition overflow-hidden"
+            >
+          
+              <!-- IMAGE SLIDER -->
+              <div class="relative">
+
+                <!-- badge -->
+                <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
+                  FOR {{ item.purpose.toUpperCase() }} 
+                </span>
+
+                <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  {{ item.category }} 
+                </span>
+                <ClientOnly>
+                  <Swiper
+                    :modules="[Pagination, Navigation]"
+                    :pagination="{ clickable: true }"
+                    :navigation="true"
+                    class="property-swiper"
+                  >
+                  <!-- <SwiperSlide v-for="img in (item?.media?.files?.filter(f => f.type === 'image' && f.url) || [{ url: '/image/osun.png' }])" :key="img.url"> -->
+                    <SwiperSlide 
+                    v-for="img in (
+                          item?.media?.files?.filter(f => f.type === 'image' && f.url)?.length
+                            ? item.media.files.filter(f => f.type === 'image' && f.url)
+                            : [{ url: '/image/no-image.png' }]
+                        )"
+                      :key="img">
+                      <div
+                        class="h-44 bg-cover bg-center"
+                        :style="{
+                          backgroundImage: `url(${img.url || '/image/no-image.png'})`
+                        }"
+                      />
+                    </SwiperSlide>
+                  </Swiper>
+                </ClientOnly>
+              </div>
+
+              <!-- CONTENT -->
+              <div class="p-4 text-sm">
+                <!-- <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
+
+                    <img
+                      src="/image/profile.webp"
+                      class="w-12 h-12 rounded-full object-cover"
+                    />
+
+                    <div class=" text-xs ">
+                      <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
+                      <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
+                      
+                    </div>
+
+                  </div> -->
+
+                <h2 class="font-semibold">
+                  {{ item.title }}
+                </h2>
+
+                <p class="text-gray-500">
+                {{item.location.address}}, {{item.location.city}}, {{item.location.state}}
+                </p> 
+
+                <p class="text-primary text-lg font-bold mt-1">
+                  {{smartMoney(item.pricing.price || 0) }} {{ getPriceLabel(item) }}
+                </p>
+
+                <!-- hide for land -->
+                
+                <div
+                  v-if="item.type !== 'land'"
+                  class="flex gap-3 mt-2 text-xs"
+                >
+                  <span>{{ item.houseDetails?.bathroom }} Beds</span>
+                  <span>{{ item.houseDetails?.bedroom }} Baths</span>
+                  <span>{{ item.houseDetails?.toilet }} Toilets</span>
                 </div>
 
-              </div> -->
+              
 
-            <h2 class="font-semibold">
-              {{ item.title }}
-            </h2>
-
-            <p class="text-gray-500">
-             {{item.location.address}}, {{item.location.city}}, {{item.location.state}}
-            </p> 
-
-            <p class="text-primary text-lg font-bold mt-1">
-               {{smartMoney(item.pricing.price || 0) }} {{ getPriceLabel(item) }}
-            </p>
-
-            <!-- hide for land -->
-             
-            <div
-              v-if="item.type !== 'land'"
-              class="flex gap-3 mt-2 text-xs"
-            >
-              <span>{{ item.houseDetails?.bathroom }} Beds</span>
-              <span>{{ item.houseDetails?.bedroom }} Baths</span>
-              <span>{{ item.houseDetails?.toilet }} Toilets</span>
-            </div>
-
-           
-
+              </div>
+            </NuxtLink>
           </div>
-        </NuxtLink>
-      </div>
-    </Container>
-  </section>
+        </Container>
+      </section>
 
   <Paginat v-model="page" :total="filteredResults.length" :perPage="perPage"/>
-
+    
   <!-- LOAD MORE -->
   <div
     v-if="visibleCount < filteredResults.length"
@@ -736,7 +859,7 @@ const categories = [
       View More
     </button>
   </div>
-
+  </div>
 
    <NavigationFooter />
 </div>

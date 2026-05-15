@@ -1,15 +1,13 @@
 export default defineNuxtRouteMiddleware(async () => {
   const config = useRuntimeConfig()
   const auth = useAuth()
- console.log(auth.value);
-  console.log('Middleware started')
-  console.log(auth.value);
+
   
   // Prevent multiple checks
   if (auth.value.checked) {
     return
   }
-   console.log('is not been check');
+  
    
   // SSR cookies
   const headers = process.server

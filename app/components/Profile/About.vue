@@ -2,7 +2,7 @@
   <div class="mt-12 p-5 rounded-xl border border-gray-300 bg-white">
 
     <!-- HEADER -->
-    <div class="flex items-center justify-between">
+    <div class="sm:flex items-center justify-between">
 
       <div>
         <h3 class="font-semibold text-xl">About</h3>
@@ -19,7 +19,7 @@
           v-if="editing"
           @click="generateAI"
           :disabled="loadingAI"
-          class="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 transition disabled:opacity-50"
+          class="flex  sm:w-fit justify-center items whitespace-normal text-nowrap w-full items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 transition disabled:opacity-50"
         >
 
           <!-- ICON -->
@@ -66,13 +66,16 @@
         </button>
 
         <!-- EDIT -->
+         <div class=" w-full  flex justify-end ">
         <button
           v-if="!editing"
           @click="editing = true"
-          class="border rounded-lg px-3 py-2 hover:bg-gray-50 transition"
+          class="border md:flex justify-end items-end rounded-lg px-3 py-2 hover:bg-gray-50 transition"
         >
           <img src="/image/icon/edit.svg" class="w-3" />
         </button>
+
+        </div>
 
       </div>
 

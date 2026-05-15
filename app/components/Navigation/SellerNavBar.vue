@@ -67,7 +67,7 @@
               </NuxtLink>
 
               <NuxtLink
-                to="/settings"
+                to="/user/settings"
                 activeClass="active-link"
               >
                 <p class="hover:text-primary cursor-pointer">
@@ -102,11 +102,11 @@
             <!-- PROFILE -->
             <div class="flex items-end">
 
-              <div
-                class="flex rounded-full overflow-hidden h-10 w-10"
+              <button @click="toggleMoreMenu" 
+                 class="flex rounded-full overflow-hidden h-10 w-10"
               > 
                 <img :src="avatar  " class=" w-10 bg-black" />
-              </div>
+              </button>
               
               <div
                 class="relative right-3 border-2 border-white w-3 h-3 rounded-full bg-green-500"
@@ -182,7 +182,7 @@
           </NuxtLink>
 
           <NuxtLink
-            to="/careers"
+            to="/user/orders"
             activeClass="active-link"
           >
             <p class="hover:text-primary">
@@ -191,7 +191,7 @@
           </NuxtLink>
 
           <NuxtLink
-            to="/careers"
+            to="/user/earnings"
             activeClass="active-link"
           >
             <p class="hover:text-primary">
@@ -200,7 +200,7 @@
           </NuxtLink>
 
           <NuxtLink
-            to="/careers"
+            to="/user/settings"
             activeClass="active-link"
           >
             <p class="hover:text-primary">
@@ -208,11 +208,76 @@
             </p>
           </NuxtLink>
 
+        
+
+           <button @click="handlelogout" class="text-left  w-fit">
+                      <p class=" text-  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer"> Log out</p>
+                  </button>
+
         </div>
 
       </div>
 
     </Transition>
+
+
+    <div v-if="moreMenu" class=" ">
+        <div class=" absolute  z-50 bg  h-fit w-60  top-16 sh  rounded-lg right-12 -12    bg-white  shadow-xl ">
+              <div >
+                 <div class="flex  p-3 items-end">
+                 <button @click="toggleMoreMenu" class="flex items-end group">
+
+                    <div class="flex rounded-full overflow-hidden h-10 w-10 border transition group-hover:scale-105">
+                      <img
+                        :src="preview || defaultAvatar"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div class="relative right-3 border-2 border-white w-3 h-3 rounded-full bg-green-500"></div>
+
+                  </button>
+                  <div>
+                    <p></p>     
+                  </div>
+               
+               </div>
+
+              
+                <div class=" px-2 border-t  border- py-3 space-y-3 mt-1">
+                  
+                 
+                
+                
+
+                 <div class="">
+                   <NuxtLink to="/search" class="">
+                      <p class=" text-primary text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer"> 
+                       Switch to User
+                         </p>
+                   </NuxtLink>
+                 </div>
+               
+
+                
+                </div>
+
+                <div class=" px-2 border-t  border- py-3 space-y-3 mt-1">
+                   <div>
+                   <button @click="handlelogout" class="">
+                      <p class=" text-sm  px-2  duration-500 hover:text-secondary  i  font-medium     te cursor-pointer"> Sign out</p>
+                  </button>
+                 </div>
+                
+                 
+                
+               
+
+                
+                </div>
+              </div>
+            </div>
+    </div>
 
   </div>
 </template>
@@ -221,10 +286,14 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 const defaultAvatar = '/image/icon/avatar.svg'
+
 import { computed } from 'vue'
+
+const moreMenu = ref(false)
 const auth = useAuth()
 const router = useRouter()
 const route = useRoute()
+const { $toast } = useNuxtApp()
 
 
 watch(
@@ -241,7 +310,6 @@ const avatar = computed(() => {
   return auth.value.user?.avatar || defaultAvatar
 })
 
-
 /* =========================================
    STATES
 ========================================= */
@@ -254,10 +322,19 @@ const isScrolled = ref(false)
 ========================================= */
 
 function toggleMenu() {
+
   menuRevealed.value = !menuRevealed.value
 }
+function toggleMoreMenu(){
+ 
+  console.log('ffffaaa');
+  
+  moreMenu.value = !moreMenu.value
+  console.log('menueee');
+  
 
-/* =========================================
+}
+/* ========== ===============================
    CLOSE MENU ON ROUTE CHANGE
 ========================================= */
 
@@ -284,6 +361,44 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
 }
 
+
+const handlelogout = async () => {
+  try {
+    const response = await fetch(`${config.public.api_url}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      $toast.error(data.message || 'Login failed')
+      return
+    }
+    
+     auth.value.user =  null
+    auth.value.authenticated = false
+    auth.value.checked = false
+    auth.value.serverError = false
+    /* SUCCESS */
+
+    $toast.success(data.message || 'logout successful')
+    
+    
+    setTimeout(() => {
+      console.log('otp processed');
+       router.push('/')
+    }, 800)
+
+  } catch (err) {
+    
+    loginloading.value = false
+    $toast.error(err.message || 'An error occurred')
+  } finally {
+    loginloading.value = false
+  }
+}
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
 })

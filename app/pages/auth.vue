@@ -26,7 +26,7 @@ const registerloading = ref(false)
 const loginloading = ref(false)
 const resetpassword = ref(false)
 const isregisterpage = ref(false)
-
+const loginWithGoogle = ref(false)
 const registerData = reactive({
   full_name: '',
   email: '',
@@ -224,7 +224,7 @@ const handlelogin = async () => {
 
 const handleloginwithGoogle = async () => {
 
-  loginloading.value = true
+  loginWithGoogle.value = true
   try {
     const response = await fetch(`${config.public.api_url}/auth/login/google`, {
       method: 'POST',
@@ -251,10 +251,10 @@ const handleloginwithGoogle = async () => {
 
   } catch (err) {
     
-    loginloading.value = false
+    loginWithGoogle.value = false
     $toast.error(err.message || 'An error occurred')
   } finally {
-    loginloading.value = false
+    loginWithGoogle.value = false
   }
 }
 
@@ -350,8 +350,8 @@ watch(
                 
                   class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-4 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
                 >
-                  <img src="/image/icon/gmail.svg" class=" w-6" alt="">
-                  <p class=" text-sm">Google</p>
+                <img src="/image/icon/gmail.svg" class=" w-6" alt="">
+                   {{ loginWithGoogle? `loading....`: ' Google'}} 
                 </button>
               </div>  
             </form>
@@ -377,9 +377,7 @@ watch(
        <div v-if="isregisterpage" class=" sm:max-w-xl  w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
         <NavigationBackArrow/>
         <div v-if="!otpverify" class="">
-           <NuxtLink to="/" >
-            <p class=" font-semibold  hover:text-primary cursor-pointer"> < Back </p>
-          </NuxtLink>
+          
           <div class=" flex justify-center items-center  flex-col">
              <img src="/images/unilorin.png" alt="">
               <p class="text-xl font-semibold   ">
@@ -449,12 +447,12 @@ watch(
                   </div>
                   <div class=" w-full  h-[1px] bg-slate-300"></div>
               </div>
-                <button
-                 @click="handleloginwithGoogle"
-                  class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-6 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
+                 <button type="button" @click="handleloginwithGoogle"
+                
+                  class="w-full bg-blue-600 gap-3 flex justify-center items-center mt-4 px-5 text-white py-2 rounded-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
                 >
-                  <img src="/image/icon/gmail.svg" class=" w-6" alt="">
-                  <p class=" text-sm">Google</p>
+                <img src="/image/icon/gmail.svg" class=" w-6" alt="">
+                   {{ loginWithGoogle? `loading....`: ' Google'}} 
                 </button>
               </div>  
             </form>
@@ -464,7 +462,7 @@ watch(
             <!-- Links -->
             <div class=" text-sm mt-2 space-y-2">
               <div class="  flex  text-[12px] mt-1  justify-end w-full ">
-                        By joining, you agree to the Fiverr Terms of Service and to occasionally receive emails from us. Please read our Privacy Policy to learn how we use your personal data.
+                        By joining, you agree to the Abanise Terms of Service and to occasionally receive emails from us. Please read our Privacy Policy to learn how we use your personal data.
                 </div>
             </div>
         </div>

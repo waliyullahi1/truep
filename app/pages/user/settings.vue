@@ -1,548 +1,265 @@
-<!-- pages/dashboard/analytics.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <!-- Header -->
+  <div class="min-h-screen bg-[#f5f5f5] py-10 px-4">
     <div
-      class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+      class="max-w-5xl mx-auto bg-white border border-gray-200 rounded-sm p-8"
     >
-      <div>
-        <h1 class="text-4xl font-bold text-gray-900">
-          Property Analytics
-        </h1>
+    <h1></h1>
+      <!-- CHANGE PASSWORD -->
+      <section class="pb-10 border-b border-gray-200">
 
-        <p class="mt-2 text-gray-500">
-          Track your property sales, rentals, and performance insights.
-        </p>
-      </div>
+       <p class=" mb-4">{{hiddenEmail}}</p>
+        <h2
+          class="text-[15px] font-bold uppercase text-gray-700 mb-10 tracking-wide"
+        >
+          Change Password
+        </h2>
 
-      <div
-        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
-      >
-        <Icon name="lucide:calendar-days" class="h-5 w-5 text-gray-500" />
-
-        <span class="text-sm font-medium text-gray-700">
-          Apr 11 - May 10, 2026
-        </span>
-
-        <Icon name="lucide:chevron-down" class="h-4 w-4 text-gray-400" />
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div
-      class="mb-8 flex flex-wrap items-center gap-8 border-b border-gray-200"
-    >
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        class="border-b-2 pb-4 text-sm font-semibold transition"
-        :class="
-          activeTab === tab
-            ? 'border-green-600 text-green-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
-        "
-        @click="activeTab = tab"
-      >
-        {{ tab }}
-      </button>
-    </div>
-
-    <!-- Stats -->
-    <div
-      class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5"
-    >
-      <div
-        v-for="item in stats"
-        :key="item.title"
-        class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
-      >
-        <div class="flex items-start justify-between">
-          <div
-            class="flex h-14 w-14 items-center justify-center rounded-full"
-            :class="item.bg"
+        <div class="space-y-6">
+         
+          <!-- Current Password -->
+          <div  v-if="auth?.user?.password"
+            class="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-4"
           >
-            <Icon
-              :name="item.icon"
-              class="h-7 w-7"
-              :class="item.color"
+            <label class="text-sm font-semibold text-gray-700">
+              Current Password
+            </label>
+
+            <input
+              v-model="form.currentPassword"
+              type="password"
+              class="h-11 w-full border border-gray-300 rounded-sm px-4 outline-none focus:border-green-500"
+            />
+          </div>
+            <div
+              v-if="!auth?.user?.password"
+              class="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-md p-4"
+            >
+              Your account is connected with Google authentication.
+              You can set a password below for additional login options.
+            </div>
+          <!-- New Password -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-4"
+          >
+            <label class="text-sm font-semibold text-gray-700">
+              New Password
+            </label>
+
+            <input 
+              v-model="form.newPassword"
+              type="password"
+              class="h-11 w-full border border-gray-300 rounded-sm px-4 outline-none focus:border-green-500"
             />
           </div>
 
-          <Icon
-            name="lucide:help-circle"
-            class="h-4 w-4 text-gray-400"
-          />
-        </div>
+          <!-- Confirm Password -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-[220px_1fr] items-start gap-4"
+          >
+            <label class="text-sm font-semibold text-gray-700 pt-3">
+              Confirm Password
+            </label>
 
-        <div class="mt-5">
-          <p class="text-sm text-gray-500">
-            {{ item.title }}
-          </p>
-
-          <h2 class="mt-2 text-4xl font-bold" :class="item.color">
-            {{ item.value }}
-          </h2>
-
-          <p class="mt-2 text-sm font-medium text-green-600">
-            {{ item.change }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Overview Chart -->
-    <div
-      class="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-    >
-      <div
-        class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
-      >
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900">
-            Overview
-          </h2>
-
-          <div class="mt-4 flex flex-wrap gap-6">
-            <div
-              v-for="legend in legends"
-              :key="legend.label"
-              class="flex items-center gap-2"
-            >
-              <span
-                class="h-3 w-3 rounded-full"
-                :class="legend.dot"
+            <div>
+              <input
+                v-model="form.confirmPassword"
+                type="password"
+                class="h-11 w-full border border-gray-300 rounded-sm px-4 outline-none focus:border-green-500"
               />
 
-              <span class="text-sm font-medium text-gray-600">
-                {{ legend.label }}
-              </span>
-
-              <span class="font-bold text-gray-900">
-                {{ legend.value }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-3"
-        >
-          <span class="text-sm font-medium text-gray-700">
-            Last 30 days
-          </span>
-
-          <Icon
-            name="lucide:chevron-down"
-            class="h-4 w-4 text-gray-400"
-          />
-        </div>
-      </div>
-
-      <!-- Fake chart -->
-      <div
-        class="relative h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-green-50 to-white"
-      >
-        <div
-          class="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:80px_80px]"
-        />
-
-        <!-- Green -->
-        <svg
-          class="absolute inset-0 h-full w-full"
-          viewBox="0 0 1000 400"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,260
-            C80,240 120,180 180,200
-            C240,220 300,100 360,160
-            C420,220 520,180 580,170
-            C640,160 700,200 760,180
-            C820,160 900,100 1000,60"
-            fill="none"
-            stroke="#10b981"
-            stroke-width="4"
-          />
-        </svg>
-
-        <!-- Blue -->
-        <svg
-          class="absolute inset-0 h-full w-full"
-          viewBox="0 0 1000 400"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,300
-            C100,270 180,250 240,260
-            C320,270 380,240 460,250
-            C520,260 620,280 700,260
-            C800,240 900,260 1000,220"
-            fill="none"
-            stroke="#3b82f6"
-            stroke-width="4"
-          />
-        </svg>
-      </div>
-    </div>
-
-    <!-- Bottom cards -->
-    <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-      <!-- Sales -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Sales Overview
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="sale in salesOverview"
-            :key="sale.label"
-            class="flex items-center justify-between"
-          >
-            <span class="text-gray-500">
-              {{ sale.label }}
-            </span>
-
-            <div class="text-right">
-              <div class="font-bold text-gray-900">
-                {{ sale.value }}
-              </div>
-
-              <div class="text-sm text-green-600">
-                {{ sale.change }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rentals -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Rentals Overview
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="rent in rentalsOverview"
-            :key="rent.label"
-            class="flex items-center justify-between"
-          >
-            <span class="text-gray-500">
-              {{ rent.label }}
-            </span>
-
-            <div class="text-right">
-              <div class="font-bold text-gray-900">
-                {{ rent.value }}
-              </div>
-
-              <div class="text-sm text-green-600">
-                {{ rent.change }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Properties -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Top Performing Properties
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="property in properties"
-            :key="property.name"
-            class="flex items-center gap-4"
-          >
-            <img
-              :src="property.image"
-              class="h-16 w-20 rounded-xl object-cover"
-            />
-
-            <div class="flex-1">
-              <h4 class="font-semibold text-gray-900">
-                {{ property.name }}
-              </h4>
-
-              <p class="text-sm text-gray-500">
-                {{ property.price }}
+              <p class="text-sm text-gray-500 mt-3 leading-6">
+                8 characters or longer. Combine upper and lowercase letters and
+                numbers.
               </p>
-            </div>
 
-            <span
-              class="rounded-full px-3 py-1 text-xs font-bold"
-              :class="
-                property.status === 'Sold'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-blue-100 text-blue-700'
-              "
-            >
-              {{ property.status }}
-            </span>
+              <div class="flex justify-end mt-5">
+              <button
+                @click="handleupdatePassword"
+                :disabled="loading || form.newPassword !== form.confirmPassword || !form.newPassword"
+                :class="[
+                  'text-white text-sm font-semibold px-6 h-10 rounded-sm transition',
+                  loading || form.newPassword !== form.confirmPassword || !form.newPassword
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-[#22c55e] hover:bg-[#16a34a]'
+                ]"
+              >
+                {{ loading ? 'Saving...' : 'Save Changes' }}
+              </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- Activity -->
-    <div
-      class="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-    >
-      <div class="mb-6 flex items-center justify-between">
-        <h3 class="text-2xl font-bold text-gray-900">
-          Recent Activity
+      <!-- PHONE VERIFICATION -->
+      <section
+        class="py-8 border-b border-gray-200 grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-6 items-start"
+      >
+        <h3 class="text-sm font-bold uppercase text-gray-700">
+          Phone Verification
         </h3>
 
-        <button class="text-sm font-semibold text-green-600">
-          View all
-        </button>
-      </div>
+        <p class="text-gray-500 text-sm leading-6 max-w-xl">
+          Phone verification will be available after you place your first order.
+        </p>
 
-      <div
-        class="grid grid-cols-1 gap-6 lg:grid-cols-4"
-      >
-        <div
-          v-for="activity in activities"
-          :key="activity.title"
-          class="flex items-start gap-4 rounded-2xl bg-gray-50 p-4"
+        <button
+          disabled
+          class="bg-gray-200 text-gray-500 text-sm font-semibold px-5 h-10 rounded-sm cursor-not-allowed"
         >
-          <div
-            class="flex h-14 w-14 items-center justify-center rounded-full"
-            :class="activity.bg"
-          >
-            <Icon
-              :name="activity.icon"
-              class="h-6 w-6"
-              :class="activity.color"
-            />
-          </div>
+          Verify Now
+        </button>
+      </section>
 
-          <div>
-            <p class="text-sm text-gray-500">
-              {{ activity.type }}
-            </p>
+      <!-- SECURITY QUESTION -->
+      <section
+        class="py-8 border-b border-gray-200 grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-6 items-start"
+      >
+        <h3 class="text-sm font-bold uppercase text-gray-700">
+          Security Question
+        </h3>
 
-            <h4 class="mt-1 font-bold text-gray-900">
-              {{ activity.title }}
-            </h4>
+        <p class="text-gray-500 text-sm leading-6 max-w-xl">
+          By creating a security question, you will add an additional layer of
+          protection for your revenue withdrawals and for changing your
+          password.
+        </p>
 
-            <p class="mt-1 text-sm text-gray-500">
-              {{ activity.amount }}
-            </p>
-          </div>
+        <button
+          class="bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-semibold px-5 h-10 rounded-sm transition"
+        >
+          Set
+        </button>
+      </section>
+
+      <!-- TWO FACTOR -->
+      <section
+        class="py-8 border-b border-gray-200 grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 items-start"
+      >
+        <div>
+          <h3 class="text-sm font-bold uppercase text-gray-700">
+            Two Factor Authentication
+          </h3>
+
+          <span class="text-[#22c55e] text-[11px] font-bold uppercase">
+            Recommended
+          </span>
         </div>
-      </div>
+
+        <div>
+          <!-- Toggle -->
+          <button
+            @click="twoFactor = !twoFactor"
+            :class="[
+              'relative w-12 h-7 rounded-full transition duration-300',
+              twoFactor ? 'bg-green-500' : 'bg-gray-300'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition duration-300',
+                twoFactor ? 'translate-x-5' : ''
+              ]"
+            />
+          </button>
+
+          <p class="text-sm text-gray-500 leading-6 mt-4 max-w-2xl">
+            To help keep your account secure, we'll ask you to submit a code
+            when using a new device to log in. We'll send the code via email or
+            Fiverr notification.
+            <span class="text-[#22c55e] font-medium cursor-pointer">
+              Verify your mobile phone
+            </span>
+            to be able to receive the code via SMS.
+          </p>
+        </div>
+      </section>
+
+      <!-- CONNECTED DEVICES -->
+      <section class="pt-8">
+        <h3 class="text-sm font-bold uppercase text-gray-700">
+          Connected Devices
+        </h3>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-const activeTab = ref("Overview")
 
-const tabs = [
-  "Overview",
-  "Sales",
-  "Rentals",
-  "Properties",
-  "Leads",
-  "Reports"
-]
+import { useRouter, useRoute, useRuntimeConfig } from '#app'
 
-const stats = [
-  {
-    title: "Total Earnings",
-    value: "$24,680",
-    change: "+12.5% vs previous month",
-    icon: "lucide:badge-dollar-sign",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    title: "Sales Earnings",
-    value: "$16,420",
-    change: "+10.3% vs previous month",
-    icon: "lucide:shopping-cart",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  },
-  {
-    title: "Rental Earnings",
-    value: "$8,260",
-    change: "+15.7% vs previous month",
-    icon: "lucide:key-round",
-    color: "text-orange-500",
-    bg: "bg-orange-100"
-  },
-  {
-    title: "Properties Listed",
-    value: "28",
-    change: "+4 new properties",
-    icon: "lucide:building-2",
-    color: "text-purple-600",
-    bg: "bg-purple-100"
-  },
-  {
-    title: "Total Views",
-    value: "12,456",
-    change: "+8.2% this month",
-    icon: "lucide:eye",
-    color: "text-cyan-600",
-    bg: "bg-cyan-100"
+const { $toast } = useNuxtApp()
+
+
+const form = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+const auth = useAuth()
+const loading = ref(false)
+const router = useRouter()
+const route = useRoute()
+const config = useRuntimeConfig()
+
+
+const hiddenEmail = computed(() => {
+  if(!auth?.value?.user?.email) return 'none'
+  const [name, domain] = auth.value?.user?.email?.split('@')
+  
+  // keep first 4 characters
+  const visiblePart = name.slice(0, 4)
+
+  // replace remaining with *****
+  const hiddenPart = '*'.repeat(Math.max(name.length - 4, 5))
+
+  return `${visiblePart}${hiddenPart}@${domain}`
+})
+
+
+
+const handleupdatePassword = async () => {
+
+  loading.value = true
+  try {
+    const response = await fetch(`${config.public.api_url}/auth/update-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword,
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      $toast.error(data.message || 'update password failed')
+
+      return
+    }
+    
+    
+
+    $toast.success(data.message || 'Password updated successfully')
+    
+    
+ 
+  } catch (err) {
+    
+    loading.value = false
+    $toast.error(err.message || 'An error occurred')
+  } finally {
+    loading.value = false
   }
-]
+}
 
-const legends = [
-  {
-    label: "Sales Earnings",
-    value: "$16,420",
-    dot: "bg-green-500"
-  },
-  {
-    label: "Rental Earnings",
-    value: "$8,260",
-    dot: "bg-blue-500"
-  },
-  {
-    label: "Sold Properties",
-    value: "8",
-    dot: "bg-violet-500"
-  },
-  {
-    label: "Rented Properties",
-    value: "12",
-    dot: "bg-orange-500"
-  }
-]
 
-const salesOverview = [
-  {
-    label: "Total Sales",
-    value: "$16,420",
-    change: "+10.3%"
-  },
-  {
-    label: "Properties Sold",
-    value: "8",
-    change: "+5.0%"
-  },
-  {
-    label: "Avg. Sale Price",
-    value: "$205,250",
-    change: "+7.6%"
-  },
-  {
-    label: "New Sales Listings",
-    value: "14",
-    change: "+16.7%"
-  }
-]
-
-const rentalsOverview = [
-  {
-    label: "Total Rental Income",
-    value: "$8,260",
-    change: "+15.7%"
-  },
-  {
-    label: "Properties Rented",
-    value: "12",
-    change: "+20%"
-  },
-  {
-    label: "Avg. Monthly Rent",
-    value: "$688",
-    change: "+6.3%"
-  },
-  {
-    label: "Occupancy Rate",
-    value: "92%",
-    change: "+3.2%"
-  }
-]
-
-const properties = [
-  {
-    name: "Luxury Villa in Downtown",
-    price: "$850,000",
-    status: "Sold",
-    image:
-      "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1200"
-  },
-  {
-    name: "Modern Apartment",
-    price: "$1,200 / month",
-    status: "Rented",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200"
-  },
-  {
-    name: "Beachfront Condo",
-    price: "$620,000",
-    status: "Sold",
-    image:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200"
-  }
-]
-
-const activities = [
-  {
-    type: "Property Sold",
-    title: "Luxury Villa in Downtown",
-    amount: "$850,000 • May 5, 2026",
-    icon: "lucide:shopping-cart",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    type: "Property Rented",
-    title: "Modern Apartment",
-    amount: "$1,200/month • May 1, 2026",
-    icon: "lucide:key-round",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  },
-  {
-    type: "Property Sold",
-    title: "Beachfront Condo",
-    amount: "$620,000 • Apr 28, 2026",
-    icon: "lucide:shopping-cart",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    type: "Property Rented",
-    title: "City Center Studio",
-    amount: "$850/month • Apr 25, 2026",
-    icon: "lucide:key-round",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  }
-]
+definePageMeta({
+  layout: 'auth',
+  access: 'seller'
+})
+const twoFactor = ref(false)
 </script>

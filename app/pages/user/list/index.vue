@@ -1,19 +1,39 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount
+} from 'vue'
+
+import {
+  useRouter,
+  useRoute
+} from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 const { $toast } = useNuxtApp()
 
 definePageMeta({
-  layout: 'seller'
+  layout: 'auth',
+  access: 'seller'
 })
 
 /* ================= STATE ================= */
 const filter = ref('all')
 const openMenuId = ref(null)
 const deleteId = ref(null)
+const changingStatus = ref(null)
+
+/* ================= TRANSITION RULES ================= */
+const allowedTransitions = {
+  draft: ['approved'],
+  approved: ['sold', 'rented', 'off_market', 'draft'],
+  off_market: ['approved'],
+  sold: [],
+  rented: []
+}
 
 /* ================= DATA ================= */
 // const properties = ref([])
@@ -24,38 +44,60 @@ const totalItems = computed(() => properties.value.length)
 const filteredList = computed(() =>
   filter.value === 'all'
     ? properties.value
-    : properties.value.filter(p => p.status === filter.value)
+    : properties.value.filter(
+        p => p.status === filter.value
+      )
 )
 
 const statuses = computed(() => [
   'all',
-  ...new Set((properties.value || []).map(p => p.status))
+  ...new Set(
+    (properties.value || []).map(
+      p => p.status
+    )
+  )
 ])
 
 /* ================= HELPERS ================= */
 const formatDate = (date) => {
+
   if (!date) return ''
 
-  return new Date(date).toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  })
+  return new Date(date)
+    .toLocaleDateString(
+      "en-US",
+      {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }
+    )
 }
 
 const getPrice = (item) => {
+
   if (!item?.pricing) return 0
 
-  if (item.pricing.paymentType === 'outright') {
+  if (
+    item.pricing.paymentType ===
+    'outright'
+  ) {
     return item.pricing.price || 0
   }
 
-  if (item.pricing.paymentType === 'installment') {
-    return item.pricing.installment?.monthlyAmount || 0
+  if (
+    item.pricing.paymentType ===
+    'installment'
+  ) {
+    return item.pricing.installment
+      ?.monthlyAmount || 0
   }
 
-  if (item.pricing.paymentType === 'rent') {
+  if (
+    item.pricing.paymentType ===
+    'rent'
+  ) {
     return item.pricing.price || 0
   }
 
@@ -63,31 +105,55 @@ const getPrice = (item) => {
 }
 
 const getPriceLabel = (item) => {
+
   const pricing = item?.pricing || {}
 
   if (item?.type === 'house') {
+
     if (item?.purpose === 'sale') {
-      if (pricing.paymentType === 'installment') {
+
+      if (
+        pricing.paymentType ===
+        'installment'
+      ) {
         return '/monthly payment'
       }
+
       return '/outright'
     }
 
     if (item?.purpose === 'rent') {
-      const unit = pricing.rent?.duration?.unit
-      return unit ? `/${unit}` : ''
+
+      const unit =
+        pricing.rent?.duration?.unit
+
+      return unit
+        ? `/${unit}`
+        : ''
     }
   }
 
   if (item?.type === 'land') {
-    if (pricing.paymentType === 'outright') {
+
+    if (
+      pricing.paymentType ===
+      'outright'
+    ) {
+
       return item.landDetails?.unit
         ? `/per ${item.landDetails.unit}`
         : ''
     }
 
-    if (pricing.paymentType === 'installment') {
-      return `/per ${item.landDetails?.unit || 'plot'} /monthly`
+    if (
+      pricing.paymentType ===
+      'installment'
+    ) {
+
+      return `/per ${
+        item.landDetails?.unit ||
+        'plot'
+      } /monthly`
     }
   }
 
@@ -95,145 +161,282 @@ const getPriceLabel = (item) => {
 }
 
 const getLocation = (item) => {
-  return `${item?.location?.state || ''}/${item?.location?.city || ''}`
+
+  return `${
+    item?.location?.state || ''
+  }/${
+    item?.location?.city || ''
+  }`
 }
 
 const getImage = (item) => {
-  return item?.media?.files?.[0]?.url || '/image/no-image.png'
+
+  return (
+    item?.media?.files?.[0]?.url ||
+    '/image/no-image.png'
+  )
 }
 
 const formatStatus = (s = '') =>
-  s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+  s.charAt(0).toUpperCase() +
+  s.slice(1).toLowerCase()
 
 const statusClass = (s = '') => {
+
   const key = s.toLowerCase()
 
   return {
-    available: 'bg-green-100 text-green-700',
-    rented: 'bg-blue-100 text-blue-700',
-    sold: 'bg-red-100 text-red-700',
-    draft: 'bg-yellow-100 text-yellow-700',
-    pending: 'bg-purple-100 text-purple-700',
-    denied: 'bg-gray-200 text-gray-700',
-    paused: 'bg-orange-100 text-orange-700'
-  }[key] || 'bg-gray-100 text-gray-600'
+    available:
+      'bg-green-100 text-green-700',
+
+    rented:
+      'bg-blue-100 text-blue-700',
+
+    sold:
+      'bg-red-100 text-red-700',
+
+    draft:
+      'bg-yellow-100 text-yellow-700',
+
+    pending:
+      'bg-purple-100 text-purple-700',
+
+    denied:
+      'bg-gray-200 text-gray-700',
+
+    paused:
+      'bg-orange-100 text-orange-700',
+
+    approved:
+      'bg-green-100 text-green-700',
+
+    off_market:
+      'bg-gray-100 text-gray-700'
+
+  }[key] ||
+  'bg-gray-100 text-gray-600'
 }
 
 const smartMoney = (value) => {
+
   const num = Number(value || 0)
 
   if (num >= 1_000_000_000) {
-    return "₦" + (num / 1_000_000_000).toFixed(1) + "B"
+    return "₦" +
+      (
+        num / 1_000_000_000
+      ).toFixed(1) +
+      "B"
   }
 
   if (num >= 1_000_000) {
-    return "₦" + (num / 1_000_000).toFixed(1) + "M"
+    return "₦" +
+      (
+        num / 1_000_000
+      ).toFixed(1) +
+      "M"
   }
 
   if (num >= 1_000) {
-    return "₦" + (num / 1_000).toFixed(1) + "K"
+    return "₦" +
+      (
+        num / 1_000
+      ).toFixed(1) +
+      "K"
   }
 
-  return "₦" + num.toLocaleString()
+  return "₦" +
+    num.toLocaleString()
+}
+
+/* ================= STATUS HELPERS ================= */
+const getAllowedStatuses = (
+  currentStatus
+) => {
+
+  return (
+    allowedTransitions[
+      currentStatus
+    ] || []
+  )
 }
 
 /* ================= METHODS ================= */
 const removeItem = async (id) => {
+
   try {
-    await useApiFetch(`/property/${id}`, {
-      method: "DELETE"
-    })
 
-    properties.value = properties.value.filter(p => p._id !== id)
+    await useApiFetch(
+      `/property/${id}`,
+      {
+        method: "DELETE"
+      }
+    )
 
-    $toast.success("Property removed")
+    properties.value =
+      properties.value.filter(
+        p => p._id !== id
+      )
+
+    $toast.success(
+      "Property removed"
+    )
+
   } catch (err) {
-    $toast.error("Remove failed")
+
+    $toast.error(
+      "Remove failed"
+    )
   }
 
   openMenuId.value = null
 }
 
+const changeStatus = async (
+  item,
+  newStatus
+) => {
+
+  try {
+
+    changingStatus.value =
+      item._id
+
+    const res =
+      await useApiFetch(
+        `/property/${item._id}/status`,
+        {
+          method: 'PATCH',
+
+          body: {
+            status: newStatus
+          }
+        }
+      )
+
+    if (!res.success) {
+
+      throw new Error(
+        res.message ||
+        'Failed to update'
+      )
+    }
+
+    item.status = newStatus
+
+    $toast.success(
+      `Status changed to ${newStatus}`
+    )
+
+  } catch (err) {
+
+    $toast.error(
+      err?.message ||
+      'Failed to change status'
+    )
+
+  } finally {
+
+    changingStatus.value = null
+    openMenuId.value = null
+  }
+}
+
 const toggleMenu = (id) => {
+
   openMenuId.value =
-    openMenuId.value === id ? null : id
+    openMenuId.value === id
+      ? null
+      : id
 }
 
 const editproper = (id) => {
-  router.push({
-       path: '/user/list/new',
-        query: {
-         id: id,
-         },
-       })
 
+  router.push({
+    path: '/user/list/new',
+
+    query: {
+      id: id,
+    },
+  })
 }
 
 const viewProperty = (slug) => {
-  router.push(`/property/${slug}`)
+
+  router.push(
+    `/property/${slug}`
+  )
 }
 
 const handleClickOutside = () => {
+
   openMenuId.value = null
 }
 
 /* ================= FETCH ================= */
 
-const { data, pending, error, refresh } = await useAsyncData(
+const {
+  data,
+  pending,
+  error,
+  refresh
+} = await useAsyncData(
   'properties',
+
   async () => {
 
-    const res = await useApiFetch('/property')
+    const res =
+      await useApiFetch(
+        '/property'
+      )
 
     // ✅ THROW ERROR
     if (!res.success) {
+
       throw createError({
-        statusCode: res.status || 500,
-        statusMessage: res.message || 'Failed to load properties'
+        statusCode:
+          res.status || 500,
+
+        statusMessage:
+          res.message ||
+          'Failed to load properties'
       })
     }
 
     // ✅ SAFE SERIALIZABLE DATA
     return JSON.parse(
-      JSON.stringify(res.data?.data || res.data || [])
+      JSON.stringify(
+        res.data?.data ||
+        res.data ||
+        []
+      )
     )
   },
+
   {
     lazy: true,
     server: true
   }
 )
 
-const properties = computed(() => data.value || [])
+const properties = computed(
+  () => data.value || []
+)
 
-// const loadingData = async () => {
-//   try {
-//     const response = await useApiFetch(`/property`, {
-//       method: 'GET'
-//     })
-
-//     properties.value =
-//       response.data?.data ||
-//       response.data ||
-//       []
-//   } catch (err) {
-//     properties.value = []
-//     $toast.error("Failed to load property")
-//   }
-// }
-
-// await loadingData()
+/* ================= LIFECYCLE ================= */
 
 onMounted(() => {
+
   window.addEventListener(
     'click',
     handleClickOutside
   )
-  console.log(properties);
-  
+
+  console.log(properties)
 })
 
 onBeforeUnmount(() => {
+
   window.removeEventListener(
     'click',
     handleClickOutside
