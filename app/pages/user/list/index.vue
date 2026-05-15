@@ -17,7 +17,8 @@ const { $toast } = useNuxtApp()
 
 definePageMeta({
   layout: 'auth',
-  access: 'seller'
+  access: 'seller',
+   sellerOnly: true
 })
 
 /* ================= STATE ================= */

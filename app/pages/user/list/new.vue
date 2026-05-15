@@ -476,7 +476,8 @@ const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
 definePageMeta({
   layout: 'auth',
-  access: 'seller'
+  access: 'seller',
+   isPrivateRoute : true
 })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */

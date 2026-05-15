@@ -259,7 +259,8 @@ const handleupdatePassword = async () => {
 
 definePageMeta({
   layout: 'auth',
-  access: 'seller'
+  access: 'seller',
+   isPrivateRoute : true
 })
 const twoFactor = ref(false)
 </script>

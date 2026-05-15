@@ -373,7 +373,8 @@ const activeTab = ref("Overview")
 
 definePageMeta({
   layout: 'auth',
-  access: 'seller'
+  access: 'seller',
+   sellerOnly: true
 })
 const tabs = [
   "Overview",

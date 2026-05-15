@@ -3,16 +3,15 @@
 export default defineNuxtRouteMiddleware(() => {
   const auth = useAuth()
 
-  // wait for auth check
   if (!auth.value.checked) {
     return
   }
 
-  // allow if server error
   if (auth.value.serverError) {
     return
   }
-
+ 
+  
   // not logged in
   if (!auth.value.authenticated) {
     return navigateTo('/login')
@@ -20,7 +19,7 @@ export default defineNuxtRouteMiddleware(() => {
 
   const userRole = auth.value.user?.roles
 
-  // BLOCK ONLY NORMAL USER
+  // block only normal users
   if (userRole === 'user') {
     return navigateTo('/403')
   }

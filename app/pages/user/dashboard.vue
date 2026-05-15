@@ -410,7 +410,8 @@ import auth from '~/middleware/auth'
 
 definePageMeta({
   layout: 'auth',
-  access: 'seller'
+  access: 'seller',
+   sellerOnly: true
 })
 
 const data = ref({})

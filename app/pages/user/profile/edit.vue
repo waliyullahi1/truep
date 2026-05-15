@@ -448,7 +448,8 @@
 <script setup>
 definePageMeta({
   layout: 'auth',
-  access: 'seller'
+  access: 'seller',
+  isPrivateRoute : true
 })
 import {
   ref,
