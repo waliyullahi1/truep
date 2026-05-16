@@ -20,47 +20,47 @@ const isPrivateRoute = computed(() => route.meta.isPrivateRoute)
 |--------------------------------------------------------------------------
 */
 
-watch(
-  () => auth.value.checked,
-  async (checked) => {
+// watch(
+//   () => auth.value.checked,
+//   async (checked) => {
 
-    if (!checked) return
+//     if (!checked) return
 
-    /*
-    |--------------------------------------------------------------------------
-    | PRIVATE ROUTE
-    |--------------------------------------------------------------------------
-    */
+//     /*
+//     |--------------------------------------------------------------------------
+//     | PRIVATE ROUTE
+//     |--------------------------------------------------------------------------
+//     */
 
-    if (isPrivateRoute.value && !auth.value.authenticated) {
-      return await navigateTo('/auth')
-    }
+//     if (isPrivateRoute.value && !auth.value.authenticated) {
+//       return await navigateTo('/auth')
+//     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SELLER ONLY ROUTE
-    |--------------------------------------------------------------------------
-    */
+//     /*
+//     |--------------------------------------------------------------------------
+//     | SELLER ONLY ROUTE
+//     |--------------------------------------------------------------------------
+//     */
 
-    if (sellerOnly.value) {
+//     if (sellerOnly.value) {
 
-      // not logged in
-      if (!auth.value.authenticated) {
-        return await navigateTo('/auth')
-      }
+//       // not logged in
+//       if (!auth.value.authenticated) {
+//         return await navigateTo('/auth')
+//       }
 
-      // logged in but normal user
-      if (auth.value.user?.roles === 'user') {
-        return await navigateTo('/profile/edit')
-      }
+//       // logged in but normal user
+//       if (auth.value.user?.roles === 'user') {
+//         return await navigateTo('/profile/edit')
+//       }
 
-    }
+//     }
 
-  },
-  {
-    immediate: true
-  }
-)
+//   },
+//   {
+//     immediate: true
+//   }
+// )
 </script>
 
 <template>
