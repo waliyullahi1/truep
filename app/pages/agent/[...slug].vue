@@ -354,29 +354,7 @@ watch(selectedState, () => {
   </section>
 
   <!-- ERROR -->
-  <section v-if="error">
-    <Container>
-
-      <div
-        class="mt-5 bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-xl flex items-center justify-between"
-      >
-
-        <p>
-          {{ error?.statusMessage || 'Failed to load agents' }}
-        </p>
-
-        <button
-          @click="refresh"
-          class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
-        >
-          Retry
-        </button>
-
-      </div>
-
-    </Container>
-  </section>
-
+     
   <!-- FILTERS -->
   <section>
     <Container>
@@ -401,19 +379,21 @@ watch(selectedState, () => {
       </div>
 
       <!-- SEARCH -->
-      <div class="flex gap-5 mt-4">
+      <div class="sm:flex block gap-5 mt-4">
 
         <!-- SEARCH -->
+         <div>
         <input
           v-model="search"
           placeholder="Search professionals..."
-          class="w-1/2 px-3 h-12 bg-white shadow rounded outline-none"
+          class="md:w-1/2 w-full px-3 h-12 bg-white border  rounded outline-none"
         />
-
+          </div>
         <!-- STATE -->
+        
         <select
           v-model="selectedState"
-          class="w-1/4 px-4 h-12 bg-white shadow rounded"
+          class="md:w-1/4  w-1/2 px-4 h-12 bg-white border rounded"
         >
 
           <option value="">
@@ -429,11 +409,12 @@ watch(selectedState, () => {
           </option>
 
         </select>
-
+       
         <!-- CITY -->
+        
         <select
           v-model="selectedCity"
-          class="w-1/4 px-4 h-12 bg-white shadow rounded"
+          class=" md:w-1/4  w-1/2 px-4 mt-5 md:mt-0  h-12 bg-white border rounded"
         >
 
           <option value="">
@@ -449,7 +430,7 @@ watch(selectedState, () => {
           </option>
 
         </select>
-
+       
       </div>
 
     </Container>
@@ -458,10 +439,15 @@ watch(selectedState, () => {
   <!-- CARDS -->
   <section class="mt-4">
     <Container>
-
+      <div v-if="error">
+      <NetworkError
+      :error="error"
+      @retry="refreshData"
+    />
+    </div>
       <!-- SKELETON -->
       <div
-        v-if="pending"
+        v-else-if="pending"
         class="grid md:grid-cols-3 gap-5"
       >
 
@@ -533,151 +519,153 @@ watch(selectedState, () => {
         </div>
 
       </div>
+      <div        v-else>
 
-      <!-- EMPTY -->
-      <div
-        v-else-if="filteredResults.length === 0"
-        class="text-center py-10 text-gray-500"
-      >
-
-        <p v-if="selectedCity && selectedState">
-          No agents found in
-          <b>{{ selectedCity }}, {{ selectedState }}</b>
-        </p>
-
-        <p v-else-if="selectedState">
-          No agents found in
-          <b>{{ selectedState }}</b>
-        </p>
-
-        <p v-else>
-          No agents found
-        </p>
-
-      </div>
-
-      <!-- GRID -->
-      <div
-        v-else
-        class="grid md:grid-cols-3 gap-5"
-      >
-
-        <div
-          v-for="item in paginatedResults"
-          :key="item.userId"
-          class="border p-4 rounded-md shadow-sm"
-        >
-
-          <!-- PROFILE -->
-          <div class="gap-4 bg-priary/10 p-3 rounded">
-
-            <!-- AVATAR -->
-            <div class="flex flex-col items-center">
-
-              <img
-                :src="item.avatar || '/image/profile.webp'"
-                class="w-1/2 rounded-full object-cover"
-              />
-
-            </div>
-
-            <!-- NAME -->
-            <div class="mt-3 text-xs flex flex-col text-left">
-
-              <div class="flex items-center gap-3">
-
-                <h2 class="font-normal text-lg sm:text-xl">
-                  {{
-                    item.name ||
-                    (item.firstName + ' ' + item.lastName)
-                  }}
-                </h2>
-
-                <BadgeCheck class="text-green-600" />
-
-              </div>
-
-              <!-- STATS -->
-              <div class="flex items-center gap-1">
-
-                <div
-                  v-for="star in 5"
-                  :key="star"
-                >
-                  <Star class="w-4 text-gray-400" />
-                </div>
-
-                <div>
-                  ({{ item.totalProperties || 0 }} properties)
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- LOCATION -->
-          <p class="text-sm flex gap-2 items-center text-gray-500">
-
-            <MapPin class="w-4 text-gray-400" />
-
-            {{ item.location?.state || '—' }},
-            {{ item.location?.city || '' }},
-            {{ item.location?.address || '' }}
-
-          </p>
-
-          <!-- ABOUT -->
-          <p class="text-xs mt-3">
-            {{
-              item.about?.slice(0, 120) ||
-              'No description available'
-            }}...
-          </p>
-
-          <!-- SKILLS -->
-          <div class="mt-3">
-
-            <span
-              v-for="skill in item.skills || []"
-              :key="skill.name"
-              class="text-xs bg-gray-200 px-3 py-1 mr-2 rounded"
-            >
-              {{ skill.name }}
-            </span>
-
-          </div>
-
-          <!-- BUTTONS -->
-          <div class="flex w-full justify-between">
-
-          <NuxtLink
-            v-if="getContactLink(item)"
-            :to="getContactLink(item).url"
-            target="_blank"
-            class="mt-4 bg-primary text-white px-4 py-1 rounded"
+      
+          <!-- EMPTY -->
+          <div
+            v-if="filteredResults.length === 0"
+            class="text-center py-10 text-gray-500"
           >
-            <span class="text-sm">
-              Message
-            </span>
-          </NuxtLink>
-             
-            <NuxtLink
-              :to="`/profile/${item.userId}`"
-              class="mt-4 bg-secondary text-white px-4 py-1 rounded"
-            >
-              <span class="text-sm">
-                View
-              </span>
-            </NuxtLink>
+
+            <p v-if="selectedCity && selectedState">
+              No agents found in
+              <b>{{ selectedCity }}, {{ selectedState }}</b>
+            </p>
+
+            <p v-else-if="selectedState">
+              No agents found in
+              <b>{{ selectedState }}</b>
+            </p>
+
+            <p v-else>
+              No agents found
+            </p>
 
           </div>
 
-        </div>
+          <!-- GRID -->
+          <div
+     
+            class="grid md:grid-cols-3 gap-5"
+          >
 
-      </div>
+            <div
+              v-for="item in paginatedResults"
+              :key="item.userId"
+              class="border p-4 rounded-md shadow-sm"
+            >
 
+              <!-- PROFILE -->
+              <div class="gap-4 bg-priary/10 p-3 rounded">
+
+                <!-- AVATAR -->
+                <div class="flex flex-col items-center">
+
+                  <img
+                    :src="item.avatar || '/image/profile.webp'"
+                    class="w-1/2 rounded-full object-cover"
+                  />
+
+                </div>
+
+                <!-- NAME -->
+                <div class="mt-3 text-xs flex flex-col text-left">
+
+                  <div class="flex items-center gap-3">
+
+                    <h2 class="font-normal text-lg sm:text-xl">
+                      {{
+                        item.name ||
+                        (item.firstName + ' ' + item.lastName)
+                      }}
+                    </h2>
+
+                    <BadgeCheck class="text-green-600" />
+
+                  </div>
+
+                  <!-- STATS -->
+                  <div class="flex items-center gap-1">
+
+                    <div
+                      v-for="star in 5"
+                      :key="star"
+                    >
+                      <Star class="w-4 text-gray-400" />
+                    </div>
+
+                    <div>
+                      ({{ item.totalProperties || 0 }} properties)
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- LOCATION -->
+              <p class="text-sm flex gap-2 items-center text-gray-500">
+
+                <MapPin class="w-4 text-gray-400" />
+
+                {{ item.location?.state || '—' }},
+                {{ item.location?.city || '' }},
+                {{ item.location?.address || '' }}
+
+              </p>
+
+              <!-- ABOUT -->
+              <p class="text-xs mt-3">
+                {{
+                  item.about?.slice(0, 120) ||
+                  'No description available'
+                }}...
+              </p>
+
+              <!-- SKILLS -->
+              <div class="mt-3">
+
+                <span
+                  v-for="skill in item.skills || []"
+                  :key="skill.name"
+                  class="text-xs bg-gray-200 px-3 py-1 mr-2 rounded"
+                >
+                  {{ skill.name }}
+                </span>
+
+              </div>
+
+              <!-- BUTTONS -->
+              <div class="flex w-full justify-between">
+
+              <NuxtLink
+                v-if="getContactLink(item)"
+                :to="getContactLink(item).url"
+                target="_blank"
+                class="mt-4 bg-primary text-white px-4 py-1 rounded"
+              >
+                <span class="text-sm">
+                  Message
+                </span>
+              </NuxtLink>
+                
+                <NuxtLink
+                  :to="`/profile/${item.userId}`"
+                  class="mt-4 bg-secondary text-white px-4 py-1 rounded"
+                >
+                  <span class="text-sm">
+                    View
+                  </span>
+                </NuxtLink>
+
+              </div>
+
+            </div>
+
+          </div>
+     </div>
       <!-- PAGINATION -->
       <div class="mt-10">
 

@@ -281,10 +281,13 @@ watch(
       <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3  min-h-screen  bg-white rounded-sm shadow-lg p-2 sm:p-8">
         <NavigationBackArrow/>
           <div  v-if="!otpverify" >
-           
+           <div class=" flex mb-3 justify-center ">
+             <NavigationLogo :big="true" />
+           </div>
           
+
              <div class=" flex flex-col justify-center items-center">
-                 <img src="/images/unilorin.png" alt="">
+                
                <p class="text-xl font-semibold   ">
                 Sign in to your account
                 </p>
@@ -377,9 +380,13 @@ watch(
        <div v-if="isregisterpage" class=" sm:max-w-xl  w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
         <NavigationBackArrow/>
         <div v-if="!otpverify" class="">
-          
+               
+
           <div class=" flex justify-center items-center  flex-col">
-             <img src="/images/unilorin.png" alt="">
+            <div class=" flex mb-3 justify-center ">
+             <NavigationLogo :big="true" />
+           </div>
+
               <p class="text-xl font-semibold   ">
                 Create a new account
                </p>

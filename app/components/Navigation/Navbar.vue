@@ -101,8 +101,11 @@
           <NuxtLink to="/privacy-policy">
             <p class="    hover:text-primary cursor-pointer"> Privacy Policy</p>
           </NuxtLink>
+           <UiButtonsPrimary  class=" font-medium">
+              <NuxtLink to="/user/list/new" >Post Property</NuxtLink>
+          </UiButtonsPrimary>
         </div>
-
+        
       </Container>
     </nav>
   </div>

@@ -624,7 +624,7 @@ const categories = [
     </div>
 
     <!-- SKELETON -->
-<section v-if="pending" class="">
+<section v-else-if="pending" class="">
   <Container>
 
     <!-- TOP TEXT -->
