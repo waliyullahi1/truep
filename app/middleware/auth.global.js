@@ -1,75 +1,38 @@
-export default defineNuxtRouteMiddleware(async () => {
-  const config = useRuntimeConfig()
+export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuth()
 
-  
-  // Prevent multiple checks
-  if (auth.value.checked) {
-    return
+  // wait until auth is ready
+  if (!auth.value.checked) return
+
+  const isPrivateRoute = to.meta.isPrivateRoute
+  const sellerOnly = to.meta.sellerOnly
+
+  /*
+  |--------------------------------------------------------------------------
+  | PRIVATE ROUTE
+  |--------------------------------------------------------------------------
+  */
+
+  if (isPrivateRoute && !auth.value.authenticated) {
+    return navigateTo('/auth')
   }
-  
-   
-  // SSR cookies
-  const headers = process.server
-    ? useRequestHeaders(['cookie'])
-    : undefined
- 
-  
-  try {
-    // SERVER SIDE FETCH
-    const data = await $fetch(
-      `${config.public.api_url}/auth/protected`,
-      {
-        credentials: 'include',
-        headers,
-        timeout: 2500,
-        retry: 0
-      }
-    )
 
-    console.log('AUTH SUCCESsS', data)
+  /*
+  |--------------------------------------------------------------------------
+  | SELLER ONLY ROUTE
+  |--------------------------------------------------------------------------
+  */
 
-    // auth.value.user = data?.data || null
-    // auth.value.authenticated = true
-    // auth.value.checked = true
+  if (sellerOnly) {
 
-  } catch (err) {
-    console.log('SSR AUTH FAILED', err)
+    // not logged in
+    if (!auth.value.authenticated) {
+      return navigateTo('/auth')
+    }
 
-    // Default guest state
-    auth.value.user = null
-    auth.value.authenticated = false
-    auth.value.checked = false
-
-    // CLIENT RETRY AFTER HTML RENDER
-    if (process.client) {
-      setTimeout(async () => {
-        try {
-          console.log('Retrying auth fetch...')
-
-          // const retryData = await $fetch(
-          //   `${config.public.api_url}/auth/protected`,
-          //   {
-          //     credentials: 'include',
-          //     timeout: 2500,
-          //     retry: 0
-          //   }
-          // )
-
-          // console.log('RETRY SUCCESS', retryData)
-
-          // auth.value.user = retryData?.data || null
-          auth.value.authenticated = false
-          auth.value.checked = false
-
-        } catch (retryErr) {
-          console.log('Retry failed', retryErr)
-
-          auth.value.user = null
-          auth.value.authenticated = false
-          auth.value.checked = false
-        }
-      }, 1500)
+    // logged in but normal user
+    if (auth.value.user?.roles === 'user') {
+      return navigateTo('/profile/edit')
     }
   }
 })

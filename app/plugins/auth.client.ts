@@ -1,50 +1,45 @@
-// plugins/auth.ts
-
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
   const auth = useAuth()
- 
-  // Prevent duplicate auth checks
-  if (auth.value.checked) {
-    return
-  }
+
+  if (auth.value.checked) return
 
   try {
-    // Forward SSR cookies
     const headers = process.server
       ? useRequestHeaders(['cookie'])
       : undefined
 
-    const response = await $fetch<{
-      data: any
-    }>(
+    const response = await $fetch(
       `${config.public.api_url}/auth/protected`,
       {
         credentials: 'include',
         headers,
-        timeout: 5000,
-        retry: 0
+        timeout: 8000,
+        retry: 0,
       }
     )
 
-    // SUCCESS
     auth.value.user = response?.data || null
     auth.value.authenticated = true
-    auth.value.checked = true
     auth.value.serverError = false
 
-    console.log('✅ Auth initialized', )
+  } catch (error: any) {
 
-  } catch (error) {
-    console.log('❌ Auth initialization failed', error)
+    // 👇 IMPORTANT: handle 401 separately
+    if (error?.statusCode === 401) {
+      auth.value.user = null
+      auth.value.authenticated = false
+      auth.value.serverError = false
+    } else {
+      // real server issue (Render sleep, network, etc)
+      auth.value.serverError = true
 
-    // IMPORTANT:
-    // Do NOT assume user is logged out
-    // because backend may temporarily fail
+      // DO NOT break app flow
+      auth.value.user = null
+      auth.value.authenticated = false
+    }
 
-    auth.value.user = null
-    auth.value.authenticated = false
+  } finally {
     auth.value.checked = true
-    auth.value.serverError = true
   }
 })
