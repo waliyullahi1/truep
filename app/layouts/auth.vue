@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watchEffect } from 'vue'
+import { computed, watch } from 'vue'
 
 const route = useRoute()
 const auth = useAuth()
@@ -20,42 +20,47 @@ const isPrivateRoute = computed(() => route.meta.isPrivateRoute)
 |--------------------------------------------------------------------------
 */
 
-watchEffect(() => {
+watch(
+  () => auth.value.checked,
+  async (checked) => {
 
-  // wait until auth check finishes
-  if (!auth.value.checked) return
+    if (!checked) return
 
-  /*
-  |--------------------------------------------------------------------------
-  | PRIVATE ROUTE
-  |--------------------------------------------------------------------------
-  */
+    /*
+    |--------------------------------------------------------------------------
+    | PRIVATE ROUTE
+    |--------------------------------------------------------------------------
+    */
 
-  if (isPrivateRoute.value && !auth.value.authenticated) {
-    return navigateTo('/auth')
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | SELLER ONLY ROUTE
-  |--------------------------------------------------------------------------
-  */
-
-  if (sellerOnly.value) {
-
-    // not logged in
-    if (!auth.value.authenticated) {
-      return navigateTo('/auth')
+    if (isPrivateRoute.value && !auth.value.authenticated) {
+      return await navigateTo('/auth')
     }
 
-    // logged in but still normal user
-    if (auth.value.user?.roles === 'user') {
-      return navigateTo('/profile/edit')
+    /*
+    |--------------------------------------------------------------------------
+    | SELLER ONLY ROUTE
+    |--------------------------------------------------------------------------
+    */
+
+    if (sellerOnly.value) {
+
+      // not logged in
+      if (!auth.value.authenticated) {
+        return await navigateTo('/auth')
+      }
+
+      // logged in but normal user
+      if (auth.value.user?.roles === 'user') {
+        return await navigateTo('/profile/edit')
+      }
+
     }
+
+  },
+  {
+    immediate: true
   }
-
-})
-
+)
 </script>
 
 <template>
