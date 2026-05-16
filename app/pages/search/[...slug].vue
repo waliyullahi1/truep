@@ -786,6 +786,7 @@ const categories = [
                             : [{ url: '/image/no-image.png' }]
                         )"
                       :key="img">
+                        <img :src="img.url" class="w-full h-full object-cover">
                       <div
                         class="h-44 bg-cover bg-center"
                         :style="{
