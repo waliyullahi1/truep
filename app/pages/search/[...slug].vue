@@ -439,6 +439,20 @@ const smartMoney = (value) => {
   return "₦" + num.toLocaleString()
 }
 
+const getOptimizedImage = (url) => {
+  if (!url) return '/image/no-image.png'
+
+  // If it's Cloudinary, optimize it
+  if (url.includes('res.cloudinary.com')) {
+    return url.replace(
+      '/upload/',
+      '/upload/w_400,h_300,c_fill,f_auto,q_auto/'
+    )
+  }
+
+  return url
+}
+
 /* =================================
    MOUNT
 ================================= */
@@ -771,31 +785,33 @@ const categories = [
                 <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
                   {{ item.category }} 
                 </span>
-                <ClientOnly>
-                  <Swiper
-                    :modules="[Pagination, Navigation]"
-                    :pagination="{ clickable: true }"
-                    :navigation="true"
-                    class="property-swiper"
-                  >
-                  <!-- <SwiperSlide v-for="img in (item?.media?.files?.filter(f => f.type === 'image' && f.url) || [{ url: '/image/osun.png' }])" :key="img.url"> -->
-                    <SwiperSlide 
-                    v-for="img in (
+               <ClientOnly>
+                    <Swiper
+                      :modules="[Pagination, Navigation]"
+                      :pagination="{ clickable: true }"
+                      :navigation="true"
+                      class="property-swiper"
+                    >
+                      <SwiperSlide
+                        v-for="img in (
                           item?.media?.files?.filter(f => f.type === 'image' && f.url)?.length
                             ? item.media.files.filter(f => f.type === 'image' && f.url)
                             : [{ url: '/image/no-image.png' }]
                         )"
-                      :key="img">
-                      
-                      <div
-                        class="h-44 bg-cover bg-center"
-                        :style="{
-                          backgroundImage: `url(${img.url || '/image/no-image.png'})`
-                        }"
-                      />
-                    </SwiperSlide>
-                  </Swiper>
-                </ClientOnly>
+                        :key="img.url"
+                      >
+
+                        <img
+                          :src="getOptimizedImage(img.url)"
+                          loading="lazy"
+                          decoding="async"
+                          class="h-44 w-full object-cover"
+                          alt="property image"
+                        />
+
+                      </SwiperSlide>
+                    </Swiper>
+                  </ClientOnly>
               </div>
 
               <!-- CONTENT -->
