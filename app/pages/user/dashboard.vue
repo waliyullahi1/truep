@@ -406,7 +406,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Star } from 'lucide-vue-next'
-import auth from '~/middleware/auth'
 
 definePageMeta({
   layout: 'auth',

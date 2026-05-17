@@ -97,23 +97,23 @@ const props = defineProps({
 
              <div class="mt-6 flex gap-6 text-2xl">
 
-          <a v-if="agent.social_media.facebook" :href="agent.social_media.facebook" target="_blank">
+          <a v-if="agent?.social_media?.facebook" :href="agent?.social_media?.facebook" target="_blank">
             <Icon name="mdi:facebook" class="hover:text-blue-600" />
           </a>
 
-          <a v-if="agent.social_media.instagram" :href="agent.social_media.instagram" target="_blank">
+          <a v-if="agent?.social_media?.instagram" :href="agent?.social_media?.instagram" target="_blank">
             <Icon name="mdi:instagram" class="hover:text-pink-600" />
           </a>
 
-            <a v-if="agent.social_media.tiktok" :href="agent.social_media.tiktok" target="_blank">
+            <a v-if="agent?.social_media?.tiktok" :href="agent?.social_media?.tiktok" target="_blank">
             <Icon name="simple-icons:tiktok" class="text-black" />
             </a>
 
-          <a v-if="agent.social_media.youtube" :href="agent.social_media.youtube" target="_blank">
+          <a v-if="agent?.social_media?.youtube" :href="agent?.social_media?.youtube" target="_blank">
             <Icon name="mdi:youtube" class="hover:text-red-600" />
           </a>
 
-          <a v-if="agent.social_media.whatsapp" :href="agent.social_media.whatsapp" target="_blank">
+          <a v-if="agent?.social_media?.whatsapp" :href="agent?.social_media?.whatsapp" target="_blank">
             <Icon name="mdi:whatsapp" class="hover:text-green-600" />
           </a>
 

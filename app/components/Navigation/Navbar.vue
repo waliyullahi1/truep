@@ -1,5 +1,5 @@
 <template>
-  <div :class=" fixed ?'fixed': 'static'" class="  z-90 w-full top-0 left-0"> 
+  <div :class=" fixed ?'fixed': 'static'" class="   z-[150]  w-full top-0 left-0"> 
    
     <nav
       :class="[
@@ -70,7 +70,7 @@
         <!-- Mobile Menu -->
         <div
           v-if="menuRevealed"
-            class="flex flex-col items-start gap-6 md:hidden absolute bg-white h-screen top-[4.6rem] left-0 px-6 py-10 w-full"
+            class="flex flex-col items-start gap-6 md:hidden absolute bg-white z-[150] h-screen top-[4.6rem] left-0 px-6 py-10 w-full"
            >
        
 

@@ -449,7 +449,7 @@ const getOptimizedImage = (url) => {
       '/upload/w_400,h_300,c_fill,f_auto,q_auto/'
     )
   }
-
+  
   return url
 }
 
