@@ -472,7 +472,7 @@ watch(selectedState, () => {
             class="h-4 w-2/3 bg-gray-200 rounded mt-3 animate-pulse"
           ></div>
 
-          <!-- LOCATION -->
+          <!-- LOCAION -->
           <div
             class="h-4 w-1/2 bg-gray-200 rounded mt-4 animate-pulse"
           ></div>
