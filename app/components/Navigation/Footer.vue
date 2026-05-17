@@ -1,110 +1,263 @@
+<script setup>
+/* =========================================
+   RUNTIME CONFIG
+========================================= */
+
+const config = useRuntimeConfig()
+
+const projectName =
+  config.public.projectName ||
+  'Abanise Enterprises'
+
+/* =========================================
+   FOOTER LINKS
+========================================= */
+
+const buyerLinks = [
+  {
+    name: 'Search rental properties',
+    to: '/search'
+  },
+  {
+    name: 'Create search agent',
+    to: '/auth?type=register-page'
+  },
+  {
+    name: 'FAQ',
+    to: '/faq'
+  }
+]
+
+const landlordLinks = [
+  {
+    name: 'Partnerships for portals',
+    to: '/auth'
+  },
+  {
+    name: 'Partnerships for landlords',
+    to: '/auth'
+  }
+]
+
+const aboutLinks = [
+  {
+    name: 'About us',
+    to: '/about-us'
+  },
+  {
+    name: 'Terms and conditions',
+    to: '/terms-and-conditions'
+  },
+  {
+    name: 'Privacy policy',
+    to: '/privacy-policy'
+  },
+  {
+    name: 'Contact us',
+    to: '/contact-us'
+  },
+  {
+    name: 'Cookie settings',
+    to: '/privacy-policy'
+  }
+]
+</script>
+
 <template>
-  <footer class="border-t bg-primary text-white border-accent-200 w-full">
 
-    <Container :addTopBottomPadding="false" class="border-t border-accent-200 py-6 sm:flex block items-center justify-between">
-    <div class="sm:grid md:flex sm:grid-cols-2  w-full  grid-cols-1  justify-between   gap-4 ">
+  <footer
+    class="w-full border-t border-accent-200 bg-primary text-white"
+  >
 
-      <div to="/search"  class="  ">
-        <img src="" />
-        <p class=" text-[17px] tracking-wide font-medium  "> Buyers & Renters</p>
+    <Container
+      :addTopBottomPadding="false"
+      class="py-12"
+    >
+
+      <!-- ====================================
+           FOOTER GRID
+      ===================================== -->
+
+      <div
+        class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4"
+      >
+
+        <!-- ====================================
+             BUYERS & RENTERS
+        ===================================== -->
+
         <div>
-          
-          <NuxtLink to="/search"  class="flex mt-4 gap-4">
-              <p class=" text-[15px]"> Search rental properties</p>
-          </NuxtLink>
 
-          <NuxtLink to="/auth?type=register-page"  class="flex mt-4 gap-4">
-          
-              <p class=" text-[15px] ">Create search agent</p>
-          </NuxtLink>
+          <h3
+            class="text-lg font-semibold tracking-wide"
+          >
+            Buyers & Renters
+          </h3>
 
-          <NuxtLink to="/search"  class="flex mt-4 gap-4">
-          
-              <p class=" text-[14px] "> FAQ</p>
-          </NuxtLink>
+          <div class="mt-5 space-y-3">
+
+            <NuxtLink
+              v-for="link in buyerLinks"
+              :key="link.name"
+              :to="link.to"
+              class="footer-link"
+            >
+              {{ link.name }}
+            </NuxtLink>
+
+          </div>
 
         </div>
-      </div>
 
-      
+        <!-- ====================================
+             LANDLORDS
+        ===================================== -->
 
-      <div class="  ">
-        
-        <p class=" text-[16px] tracking-wide font-medium  ">Landlords & portals</p>
         <div>
-          
-          <NuxtLink to="/auth" class="flex mt-4 gap-4">
-             <p class=" text-[15px]"> Partnerships for portals</p>
-          </NuxtLink>
-           <NuxtLink to="/auth"  class="flex mt-4 gap-4">
-             <p class=" text-[15px]"> Partnerships for landlords</p>
-          </NuxtLink>
 
-         
+          <h3
+            class="text-lg font-semibold tracking-wide"
+          >
+            Landlords & Portals
+          </h3>
 
-          
+          <div class="mt-5 space-y-3">
+
+            <NuxtLink
+              v-for="link in landlordLinks"
+              :key="link.name"
+              :to="link.to"
+              class="footer-link"
+            >
+              {{ link.name }}
+            </NuxtLink>
+
+          </div>
 
         </div>
-      </div>
 
-      <div class="   ">
-        
-        <p class=" text-[17px] tracking-wide font-medium ">About</p>
-        <div class="mt-4 space-y-2">
-          
-          <div class="flex gap-4">
-             <NuxtLink to="/about-us" class=" text-[13px]"> About us</NuxtLink>
-          </div>
-          <div class="flex gap-4"> 
-             <NuxtLink  to="/terms-and-conditions" class=" text-[13px]"> Terms and conditions</NuxtLink>
-          </div>
-          <NuxtLink to="/privacy-policy" class="flex  gap-4"> 
-             <p class=" text-[13px]">  Privacy policy</p>
-          </NuxtLink>
-           <NuxtLink to="/contact-us"  class="flex  gap-4"> 
-             <p class=" text-[13px]">  Contact us</p>
-          </NuxtLink>
-          
+        <!-- ====================================
+             ABOUT
+        ===================================== -->
 
-          <NuxtLink to="/Privacy-policy" class="flex  gap-4"> 
-             <p class=" text-[13px]">  Cookie Settings</p>
-          </NuxtLink>
-          
-        
+        <div>
+
+          <h3
+            class="text-lg font-semibold tracking-wide"
+          >
+            About
+          </h3>
+
+          <div class="mt-5 space-y-3">
+
+            <NuxtLink
+              v-for="link in aboutLinks"
+              :key="link.name"
+              :to="link.to"
+              class="footer-link"
+            >
+              {{ link.name }}
+            </NuxtLink>
+
+          </div>
+
         </div>
-      </div>
 
-       <div class="  ">
-        
-        <p class=" text-[16px] tracking-wide font-medium  ">Language</p>
-        <div class="mt-4 space-y-2">
-          
-          <div class="flex gap-4">
-             <p class=" text-[14px]"> English</p>
+        <!-- ====================================
+             LANGUAGE
+        ===================================== -->
+
+        <div>
+
+          <h3
+            class="text-lg font-semibold tracking-wide"
+          >
+            Language
+          </h3>
+
+          <div class="mt-5 space-y-3">
+
+            <p class="footer-link">
+              English
+            </p>
+
           </div>
-          
-          
-          
-          
-        
+
         </div>
-      </div>
-
-
-
-      <div>
 
       </div>
-       <!-- <NavigationLogo class="" />
-      <UiTypographyP><span class=" sm:text-base font-medium text-sm">&copy;{{ new Date().getFullYear() }} {{ projectName }}. All rights reserved.</span></UiTypographyP> -->
 
-    </div>
-         </Container>
+      <!-- ====================================
+           BOTTOM
+      ===================================== -->
+
+      <div
+        class="mt-12 flex md:flex-row flex-col  items-center justify-between gap-4 border-t border-white/20 pt-6 text-sm text-white/80 sm:flex-row"
+      >
+
+        <!-- LOGO -->
+        <div class="md:flex block items-center gap-3">
+
+          <NavigationLogo />
+
+          <p>
+            © {{ new Date().getFullYear() }}
+            {{ projectName }}.
+            All rights reserved.
+          </p>
+
+        </div>
+
+        <!-- EXTRA -->
+        <div class="md:flex block items-center gap-5">
+
+          <NuxtLink
+            to="/privacy-policy"
+            class="footer-link-small"
+          >
+            Privacy
+          </NuxtLink>
+
+          <NuxtLink
+            to="/terms-and-conditions"
+            class="footer-link-small"
+          >
+            Terms
+          </NuxtLink>
+
+          <NuxtLink
+            to="/contact-us"
+            class="footer-link-small"
+          >
+            Support
+          </NuxtLink>
+
+        </div>
+
+      </div>
+
+    </Container>
+
   </footer>
+
 </template>
 
-<script setup>
-// Get the public runtime config so project name can be used across components
-const config = useRuntimeConfig()
-const projectName = config.public.projectName
-</script>
+<style scoped>
+
+/* =========================================
+   FOOTER LINKS
+========================================= */
+
+.footer-link {
+  @apply block text-sm text-white/80 transition duration-300 hover:text-white;
+}
+
+/* =========================================
+   SMALL LINKS
+========================================= */
+
+.footer-link-small {
+  @apply text-xs text-white/70 transition duration-300 hover:text-white;
+}
+
+</style>

@@ -679,7 +679,7 @@ watch(selectedState, () => {
 
     </Container>
   </section>
-
+<NavigationFooter />
 </div>
 </template>
 
