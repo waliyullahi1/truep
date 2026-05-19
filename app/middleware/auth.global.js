@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const isPrivateRoute = to.meta.isPrivateRoute
   const sellerOnly = to.meta.sellerOnly
-
+  const adminOnly = to.meta.adminOnly
   /*
   |--------------------------------------------------------------------------
   | PRIVATE ROUTE
@@ -32,6 +32,20 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // logged in but normal user
     if (auth.value.user?.roles === 'user') {
+      return navigateTo('/profile/edit')
+    }
+  }
+
+  
+  if (adminOnly) {
+
+    // not logged in
+    if (!auth.value.authenticated) {
+      return navigateTo('/auth')
+    }
+
+    // logged in but normal user
+    if (auth.value.user?.roles !== 'admin') {
       return navigateTo('/profile/edit')
     }
   }

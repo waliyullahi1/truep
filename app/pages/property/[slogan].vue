@@ -1,5 +1,55 @@
 <template>
   <div class="pt-  min-h-screen">
+   {{ form }}
+    <Container   v-if="adminPreview"   class=""> 
+  <AdminSuspend    :property-id="form.id"
+  v-model="form.suspended.reason"></AdminSuspend>
+    </Container>
+
+   
+
+   <div class="max-w-7xl mt-3" v-if="form?.suspended.isSuspended && isOwner ">
+    <div class=" mx-auto ">
+
+      <div class="bg-red-50 border border-red-200 rounded-lg overflow-hidden shadow-sm">
+
+        <!-- TOP -->
+        <div class="p-2 border-b border-red-100">
+
+          <div class="sm:flex block items- gap-3">
+
+            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+              <Icon
+                name="solar:danger-triangle-bold"
+                class="text-red-600 text-xl"
+              />
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-lg text-red-700">
+                Property Suspended
+              </h3>
+
+              <p class="text-sm text-red-500 mt-1">
+                This property is currently unavailable to the public
+              </p>
+                
+              <p class="text-gray-700 text-sm leading-relaxed">
+              <span class=" font-semibold"> Reason : </span>  {{ form?.suspended?.reason || 'No reason was provided by the admin.' }}
+            </p>
+            </div>
+              
+          </div>
+
+        </div>
+
+        <!-- BODY -->
+        
+
+      </div>
+
+    </div>
+   </div>
     <div v-if="pending" class="text-center py-10">
      <div class="pt- bg-gray-50 min-h-screen animate-pulse">
       <Container>
@@ -392,6 +442,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MapPin,House, Toilet,  MapPinned, Share2, MessageSquareText, Home, Bed, Bath, Heart } from 'lucide-vue-next' 
+import Auth from '../auth.vue'
 definePageMeta({
   layout: 'auth',
 })
@@ -421,7 +472,11 @@ const form = ref({
   media: { images: [] },
   features: [],
   status: '',
-  user: {}
+  user: {},
+suspended: {
+  isSuspended: false,
+  reason:'',
+},
 })
 
 /* ================= UI STATE ================= */
@@ -430,6 +485,7 @@ const isWishlisted = ref(false)
 const activeTab = ref('Details')
 const tabs = ['Details', 'Area Guide']
 const loading = ref(false)
+const auth = useAuth()
 /* ================= FETCH (SSR SAFE) ================= */
 const { data, pending, error } = await useAsyncData(
   `property-${route.params.slogan}`,
@@ -475,6 +531,9 @@ const formattedPrice = computed(() => {
 
 const showPreviewBar = computed(() => {
   return isOwner.value && isPreview.value
+})
+const adminPreview = computed(() => {
+  return auth?.value.user?.roles ==='admin' && isPreview.value
 })
 const shortText = computed(() =>
   form.value.description
@@ -648,6 +707,11 @@ const mergeForm = (data) => {
   form.value.landDetails = {
     ...form.value.landDetails,
     ...data.landDetails
+  }
+
+    form.value.suspended = {
+    ...form.value.suspended,
+    ...data.suspended
   }
 
   form.value.media.images =
