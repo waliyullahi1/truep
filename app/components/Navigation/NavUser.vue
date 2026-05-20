@@ -426,10 +426,11 @@ const handleLogout = async () => {
     $toast.success(
       data.message || 'Logout successful'
     )
-
+    console.log(auth.value);
+    
     closeMenus()
 
-    router.push('/')
+    // router.push('/')
 
   } catch (error) {
 

@@ -83,6 +83,14 @@
           {{ loading ? 'Suspending...' : 'Suspend Property' }}
         </button>
 
+         <button
+          :disabled="loading"
+          @click="activate_property" v-if="suspended.isSuspended"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm disabled:opacity-50"
+        >
+          {{ loading ? 'Reactivate...' : 'Reactivate Property' }}
+        </button>
+
       </div>
 
     </div>
@@ -102,7 +110,8 @@ const props = defineProps({
   propertyId: {
     type: String,
     required: true
-  }
+  },
+  suspended:{}
 })
 
 const emit = defineEmits([
@@ -121,6 +130,8 @@ const editing = ref(false)
 const loading = ref(false)
 
 const reason = ref(props.modelValue || '')
+
+
 
 /* =========================================
    WATCH
@@ -192,6 +203,64 @@ const suspend = async () => {
     $toast.error(
       err?.message ||
       'Failed to suspend property'
+    )
+
+  } finally {
+
+    loading.value = false
+
+  }
+
+}
+
+const activate_property = async () => {
+
+  try {
+
+    if (!reason.value.trim()) {
+
+      $toast.error(
+        'Please provide suspension reason'
+      )
+
+      return
+    }
+
+    loading.value = true
+
+    const res = await useApiFetch(
+      `/admin/property/status/${props.propertyId}`,
+      {  method: 'PATCH',    body: {status: 'approved', }  }
+    )
+
+    if (!res.success) {
+
+      throw new Error(
+        res.message ||
+        'Failed to suspend property'
+      )
+    }
+
+    emit(
+      'update:modelValue',
+      reason.value
+    )
+
+    emit('suspended')
+
+    editing.value = false
+
+    $toast.success(
+      'Property Reactivate  successfully'
+    )
+
+  } catch (err) {
+
+    console.log(err)
+
+    $toast.error(
+      err?.message ||
+      'Failed to reactivate property'
     )
 
   } finally {

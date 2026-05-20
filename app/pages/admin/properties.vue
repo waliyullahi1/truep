@@ -224,8 +224,8 @@
       <div
         v-for="property in properties"
         :key="property._id"
-        class="table-row cursor-pointer"
-        @click="goToProperty(property)"
+        class="table-row z-10 static cursor-pointer"
+       @click.stop="goToProperty(property)"
       >
 
         <!-- PROPERTY -->
@@ -286,24 +286,21 @@
 
         <!-- OWNER -->
         
-        <button  @click="gotoProfile(property)" class="flex static z-20 items-center gap-4">
-
-          <img
-            :src=" property.owner.avatar || `https://i.pravatar.cc/150?img=${index + 10}`"
-            class="w-8 h-8 rounded-full object-cover border border-white/10"
+          <button
+            @click.stop="gotoProfile(property)"
+            class="flex items-center gap-4 cursor-pointer"
           >
+            <img
+              :src="property.owner.avatar || `https://i.pravatar.cc/150?img=${index + 10}`"
+              class="w-8 h-8 rounded-full object-cover border border-white/10"
+            >
 
-          <div>
-
-           
-
-            <p class="text-xs text-gray-500">
-              @{{  property.owner.firstName || user.lastName }}
-            </p>
-
-          </div>
-
-        </button>
+            <div>
+              <p class="text-xs text-gray-500">
+                @{{ property.owner.firstName || property.owner.lastName }}
+              </p>
+            </div>
+          </button>
 
         <!-- ACTION -->
         <div class="flex justify-end">
@@ -414,7 +411,13 @@ const soldProperties = computed(() => {
 ========================================= */
 
 const goToProperty = property => {
-  router.push(`/property/${property.slug}`)
+    router.push({
+       path: `/property/${property.slug}`,
+        query: {
+         preview: true,
+         },
+       })
+ 
 }
 const gotoProfile = property =>{
      router.push(`/profile/${property.userId}`)

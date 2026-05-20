@@ -1,10 +1,17 @@
 <template>
   <div class="pt-  min-h-screen">
-   {{ form }}
-    <Container   v-if="adminPreview"   class=""> 
-  <AdminSuspend    :property-id="form.id"
-  v-model="form.suspended.reason"></AdminSuspend>
-    </Container>
+  
+    <div   v-if="adminPreview"    class="max-w-7xl mx-auto  mt-2"> 
+      <button v-if="!editing" @click="editing = true"  class="border flex  font-semibold rounded-lg px-3 py-2 hover:bg-gray-50 transition"    >
+           Edit property <img src="/image/icon/edit.svg" class="w-3"/>
+      </button>
+        <Container   v-if="editing" class="">
+           <AdminSuspend   :suspended="form.suspended"  :property-id="form.id" v-model="form.suspended.reason"></AdminSuspend>
+        </Container>
+        <button v-if="editing" @click="editing = false"  class="border mt-4 flex  gap-2 font-semibold rounded-lg px-3 py-2 hover:bg-gray-50 transition"    >
+           Cancel 
+      </button>
+    </div>
 
    
 
@@ -483,6 +490,7 @@ suspended: {
 const showFull = ref(false)
 const isWishlisted = ref(false)
 const activeTab = ref('Details')
+const editing = ref(false)
 const tabs = ['Details', 'Area Guide']
 const loading = ref(false)
 const auth = useAuth()
@@ -533,7 +541,7 @@ const showPreviewBar = computed(() => {
   return isOwner.value && isPreview.value
 })
 const adminPreview = computed(() => {
-  return auth?.value.user?.roles ==='admin' && isPreview.value
+  return auth?.value.user?.roles ==='Admin' && isPreview.value
 })
 const shortText = computed(() =>
   form.value.description
