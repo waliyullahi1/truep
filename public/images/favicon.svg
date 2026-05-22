@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="40mm" height="35mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 4000 3500"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <font id="FontID0" horiz-adv-x="841" font-variant="normal" style="fill-rule:nonzero" font-weight="400">
+	<font-face 
+		font-family="Moon Walk">
+		<font-face-src>
+			<font-face-name name="MoonWalk"/>
+		</font-face-src>
+	</font-face>
+   <missing-glyph><path d="M0 0z"/></missing-glyph>
+   <glyph unicode="A" horiz-adv-x="841" d="M791 0l-124.001 0 0 496.001c0,25.999 -2.66608,46.833 -8.00058,62.4997 -5.33217,15.6667 -16.6654,23.5001 -33.9995,23.5001 -13.9993,0 -27.6664,-4.83286 -40.9992,-14.5009 -13.3327,-9.66572 -25.6669,-21.1661 -37.0001,-34.4989 -11.3332,-13.3351 -21.5005,-26.9999 -30.4997,-41.0015 -9.00152,-13.9993 -16.5005,-25.6669 -22.5015,-35.0005l-295.998 -456.999 -148 0 296 456.999c25.3324,39.334 49.1646,74.5017 71.4989,105.501 22.3343,31.0014 45.0006,57.1675 67.9991,78.5009 23.0008,21.3333 47.6667,37.4994 74.0001,48.5004 26.3334,10.9988 56.501,16.4981 90.5006,16.4981 42.0001,0 75.9997,-18.3328 102.001,-54.9984 25.999,-36.668 38.9996,-88.3338 38.9996,-155l0 -496.001z"/>
+  </font>
+  <style type="text/css">
+   <![CDATA[
+    @font-face { font-family:"Moon Walk";font-variant:normal;font-weight:normal;src:url("#FontID0") format(svg)}
+    .str1 {stroke:#FF461F;stroke-width:200;stroke-miterlimit:22.9256}
+    .str0 {stroke:#201D1D;stroke-width:20;stroke-miterlimit:22.9256}
+    .fil0 {fill:#201D1D}
+    .fil2 {fill:#FF461F}
+    .fil1 {fill:#FF461F;fill-rule:nonzero}
+    .fnt0 {font-weight:normal;font-size:4305.94px;font-family:'Moon Walk'}
+   ]]>
+  </style>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_2947719011936">
+   <circle class="fil0 str0" cx="3700.28" cy="3094.57" r="144.29"/>
+   <path class="fil1 str1" d="M3065.97 3112.24l-162.05 -19.91 130.78 -1105.57c7.06,-59.62 -6.8,-108.15 -20.36,-144.32 -13.57,-36.18 -42.42,-54.27 -86.54,-54.27 -35.64,0 -70.42,11.16 -104.35,33.48 -33.94,22.33 -65.32,48.88 -94.18,79.67 -28.84,30.79 -54.72,62.35 -77.62,94.68 -22.91,32.33 -41.99,59.27 -57.27,80.82l-753.35 1055.31 -376.68 0 753.35 -1055.31c64.48,-90.83 125.14,-172.04 181.98,-243.62 56.84,-71.58 114.53,-132.01 173.07,-181.27 58.54,-49.27 121.32,-86.6 188.34,-112 67.02,-25.4 143.8,-38.1 230.34,-38.1 106.89,0 102.46,19.62 168.62,104.26 66.16,84.66 21.2,136.32 8.29,289.7l-102.37 1216.45z"/>
+   <g transform="matrix(0.991424 0 0 1 -2051.93 1525.93)">
+    <text x="2000" y="1750"  class="fil2 fnt0">A</text>
+   </g>
+  </g>
+ </g>
+</svg>

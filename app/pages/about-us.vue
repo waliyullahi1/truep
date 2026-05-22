@@ -5,8 +5,8 @@
      <div class=" mt-20">
     <Container class="  ">
         <div class=" ">
-            <div class=" flex flex-col text-secondary  justify-center items-center">
-                <UiTypographyH1 class=" text-secondary font-semibold py- font-inter px-2 lg:text-3xl md:text-3xl/tight text-xl/tight sm:text-2xl/tight">
+            <div class=" flex flex-col  text-primary justify-center items-center">
+                <UiTypographyH1 class="  text-primary font-semibold py- font-inter px-2 lg:text-3xl md:text-3xl/tight text-xl/tight sm:text-2xl/tight">
                 Simple, Stress-Free, and Trusted Property Solutions
               </UiTypographyH1>
 
@@ -177,8 +177,8 @@
           <div class="  mt-4 md:grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1  gap-5   ">
            
                 <div  v-for="value in numbers"  class=" space-y-3 rounded-md bg-white cursor-pointer px-2 sm:px-4 py-4 w-full h-full   gap-3 items-center ">
-                  <UiTypographyH3 class=" text-center"><span class=" text-secondary font-semibold text-5xl sm:text-8xl">{{value.title}}</span></UiTypographyH3>
-                  <UiTypographyP class=" text-center text-lg text-secondary"><span class=" text-xl  md:text-2xl">{{value.descri}}</span></UiTypographyP>
+                  <UiTypographyH3 class=" text-center"><span class=" text-primary font-semibold text-5xl sm:text-8xl">{{value.title}}</span></UiTypographyH3>
+                  <UiTypographyP class=" text-center text-lg text-primary"><span class=" text-xl  md:text-2xl">{{value.descri}}</span></UiTypographyP>
                 </div>
              
            

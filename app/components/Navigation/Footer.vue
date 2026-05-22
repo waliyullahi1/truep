@@ -196,9 +196,9 @@ const aboutLinks = [
       >
 
         <!-- LOGO -->
-        <div class="md:flex block items-center gap-3">
+        <div class="md:flex block items-end gap-3">
 
-          <NavigationLogo />
+          <NavigationLogo2 />
 
           <p>
             © {{ new Date().getFullYear() }}

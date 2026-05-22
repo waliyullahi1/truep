@@ -52,7 +52,7 @@
 
      <section>
         <Container>
-          <div class=" text-secondary ">
+          <div class="  text-primary ">
 
            <h2 class="  font-semibold text-2xl">Which type of  Property suits your needs?</h2>
 

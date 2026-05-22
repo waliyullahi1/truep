@@ -485,7 +485,7 @@ const categories = [
 <div>
 
       <div v-if="isFixed"   class="fixed  z-20 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
-        <div class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+        <div class="   border  border-primary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
           <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
             
             <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
@@ -495,7 +495,7 @@ const categories = [
             placeholder="Search land, houses, agents..."
             class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
           />
-          <div class=" bg-secondary text-sm h-full  -0">
+          <div class=" bg-primary text-sm h-full  -0">
               <PropertyFilterModal
               v-model="showFilter"
               :initialFilters="filters"
@@ -504,7 +504,7 @@ const categories = [
                
               }"
             />
-               <button @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+               <button @click="showFilter = true" class=" bg-primary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-primary/80">
                 <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
                 <p>Filters</p> 
               </button>
@@ -526,7 +526,7 @@ const categories = [
     </div>
     
           <div    class="  mt-5  w-full   backdrop-blur bg-white/90"   ref="searchRef">
-              <div v-if="!isFixed"  ref="searchRef" class="   border  border-secondary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+              <div v-if="!isFixed"  ref="searchRef" class="   border  border-primary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
                 <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
                   
                   <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
@@ -536,7 +536,7 @@ const categories = [
                   placeholder="Search land, houses, agents..."
                   class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
                 />
-                <div class=" bg-secondary text-sm h-full  -0">
+                <div class=" bg-primary text-sm h-full  -0">
                     <PropertyFilterModal
                     v-model="showFilter"
                     :initialFilters="filters"
@@ -545,7 +545,7 @@ const categories = [
                     
                     }"
                   />
-                    <button @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                    <button @click="showFilter = true" class=" bg-primary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
                       <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
                       <p>Filters</p> 
                     </button>
@@ -559,7 +559,7 @@ const categories = [
                   :key="c"
                   @click="selectCategory(c)"
                   class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
-                  :class="isActive(c) ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'"
+                  :class="isActive(c) ? 'bg-primary text-white' : ' bg-white/40 text-primary border border-primary text'"
                 >
                   {{ c }}
                 </button>
