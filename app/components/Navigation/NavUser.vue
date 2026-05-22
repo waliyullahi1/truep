@@ -105,7 +105,10 @@
         />
 
       </ContainerUser>
-
+        <NavigationToggle
+          :isOpen="menuRevealed"
+          @revealMenu="toggleMenu"
+        />
     </nav>
 
     <!-- MOBILE MENU -->
