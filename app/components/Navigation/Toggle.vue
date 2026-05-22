@@ -1,6 +1,6 @@
 <template>
-  <div class="flex md:hidden" @click="$emit('revealMenu')">
-    <div class="w-8">
+  <div class="flex md:hidden" >
+    <div @click="$emit('revealMenu')" class="w-8">
       <div
         :class="isOpen 
           ? 'transition transform rotate-45 w-8 bg-primary' 
