@@ -13,7 +13,7 @@
         <div class="flex items-center gap-10">
 
           <!-- LOGO -->
-          <NavigationLogo @logoClicked="handleLogoClick" />
+          <NavigationLogo @logoClicked="handleLogoClick" /> user one
 
           <!-- DESKTOP LINKS -->
           <div class="hidden items-center gap-3 text-sm font-medium text-gray-600 md:flex">

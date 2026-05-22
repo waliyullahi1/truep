@@ -234,7 +234,7 @@ onUnmounted(() => {
             <!-- LOGO -->
             <NavigationLogo
               @logoClicked="handleLogoClick"
-            />
+            /> seller one 
 
             <!-- DESKTOP LINKS -->
             <div
