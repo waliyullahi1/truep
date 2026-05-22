@@ -493,7 +493,7 @@ const categories = [
           <input
             v-model="search"
             placeholder="Search land, houses, agents..."
-            class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
+            class="flex-1  h text-sm font-normal sm:text-md  outline-none text-gray-700"
           />
           <div class=" bg-primary text-sm h-full  -0">
               <PropertyFilterModal
