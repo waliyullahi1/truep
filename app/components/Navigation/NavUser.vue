@@ -100,13 +100,13 @@
 
         <!-- MOBILE TOGGLE -->
          
-        <NavigationToggle
+        <!-- <NavigationToggle
           :isOpen="menuRevealed"
           @revealMenu="toggleMenu"
-        />
+        /> -->
 
       </ContainerUser>
-       <div class=" flex justify-end w-full  absolute  top-3.5 right-2">
+       <div class=" flex justify-end w-full  absolute  top-4 right-2">
           <NavigationToggle
           :isOpen="menuRevealed"
           @revealMenu="toggleMenu"
