@@ -13,7 +13,7 @@
       <Container :addTopBottomPadding="false" class="flex items-center justify-between py-2">
 
         <!-- Logo -->
-        <NavigationLogo @logoClicked="handleLogoClick" /> audinary
+        <NavigationLogo @logoClicked="handleLogoClick" /> 
 
         <!-- Desktop Navigation -->
         <div class="hidden  md:flex gap-3 text-sm font-medium  items-center flex-shrink-0">
