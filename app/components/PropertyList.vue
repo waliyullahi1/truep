@@ -39,7 +39,7 @@
         <div class="p-4 flex flex-col items-start justify-start text-sm">
 
 
-          <h2 class="font-medium text-sm text-pink-600">
+          <h2 class="font-medium text-left text-sm text-pink-600">
             {{ item.title }}
           </h2>
           <p class="text-primary  text-md font-semibold mt-1">
@@ -95,7 +95,7 @@ const visibleCount = ref(9)
 const results = ref([
   {
     id: 1,
-    title: '3 Bedroom Fully Furnished Maisonette',
+    title: 'BEDROOM TERRACE DUPLEX AT ORCHID LEKKI LAGOS',
     category: 'Flat / Apartment',
     location: {
       country: "Nigeria",
@@ -110,7 +110,7 @@ const results = ref([
       }
     },
     pricing: {
-      price: 30000000,
+      price: 130000000,
       currency: "NGN",
       rentDuration: "year",
       installment: false,
@@ -129,7 +129,7 @@ const results = ref([
     baths: 4,
     toilets: 4,
     purpose: 'Rent',
-    images: ['/images/land1.jpg', '/images/land2.jpg']
+    images: ['/images/land1.jpg', '/images/land2.jpg', '/images/land11.jpg' ]
   },
   {
     id: 2,
