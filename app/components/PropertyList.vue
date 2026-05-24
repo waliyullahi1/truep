@@ -129,18 +129,18 @@ const results = ref([
     baths: 4,
     toilets: 4,
     purpose: 'Rent',
-    images: ['/images/land1.jpg', '/images/land2.jpg', '/images/land11.jpg' ]
+    images: ['/images/land1.jpg', '/images/land2.jpg', '/images/land11.jpg', '/images/land111.jpeg' ]
   },
   {
     id: 2,
-    title: '4 Bedroom Terrace Duplex With BQ',
+    title: ' BEDROOM SEMI DETACHED DUPLEX LOCATED AT AJAH LAGOS',
     category: 'Duplex',
     location: {
     country: "Nigeria",
-    state: "",
+    state: "Lagos",
     lga: "",
-    city: "",
-    address: "",
+    city: "Lekki ",
+    address: " Ajah, Lekki, Lagos",
     source: "gps",
 
     geometry: {
@@ -149,7 +149,7 @@ const results = ref([
     }
   },
      pricing: {
-    price: null,
+    price: 222000000,
     currency: "NGN",
     rentDuration: null,
     installment: false,
@@ -165,7 +165,7 @@ const results = ref([
       location: ""
     },
     purpose: 'Rent',
-    images: ['/images/land2.jpg','/images/land3.jpg']
+    images: ['/images/land22.jpeg','/images/land222.jpeg','/images/land22222.jpeg', '/images/land2222.jpeg' ]
   },
 
   /* =============================
