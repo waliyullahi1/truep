@@ -158,6 +158,23 @@
 
         <!-- MOBILE LINKS -->
         <div class="flex flex-col gap-7 font-medium text-slate-700">
+           <NuxtLink
+            v-if="auth.user?.roles === 'user'"
+            to="/user/profile/edit"
+          >
+            <p class="menu-link">
+              Upgrade Account
+            </p>
+          </NuxtLink>
+
+          <NuxtLink
+            v-if="auth.user?.roles !== 'user'"
+            to="/user/dashboard"
+          >
+            <p class="menu-link">
+              Dashboard
+            </p>
+          </NuxtLink>
 
           <NuxtLink
             v-for="link in navLinks"
@@ -168,7 +185,12 @@
               {{ link.name }}
             </p>
           </NuxtLink>
-
+          
+          <NuxtLink to="/user/list/new">
+            <p class="menu-link">
+              Post Property
+            </p>
+          </NuxtLink>
         </div>
 
       </div>

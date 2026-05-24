@@ -786,7 +786,7 @@ const next = async () => {
      if (step.value === 3) {
 
           const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
-          if (imageCount < 6) {
+          if (imageCount < 3) {
             return $toast.error("Please upload at least 6 images.")
           }
       }

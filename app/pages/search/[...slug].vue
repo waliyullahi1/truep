@@ -518,7 +518,7 @@ const categories = [
             :key="c"
             @click="selectCategory(c)"
             class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
-            :class="isActive(c) ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'"
+            :class="isActive(c) ? ' bg-tertiary text-white' : ' bg-white/40 text-tertiary  border border-tertiary text'"
           >
             {{ c }}
           </button>
@@ -545,7 +545,7 @@ const categories = [
                     
                     }"
                   />
-                    <button @click="showFilter = true" class=" bg-primary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                    <button @click="showFilter = true" class=" bg-primary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-tertiary/80">
                       <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
                       <p>Filters</p> 
                     </button>
@@ -748,8 +748,8 @@ const categories = [
       <!-- CARDS -->
       <section  class="">
         <Container>
-          <div class=" text-secondary">
-            <UiTypographyH3><span class=" text-secondary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
+          <div class=" text- text-tertiary">
+            <UiTypographyH3><span class=" text-tertiary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
               <div  class=" flex justify-between items-center py-3">
                 <p  class="  sm:text-lg text-sm "> <span class="font-semibold ">10000</span> results </p> 
                 <div class=" flex ">
@@ -758,7 +758,7 @@ const categories = [
                     <SortDropdown @update="handleSort" />
 
 
-                        <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
+                        <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-tertiary text-white' : ' bg-white/40 text-tertiary border border-tertiary text'">
                         <img src="@/assets/images/icons/map.svg" class=" w-4" alt=""> Map
                       </button>
                   </div>

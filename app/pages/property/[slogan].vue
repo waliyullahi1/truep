@@ -241,7 +241,7 @@
                <p class="  font-semibold bg-rose-200 text-sm w-fit  text-rose-800 px-2"> For {{capitalizeFirstLetter(form.purpose)}}</p>
               <p class="font-inter text-xl font-bold text-green-600">
                 {{ formattedPrice }}
-                <span class="text-secondary text-lg">
+                <span class="text-tertiary text-lg">
                   /{{ form.pricing.paymentType }} 
                 </span>
               </p>

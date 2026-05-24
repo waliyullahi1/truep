@@ -33,7 +33,7 @@ console.log(auth.value.authenticated, 'dfsdsfdsdfsdfdfdfsdffffffffffffffff');
 
     // logged in but normal user
     if (auth.value.user?.roles === 'user') {
-      return navigateTo('/profile/edit')
+      return navigateTo('/user/profile/edit')
     }
   }
 

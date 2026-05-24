@@ -1,6 +1,6 @@
 <template>
   <div class="relative inline-block">
-    <button  @click="toggle" class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-secondary text-white' : ' bg-white/40 text-secondary border border-secondary text'">
+    <button  @click="toggle" class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-tertiary text-white' : ' bg-white/40 text-tertiary border border-tertiary text'">
         <img src="@/assets/images/icons/suggest.svg" class=" w-4" alt=""> 
         <span class="capitalize">{{ selectedLabel }}</span>
     </button>
