@@ -119,7 +119,7 @@
 
       <div
         v-if="menuRevealed"
-        class="fixed inset-y-0 left-0 z-[200] h-screen w-[70%] max-w-[320px] overflow-y-auto bg-white px-6 py-8 shadow-2xl md:hidden"
+        class="fixed inset-y-0 left-0 z-[200] h-screen w-[50%] max-w-[320px] overflow-y-auto bg-white px-2 py-8 shadow-2xl md:hidden"
       >
 
         <!-- USER -->
@@ -157,40 +157,41 @@
         </div>
 
         <!-- MOBILE LINKS -->
-        <div class="flex flex-col gap-7 font-medium text-slate-700">
+        <div class="flex  flex-col text-md sm:text-sm gap-4 font-medium text-slate-700">
            <NuxtLink
-            v-if="auth.user?.roles === 'user'"
+            v-if="auth.user?.roles === 'user'" class="menu-link"
             to="/user/profile/edit"
           >
-            <p class="menu-link">
+            <p class="cursor-pointer hover:text-primary">
               Upgrade Account
             </p>
           </NuxtLink>
 
           <NuxtLink
-            v-if="auth.user?.roles !== 'user'"
+            v-if="auth.user?.roles !== 'user'" class="menu-link"
             to="/user/dashboard"
           >
-            <p class="menu-link">
+            <p class="cursor-pointer hover:text-primary">
               Dashboard
+            </p>
+          </NuxtLink>
+          <NuxtLink to="/user/list/new" class="menu-link">
+            <p class=" cursor-pointer hover:text-primary ">
+              Post Property
             </p>
           </NuxtLink>
 
           <NuxtLink
             v-for="link in navLinks"
             :key="link.to"
-            :to="link.to"
+            :to="link.to" class="menu-link"
           >
             <p class="cursor-pointer hover:text-primary">
               {{ link.name }}
             </p>
           </NuxtLink>
           
-          <NuxtLink to="/user/list/new">
-            <p class="menu-link">
-              Post Property
-            </p>
-          </NuxtLink>
+          
         </div>
 
       </div>

@@ -573,13 +573,36 @@ const propertyType = computed(() => form.value.type)
 /* ================= OPTIONS BASED ON TYPE ================= */
 const houseType = [
   { key: 'self_contain', label: 'Self Contain' },
-  { key: 'duplex', label: 'Duplex' },
+  { key: 'single_room', label: 'Single Room' },
+  { key: 'mini_flat', label: 'Mini Flat' },
+  { key: 'room_and_parlour', label: 'Room and Parlour' },
+  { key: 'studio_apartment', label: 'Studio Apartment' },
+
   { key: 'flat', label: 'Flat' },
-  { key: 'mansion', label: 'Mansion' },
+  { key: 'apartment', label: 'Apartment' },
+  { key: 'penthouse', label: 'Penthouse' },
+  { key: 'duplex', label: 'Duplex' },
+  { key: 'terrace_duplex', label: 'Terrace Duplex' },
+  { key: 'semi_detached_duplex', label: 'Semi Detached Duplex' },
+  { key: 'detached_duplex', label: 'Detached Duplex' },
+
   { key: 'bungalow', label: 'Bungalow' },
+  { key: 'detached_bungalow', label: 'Detached Bungalow' },
+  { key: 'semi_detached_bungalow', label: 'Semi Detached Bungalow' },
+
+  { key: 'mansion', label: 'Mansion' },
   { key: 'villa', label: 'Villa' },
+  { key: 'townhouse', label: 'Townhouse' },
+  { key: 'cottage', label: 'Cottage' },
+
   { key: 'shop', label: 'Shop' },
-  { key: 'office_space', label: 'Office Space' }
+  { key: 'office_space', label: 'Office Space' },
+  { key: 'warehouse', label: 'Warehouse' },
+  { key: 'commercial_property', label: 'Commercial Property' },
+  { key: 'plaza', label: 'Plaza' },
+  { key: 'hotel', label: 'Hotel' },
+  { key: 'guest_house', label: 'Guest House' },
+  { key: 'hostel', label: 'Hostel' }
 ]
 
 const landType = [

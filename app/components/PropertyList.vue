@@ -46,7 +46,7 @@
             {{ getPriceLabel(item) }}
           </p>
 
-          <p class="text-gray-500">
+          <p class="text-gray-500 text-left">
             {{ getLocationLabel(item.location) }}
           </p>
 
@@ -174,15 +174,15 @@ const results = ref([
 
   {
     id: 100,
-    title: '700sqm Estate Plot At NNPC By Ochacho',
+    title: 'Full plot of land 60×100 for sale at feru',
     category: 'Land',
-    location: 'Life Camp Abuja',
+    location: 'Feru town , peace estate , after lafenwa, ado-odo Ogun state, Ado-Odo/Ota, Ogun',
     price: '₦110,000,000',
     beds: 0,
     baths: 0,
     toilets: 0,
     purpose: 'Sale',
-    images: ['/images/land1.jpg','/images/land2.jpg']
+    images: ['/images/land33.jpg','/images/land333.jpeg', '/images/land3333.jpeg', "/images/land333.jpeg"]
   },
 ])
 const resultss = ref([
