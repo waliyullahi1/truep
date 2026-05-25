@@ -47,13 +47,19 @@ const price = computed({
 })
 
 const rentDuration = computed({
-  get: () => pricing.value.rent.duration || "monthly",
+  get: () => pricing.value?.rent?.duration?.unit || "monthly",
+
   set: (val) => {
     pricing.value = {
       ...pricing.value,
+
       rent: {
         ...pricing.value.rent,
-        duration: val
+
+        duration: {
+          ...pricing.value.rent?.duration,
+          unit: val
+        }
       }
     }
   }

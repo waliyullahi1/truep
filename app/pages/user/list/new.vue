@@ -154,7 +154,7 @@
     </div>
 
   <Container v-else>
-
+   {{ form }}
       <!-- ✅ STEP PROGRESS -->
     <div class="mb-12  max-w-4xl mx-auto ">
       <div class="flex  items-center justify-between text-sm font-medium">
@@ -741,9 +741,7 @@ function generateTitle(data){
     if(data.category === 'office_space'){
     return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
     }
-  const bedroom = form.value.features.find(
-  item => item.key === 'bedroom'
-  )?.value
+const bedroom = form.value.houseDetails?.bedroom 
     return `${bedroom || 0} BEDROOM ${data.category} AT ${data.location.city} ${data.location.state}`.toUpperCase()
 
 }
