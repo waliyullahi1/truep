@@ -1,5 +1,5 @@
 <template>
-  <div class="border w-full space-y-6 p-5 rounded shadow">
+  <div class="border w-full space-y-6 p-2 sm:p-5 rounded ">
 
     <!-- STATE SELECTION -->
     <div>
@@ -86,7 +86,7 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({
-      state: '',
+      state: 'osun',
       city: '',
       address: ''
     })

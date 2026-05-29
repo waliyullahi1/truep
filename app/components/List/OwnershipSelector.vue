@@ -80,7 +80,7 @@
            >
             <Verifyidentity :kycType="kycType"  v-model:isVerify="verifiedModel" />
           </div>
-        verified {{}} {{verifiedModel}}
+      
         </div>
       </div>
 

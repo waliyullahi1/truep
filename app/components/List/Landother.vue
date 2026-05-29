@@ -237,7 +237,7 @@ const money = (v) => "₦ " + Number(v || 0).toLocaleString()
 
 <style scoped>
 .card {
-  @apply bg-white rounded-2xl shadow p-6 space-y-4;
+  @apply bg-white rounded-2xl  p-6 space-y-4;
 }
 .title { @apply text-lg font-semibold; }
 .mode-wrap { @apply flex gap-2; }

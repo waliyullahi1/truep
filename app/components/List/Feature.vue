@@ -147,7 +147,7 @@ const handleNumberInput = (feature, value) => {
     </div>
 
     <!-- ================= HOUSE ================= -->
-    <div v-if="type === 'house'" class="space-y-6">
+    <div v-if="type === 'house'  || type === 'hostel'" class="space-y-6">
 
       <!-- NUMBER INPUTS -->
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">

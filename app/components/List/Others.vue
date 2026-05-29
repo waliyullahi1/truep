@@ -34,7 +34,7 @@ watch(() => props.modelValue, (v) => {
 </script>
 
 <template>
-<div class="border w-full p-5 rounded-xl shadow space-y-6">
+<div class="border w-full p-5 rounded-xl  space-y-6">
   <!-- TITLE -->
   <h2 class="section-title">
     {{ props.type === 'house' ? 'House Other Features' : 'Land Other Features' }}

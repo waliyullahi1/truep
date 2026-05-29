@@ -154,7 +154,7 @@
     </div>
 
   <Container v-else>
-
+   {{ form }}
       <!-- ✅ STEP PROGRESS -->
     <div class="mb-12  max-w-4xl mx-auto ">
       <div class="flex  items-center justify-between text-sm font-medium">
@@ -294,6 +294,10 @@
                 <!-- ================= MANUAL ================= -->
                 <div v-if="form.location.source === 'manual'">
                   <ListStateLGASelector v-model="form.location" />
+                </div>
+
+                <div  v-if=" form.category.toLowerCase() === 'hostel'" >
+
                 </div>
 
               </div>
@@ -474,10 +478,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-definePageMeta({
-  layout: 'auth',
-  access: 'seller'
-})
+// definePageMeta({
+//   layout: 'auth',
+//   access: 'seller',
+//    isPrivateRoute : true
+// })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -542,7 +547,11 @@ ownership: {
   paymentType: 'outright',
   landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
   houseDetails: {},
- 
+  schoolDetails:{
+    name:'',
+    abbreviation:'',
+    
+  },
   media: { images: [], video: null },
   documents: { surveyPlan: null, titleDocument: null },
   features: [],
@@ -572,13 +581,36 @@ const propertyType = computed(() => form.value.type)
 /* ================= OPTIONS BASED ON TYPE ================= */
 const houseType = [
   { key: 'self_contain', label: 'Self Contain' },
-  { key: 'duplex', label: 'Duplex' },
+  { key: 'single_room', label: 'Single Room' },
+  { key: 'mini_flat', label: 'Mini Flat' },
+  { key: 'room_and_parlour', label: 'Room and Parlour' },
+  { key: 'studio_apartment', label: 'Studio Apartment' },
+
   { key: 'flat', label: 'Flat' },
-  { key: 'mansion', label: 'Mansion' },
+  { key: 'apartment', label: 'Apartment' },
+  { key: 'penthouse', label: 'Penthouse' },
+  { key: 'duplex', label: 'Duplex' },
+  { key: 'terrace_duplex', label: 'Terrace Duplex' },
+  { key: 'semi_detached_duplex', label: 'Semi Detached Duplex' },
+  { key: 'detached_duplex', label: 'Detached Duplex' },
+
   { key: 'bungalow', label: 'Bungalow' },
+  { key: 'detached_bungalow', label: 'Detached Bungalow' },
+  { key: 'semi_detached_bungalow', label: 'Semi Detached Bungalow' },
+
+  { key: 'mansion', label: 'Mansion' },
   { key: 'villa', label: 'Villa' },
+  { key: 'townhouse', label: 'Townhouse' },
+  { key: 'cottage', label: 'Cottage' },
+
   { key: 'shop', label: 'Shop' },
-  { key: 'office_space', label: 'Office Space' }
+  { key: 'office_space', label: 'Office Space' },
+  { key: 'warehouse', label: 'Warehouse' },
+  { key: 'commercial_property', label: 'Commercial Property' },
+  { key: 'plaza', label: 'Plaza' },
+  { key: 'hotel', label: 'Hotel' },
+  { key: 'guest_house', label: 'Guest House' },
+  { key: 'hostel', label: 'Hostel' }
 ]
 
 const landType = [
@@ -587,6 +619,7 @@ const landType = [
   { key: 'industrial_land', label: 'Industrial Land' },
   { key: 'mixed_use_land', label: 'Mixed-use Land' },
   { key: 'family_land', label: 'Family Land' },
+   { key: 'estate_land', label: 'Estate Land' },
   { key: 'other_land', label: 'Other Land' }
 ]
 
@@ -600,34 +633,7 @@ const options = computed(() => {
 watch(propertyType, type => {
   form.value.location.geometry.type = type === 'house' ? 'Point' : 'Polygon'
 })
-function generateRandomLand() {
-  // Iwo, Osun base coordinates
-  const baseLng = 4.18 + (Math.random() - 0.5) * 0.02
-  const baseLat = 7.63 + (Math.random() - 0.5) * 0.02
 
-  const size = 0.001 + Math.random() * 0.001
-
-  const corners = [
-    [baseLng, baseLat],
-    [baseLng + size, baseLat],
-    [baseLng + size, baseLat + size],
-    [baseLng, baseLat + size],
-    [baseLng, baseLat]
-  ]
-
-  return {
-    country: "Nigeria",
-    state: "Osun",
-    lga: "Iwo",
-    city: "Iwo",
-    address: "Iwo Test Land (Near Bowen Area)",
-    source: "manual",
-    geometry: {
-      type: "Polygon",
-      coordinates: [corners]
-    }
-  }
-}
 
 const refreshData = async (stopLoading) => {
   await refresh()   // or your API call
@@ -699,7 +705,7 @@ function mergeForm(property) {
     formSelection.value = { purpose: property.purpose, type: property.type }
   }
    originalForm.value = JSON.parse(JSON.stringify(form.value))
-  form.value.location = generateRandomLand()
+  form.value.location = form.value.location || { country: "", state: "", lga: "", city: "", address: "", source: "gps", geometry: form.value.location.geometry }
 }
 
 const safeClone = (obj) => JSON.parse(JSON.stringify(obj))
@@ -737,6 +743,7 @@ const generateAI = async () => {
   }
 }
 function generateTitle(data){
+  const category = data.category?.replace(/_/g, ' ')|| ''
     if(data.type === 'land'){
     return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
     }
@@ -744,16 +751,13 @@ function generateTitle(data){
     if(data.category === 'office_space'){
     return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
     }
-  const bedroom = form.value.features.find(
-  item => item.key === 'bedroom'
-  )?.value
-    return `${bedroom || 0} BEDROOM ${data.category} AT ${data.location.city} ${data.location.state}`.toUpperCase()
+
+const bedroom = form.value.houseDetails?.bedroom 
+    return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
 
 }
 
-function isFormChanged() {
-  return JSON.stringify(form.value) !== JSON.stringify(originalForm.value)
-}
+
 /* ================= NAVIGATION ================= */
 const next = async () => {
   if (submitloading.value) return
@@ -809,13 +813,13 @@ const next = async () => {
           return
 
     }
-     console.log(response.data.data);
+  
      
      if (step.value === 3) {
 
           const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
-          if (imageCount < 6) {
-            return $toast.error("Please upload at least 6 images.")
+          if (imageCount < 3) {
+            return $toast.error("Please upload at least 3 images.")
           }
       }
     const property = response.data?.data || response.data
@@ -866,9 +870,11 @@ const submit =  async() => {
       }
   
    submitloading.value = true
+   console.log( form.value);
+   
     try {
     const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })
-    console.log(res);
+    
     
       if (!res.success) {
 
@@ -879,9 +885,8 @@ const submit =  async() => {
 
 
        router.push({
-       path: '/property',
+       path: `/property/${form.value.slug}`,
         query: {
-         slog: form.value.slog,
          preview: true,
          },
        })
@@ -909,13 +914,21 @@ const { data, pending, error, refresh } = await useAsyncData(
       }
        const safe = res?.data?.data || res?.data || null
        mergeForm(safe)
-      return res.data?.data || null
+      // return res.data?.data || null
     } catch (err) {
       throw err
     }
   },
   { lazy: true, server: true }
 )
+
+// watch(data, (newData) => {
+//   if (newData) {
+//     console.log('fffff', newData);
+    
+//     mergeForm(newData)
+//   }
+// })
 // const { data, pending, error } = await useAsyncData(
 //   `property-${route.params.id}`,
 //   async () => {

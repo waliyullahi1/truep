@@ -175,7 +175,7 @@
     <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="md:max-w-4xl w-full list-disc mx-auto space-y-4">
-        <div class="bg-white p-5 rounded shadow space-y-6">
+        <div class="bg-white sm:p-5 p-1 rounded  space-y-6">
           <div class="text-center space-y-2 mb-8">
             <h1 class="text-2xl font-bold">Basic Property Information</h1>
             <p class="text-gray-500 text-sm max-w-xl mx-auto">
@@ -210,7 +210,7 @@
           </div>
 
           <!-- LOCATION / FEATURES / OTHERS -->
-          <div class="mt-10 border rounded p-4">
+          <div class="mt-10 border rounded p-1 sm:p-4">
 
             <!-- TABS -->
             <div class="flex bg-gray-50 rounded overflow-hidden">
@@ -285,7 +285,7 @@
                     <ListLandMap v-model="form" />
                   </div>
 
-                  <div v-if="propertyType === 'house'">
+                  <div v-if="propertyType === 'house' || propertyType === 'hostel' ">
                     <ListHouseLocationPicker v-model="form" />
                   </div>
 
@@ -295,6 +295,12 @@
                 <div v-if="form.location.source === 'manual'">
                   <ListStateLGASelector v-model="form.location" />
                 </div>
+
+                <div  v-if="propertyType === 'hostel'">
+                   <ListHostelForm  :state="form.location.state"   v-model="form.hostelDetails" /> 
+                </div>
+                   
+                 
 
               </div>
               </div>
@@ -321,8 +327,8 @@
                     <ListLandother v-model="form" />
                   </div>
 
-                  <div v-if="propertyType === 'house'">
-                    <ListHouseother v-model="form" :purpose="form.purpose" />
+                  <div v-if="propertyType === 'house' || propertyType === 'hostel'">
+                    <ListHouseother v-model="form" :purpose="form.purpose" :type="form.type" />
                   </div>
                   <div class="mb-6 mt-5 text">
                     <h2 class="text-lg font-semibold">Select Payment Type <span>(Optional)</span></h2>
@@ -466,6 +472,7 @@
 </template>
 
 <script setup>
+import { Form } from 'lucide-vue-next'
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 const ownershipType = ref('')
@@ -474,11 +481,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-definePageMeta({
-  layout: 'auth',
-  access: 'seller',
-   isPrivateRoute : true
-})
+// definePageMeta({
+//   layout: 'auth',
+//   access: 'seller',
+//    isPrivateRoute : true
+// })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -543,17 +550,22 @@ ownership: {
   paymentType: 'outright',
   landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
   houseDetails: {},
- 
+   hostelDetails: {
+   school: null,
+    gender: 'Mixed',
+    name: ''
+ },
   media: { images: [], video: null },
   documents: { surveyPlan: null, titleDocument: null },
   features: [],
-  contact: { name: "", phone: "", whatsapp: "" }
+
 })
 /* ================= PURPOSE OPTIONS ================= */
 const purposeOptions = [
   { label: 'Sell Land', value: { purpose: 'sale', type: 'land' } },
   { label: 'Sell House', value: { purpose: 'sale', type: 'house' } },
-  { label: 'Rent House', value: { purpose: 'rent', type: 'house' } }
+  { label: 'Rent House', value: { purpose: 'rent', type: 'house' } },
+  { label: 'Rent Hostel', value: { purpose: 'rent', type: 'hostel' } },
 ]
 
 const formSelection = ref(null)
@@ -601,8 +613,7 @@ const houseType = [
   { key: 'commercial_property', label: 'Commercial Property' },
   { key: 'plaza', label: 'Plaza' },
   { key: 'hotel', label: 'Hotel' },
-  { key: 'guest_house', label: 'Guest House' },
-  { key: 'hostel', label: 'Hostel' }
+
 ]
 
 const landType = [
@@ -611,12 +622,35 @@ const landType = [
   { key: 'industrial_land', label: 'Industrial Land' },
   { key: 'mixed_use_land', label: 'Mixed-use Land' },
   { key: 'family_land', label: 'Family Land' },
+   { key: 'estate_land', label: 'Estate Land' },
   { key: 'other_land', label: 'Other Land' }
+]
+
+const hostelCategory = [
+
+  {key: 'selfcon', label: 'Self Contain'},
+  { key: 'single_room',  label: 'Single Room' },
+  {  key: 'one_room',  label: 'One Room'},
+  {  key: 'one_room_parlour', label: 'One Room & Parlour' },
+  { key: 'two_bedroom', label: '2 Bedroom Flat' },
+  { key: 'three_bedroom',  label: '3 Bedroom Flat' },
+  { key: 'shared_room', label: 'Shared Room' },
+  { key: 'bunk_space',  label: 'Bunk Space' },
+  {key: 'private_hostel', label: 'Private Hostel'},
+  { key: 'school_hostel', label: 'School Hostel'},
+  { key: 'apartment_hostel', label: 'Hostel Apartment'},
+  { key: 'luxury_hostel', label: 'Luxury Hostel'},
+  { key: 'boys_quarters',  label: 'Boys Quarters (BQ)'},
+  { key: 'mini_flat', label: 'Mini Flat'},
+  { key: 'studio_apartment', label: 'Studio Apartment'},
+  
+  { key: 'other', label: 'Other' }
 ]
 
 const options = computed(() => {
   if (propertyType.value === 'land') return landType
   if (propertyType.value === 'house') return houseType
+   if (propertyType.value === 'hostel') return hostelCategory
   return []
 })
 
@@ -684,6 +718,7 @@ function mergeForm(property) {
   form.value.location.geometry = { ...(property.location?.geometry || form.value.location.geometry) }
   form.value.landDetails = { ...form.value.landDetails, ...(property.landDetails || {}) }
   form.value.houseDetails = property.houseDetails ?? form.value.houseDetails
+  form.value.hostelDetails = property.hostelDetails ?? form.value.hostelDetails
   form.value.media = { ...form.value.media, ...(property.media || {}) }
   form.value.documents = { ...form.value.documents, ...(property.documents || {}) }
   form.value.contact = { ...form.value.contact, ...(property.contact || {}) }
@@ -712,13 +747,13 @@ const generateAI = async () => {
       body: { form: payload }
     })
 
-    console.log(res.data)
+    
 
     // ✅ DO NOT overwrite blindly
     const newDescription = res.data
        form.value.description = newDescription
 
-       console.log(form.value.description);
+   
        
     // // If old description exists, append OR replace intelligently
     // if (form.value.description && form.value.description.trim()) {
@@ -734,15 +769,29 @@ const generateAI = async () => {
   }
 }
 function generateTitle(data){
+  const category = data.category?.replace(/_/g, ' ')|| ''
     if(data.type === 'land'){
     return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
     }
 
+    if (data.type === 'hostel') {
+
+      const school =  data.hostelDetails?.school?.abbreviation ||  data.hostelDetails?.school?.name || ''
+
+      const gender = data.hostelDetails?.gender || 'Mixed'
+
+      const hostelName =  data.hostelDetails?.name || ''
+
+    return `${  hostelName ? hostelName + ' - ' : '' }${gender} HOSTEL FOR RENT NEAR ${school} IN, ${data.location.state} `
+  }
+
+
     if(data.category === 'office_space'){
     return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
     }
+
 const bedroom = form.value.houseDetails?.bedroom 
-    return `${bedroom || 0} BEDROOM ${data.category} AT ${data.location.city} ${data.location.state}`.toUpperCase()
+    return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
 
 }
 
@@ -808,7 +857,7 @@ const next = async () => {
 
           const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
           if (imageCount < 3) {
-            return $toast.error("Please upload at least 6 images.")
+            return $toast.error("Please upload at least 3 images.")
           }
       }
     const property = response.data?.data || response.data
@@ -859,7 +908,7 @@ const submit =  async() => {
       }
   
    submitloading.value = true
-   console.log( form.value);
+
    
     try {
     const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })

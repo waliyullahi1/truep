@@ -8,6 +8,10 @@ const props = defineProps({
     type: String,
     default: "sell"
   },
+  type: {
+    type: String,
+    default: "sell"
+  },
   modelValue: {
     type: Object,
     required: true
@@ -86,12 +90,14 @@ const money = (v) =>
 </script>
 <template>
 
-<div class="border w-full p-5 rounded-xl shadow space-y-6">
+<div class="border w-full p-5 rounded-xl  space-y-6">
 
-<h2 class="section-title">
+<h2 v-if="type !== 'hostel'" class="section-title">
 {{ purpose.split(' ')[0].toLowerCase() === "sell" ? "House Price" : "Rent Price" }}
 </h2>
-
+<h2 v-if="type === 'hostel'" class="section-title">
+Hostel Rent Price
+</h2>
 <!-- SELL -->
 
 <div v-if="purpose  === 'sale'" class="space-y-2">

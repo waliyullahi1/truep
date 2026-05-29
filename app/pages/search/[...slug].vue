@@ -412,7 +412,7 @@ const getPriceLabel = (item) => {
     }
 
     if (item?.purpose === 'rent') {
-      return pricing.rent?.duration ? `/${pricing.rent.duration}` : ''
+      return pricing.rent?.duration?.unit ? `/${pricing.rent.duration?.unit}` : ''
     }
   }
 
@@ -839,7 +839,7 @@ const categories = [
                 {{item.location.address}}, {{item.location.city}}, {{item.location.state}}
                 </p> 
 
-                <p class="text-primary text-lg font-bold mt-1">
+                <p class="text-primary text-md font-bold mt-1">
                   {{smartMoney(item.pricing.price || 0) }} {{ getPriceLabel(item) }}
                 </p>
 

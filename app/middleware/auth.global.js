@@ -12,7 +12,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   | PRIVATE ROUTE
   |--------------------------------------------------------------------------
   */
-console.log(auth.value.authenticated, 'dfsdsfdsdfsdfdfdfsdffffffffffffffff');
 
   if (isPrivateRoute && !auth.value.authenticated) {
     return navigateTo('/auth')

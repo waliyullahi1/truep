@@ -24,28 +24,24 @@ const toolbar = [
 </script>
 
 <template>
+  <div class="p-6 bg-white rounded-xl mt-7">
 
-<div class="p-6 bg-white rounded-xl mt-7">
+    <ClientOnly>
 
+      <QuillEditor
+        v-model:content="description"
+        contentType="html"
+        theme="snow"
+        :toolbar="toolbar"
+        class="min-h-[220px]"
+      />
 
+    </ClientOnly>
 
-<ClientOnly>
-
-<QuillEditor
-:content="description"
-contentType="html"
-theme="snow"
-:toolbar="toolbar"
-class="min-h-[220px]"
-/>
-
-</ClientOnly>
-
-</div>
-
+  </div>
 </template>
+
 <style scoped>
-/* optional: fix min-height of read-only editor */
 .ql-container {
   min-height: 150px;
 }

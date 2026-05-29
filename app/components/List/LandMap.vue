@@ -382,7 +382,7 @@ const hasExistingPolygon = computed(() => {
       <!-- MAP -->
       <div
         ref="mapRef"
-        class="w-full h-[500px] rounded-xl border shadow"
+        class="w-full h-[500px] rounded-xl border "
       ></div>
 
       <!-- LOCATION DETAILS -->
