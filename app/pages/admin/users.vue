@@ -373,7 +373,8 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  adminOnly: true
 })
 
 const route = useRoute()

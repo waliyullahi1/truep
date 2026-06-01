@@ -547,7 +547,7 @@ ownership: {
     source: "gps",
     geometry: { type: "Polygon", coordinates: [] }
   },
-  paymentType: 'outright',
+
   landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
   houseDetails: {},
    hostelDetails: {
@@ -776,13 +776,13 @@ function generateTitle(data){
 
     if (data.type === 'hostel') {
 
-      const school =  data.hostelDetails?.school?.abbreviation ||  data.hostelDetails?.school?.name || ''
+      const school =  data.hostelDetails?.school?.abbreviation.toUpperCase() ||  data.hostelDetails?.school?.name.toUpperCase() || ''
 
-      const gender = data.hostelDetails?.gender || 'Mixed'
+      const gender = data.hostelDetails?.gender.toUpperCase() || 'Mixed'
 
-      const hostelName =  data.hostelDetails?.name || ''
+      const hostelName =  data.hostelDetails?.name.toUpperCase() || ''
 
-    return `${  hostelName ? hostelName + ' - ' : '' }${gender} HOSTEL FOR RENT NEAR ${school} IN, ${data.location.state} `
+    return `${  hostelName ? hostelName + ' - ' : '' }${gender} HOSTEL FOR RENT NEAR ${school} IN, ${data.location.state.toUpperCase()} `
   }
 
 
@@ -794,6 +794,21 @@ const bedroom = form.value.houseDetails?.bedroom
     return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
 
 }
+
+// function generateTitle(data){
+//   const category = data.category?.replace(/_/g, ' ')|| ''
+//     if(data.type === 'land'){
+//     return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
+//     }
+
+//     if(data.category === 'office_space'){
+//     return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
+//     }
+
+// const bedroom = form.value.houseDetails?.bedroom 
+//     return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
+
+// }
 
 
 /* ================= NAVIGATION ================= */
@@ -960,87 +975,15 @@ const { data, pending, error, refresh } = await useAsyncData(
   { lazy: true, server: true }
 )
 
-// watch(data, (newData) => {
-//   if (newData) {
-//     console.log('fffff', newData);
-    
-//     mergeForm(newData)
-//   }
-// })
-// const { data, pending, error } = await useAsyncData(
-//   `property-${route.params.id}`,
-//   async () => {
-//     try {
-//        const propertyId = route.query?.id
-//       if (!propertyId) return null
-
-//       const res = await useApiFetch(`/property/${propertyId}`)
-//           console.log(res,'res');
-          
-//             if (!res.success) {
-//               console.log(res.success, 'res.success');
-              
-//               throw createError({
-//                 statusCode: res.status || 500,
-//                 statusMessage: res.message || 'Failed to load properties'
-//               })
-//             }
-//       // ✅ Extract ONLY plain JSON
-//       const safe = res?.data?.data || res?.data || null
-//             mergeForm(safe)
-//       // ✅ Prevent "non-POJO" error
-//       return JSON.parse(JSON.stringify(safe))
-//     } catch (err) {
-//       console.error('Fetch failed:', err)
-//       return null
-//     }
-//   },
-//    {
-//     lazy: true,
-//     server: true
-//   }
-// )
-// const loadData = async () => {
-//   try {
-//     const response = await useApiFetch(`/property/${propertyId}`, {
-//       method: 'GET'
-//     })
-
-//     // If your API returns wrapped response
-//     const property = response?.data?.data || response?.data || null
-
-//     if (!property) {
-//       console.warn('No property found')
-//       return
-//     }
-
-//     console.log(property)
-//     mergeForm(property)
-
-//   } catch (err) {
-//     console.error('LoadData Error:', err)
-
-//     // ✅ show ONE clear message
-//     $toast.error('Server unavailable. Try again.')
-//   }
-// }
-
-// await loadData()
-
-//  mergeForm(data.value.data)
-// onMounted(async () => {
-//   const propertyId = route.query?.id
-  
-//   if (!propertyId) return
-//   try {
-//     const response = await useApiFetch(`/property/${propertyId}`, { method: 'GET' })
-//     const property = response.data?.data || response.data
-//     mergeForm(property)
-//   } catch (err) {
-//     console.error(err)
-//     $toast.error(err?.message || "Failed to load property")
-//   }
-// })
+watch(
+  () => form.value.purpose,
+  (purpose) => {
+    if (purpose === "rent") {
+      form.value.pricing.paymentType = "rent"
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

@@ -110,11 +110,27 @@ const toggleFeature = (feature) => {
 }
 
 /* HANDLE NUMBER INPUT → HOUSE OBJECT */
+// const handleNumberInput = (feature, value) => {
+//   const newHouse = { ...props.house }
+
+//   if (value !== null && value !== '' && value >= 0) {
+//     newHouse[feature.key] = value
+//   } else {
+//     delete newHouse[feature.key]
+//   }
+
+//   emit('update:house', newHouse)
+// }
+
+
 const handleNumberInput = (feature, value) => {
+  // Remove anything that is not a digit
+  value = String(value).replace(/\D/g, '')
+
   const newHouse = { ...props.house }
 
-  if (value !== null && value !== '' && value >= 0) {
-    newHouse[feature.key] = value
+  if (value !== '') {
+    newHouse[feature.key] = Number(value)
   } else {
     delete newHouse[feature.key]
   }
@@ -125,7 +141,7 @@ const handleNumberInput = (feature, value) => {
 
 
 <template>
-  <div class="border w-full p-5 rounded-xl shadow space-y-6">
+  <div class="border w-full p-1 sm:p-5 rounded-xl shadow space-y-6">
 
     <!-- TITLE -->
     <h2 class="text-lg font-semibold">
@@ -157,12 +173,12 @@ const handleNumberInput = (feature, value) => {
           </label>
 
           <input
-            type="number"
-            min="0"
-            :value="house[f.key] || ''"
-            @input="handleNumberInput(f, $event.target.valueAsNumber)"
-            class="input mt-1"
-          />
+              type="text"
+              inputmode="numeric"
+              :value="house[f.key] || ''"
+              @input="handleNumberInput(f, $event.target.value)"
+              class="input mt-1"
+            />
         </div>
       </div>
 
@@ -178,7 +194,7 @@ const handleNumberInput = (feature, value) => {
             :class="{ active: features.some(v => v.key === f.key) }"
             @click="toggleFeature(f)"
           >
-            <span>{{ f.icon }} {{ f.label }}</span>
+            <span class=" text-sm">{{ f.icon }} {{ f.label }}</span>
             <span v-if="features.some(v => v.key === f.key)">✓</span>
           </div>
         </div>
@@ -189,7 +205,7 @@ const handleNumberInput = (feature, value) => {
     <!-- NO TYPE -->
     <div
       v-if="!type"
-      class="bg-gray-50 border rounded-xl p-8 text-center text-gray-500"
+      class="bg-gray-50 border rounded-xl p-2 sm:p-8 text-center text-gray-500"
     >
       <p class="text-lg font-medium">No property selected</p>
       <p class="text-sm mt-1">Please select property type first.</p>
@@ -201,7 +217,7 @@ const handleNumberInput = (feature, value) => {
 
 <style scoped>
 .input {
-  @apply w-full border rounded-lg px-4 py-2 text-sm
+  @apply w-full border   rounded-sm  px-4 py-2 text-sm
          focus:outline-none focus:ring-2 focus:ring-black;
 }
 

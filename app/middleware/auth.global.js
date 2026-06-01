@@ -43,10 +43,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (!auth.value.authenticated) {
       return navigateTo('/auth')
     }
-
+    // console.log( auth.value.user?.roles, 'fffffff');
+    
     // logged in but normal user
-    if (auth.value.user?.roles !== 'admin') {
-      return navigateTo('/profile/edit')
+    if (auth.value.user?.roles !== 'Admin') {
+      return navigateTo('/')
     }
   }
 })

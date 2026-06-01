@@ -420,6 +420,15 @@ const {
   }
 )
 
+const getStatusCount = (status) => {
+  if (status === 'all') {
+    return properties.value.length
+  }
+
+  return properties.value.filter(
+    p => p.status === status
+  ).length
+}
 const properties = computed(
   () => data.value || []
 )
@@ -470,7 +479,7 @@ onBeforeUnmount(() => {
               class="pb-3 relative uppercase tracking-wide"
               :class="filter===s ? 'text-black border-b-2 border-black' : ''"
             >
-              {{ s }}
+              {{ s }} {{ getStatusCount(s) }}
               <span
                 v-if="filter===s"
                 class="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"

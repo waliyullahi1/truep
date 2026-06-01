@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue"
+import PaymentType from "./PaymentType.vue"
 
 /* ================= PROPS ================= */
 
@@ -56,7 +57,7 @@ const rentDuration = computed({
   set: (val) => {
     pricing.value = {
       ...pricing.value,
-
+      PaymentType:'rent',
       rent: {
         ...pricing.value.rent,
 
@@ -83,7 +84,18 @@ const totalRentLabel = computed(() =>
     : "Yearly Rent"
 )
 
+
+watchEffect(() => {
+  if (props.purpose !== "sale") {
+    pricing.value = {
+      ...pricing.value,
+      PaymentType: "rent"
+    }
+  }
+})
 /* ================= MONEY FORMAT ================= */
+
+
 
 const money = (v) =>
   "₦ " + Number(v || 0).toLocaleString()

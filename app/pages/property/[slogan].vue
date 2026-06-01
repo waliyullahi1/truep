@@ -57,6 +57,9 @@
 
     </div>
    </div>
+
+   
+
     <div v-if="pending" class="text-center py-10">
      <div class="pt- bg-gray-50 min-h-screen animate-pulse">
       <Container>
@@ -213,7 +216,7 @@
                   </h1>
                    <div class="  items-center text-gray-600 font-normal flex gap-1"> <MapPin class=" w-4" /> 
              
-                     <p class=" font-inter te text-sm sm:text-[16px]">{{ form.location.address }},  {{ form.location.city }}, {{ form.location.state }} </p>
+                     <p class=" font-inter te text-sm sm:text-[16px]">{{ form.location.address }},  {{ form.location.city }}, {{ form.location.state }} <span v-if="form.type === 'hostel'">Near   {{ form.hostelDetails.school.name }} </span> </p>
                  
                    </div>
                 </div>
@@ -242,7 +245,7 @@
               <p class="font-inter text-xl font-bold text-green-600">
                 {{ formattedPrice }}
                 <span class="text-tertiary text-lg">
-                  /{{ form.pricing.paymentType }} 
+                  / <span v-if="formattedPrice !== 'rent'">{{ form.pricing.paymentType }}</span> 
                 </span>
               </p>
 
@@ -308,7 +311,7 @@
           </div>
 
           <!-- DESCRIPTION -->
-          <div font-inter class="bg-white rounded-xl p-6">
+          <div font-inter class="bg-white rounded-xl p-1 md:p-6">
             <h3 class="font-medium text-xl mb-3 text-gray-900">
               Description
             </h3>
@@ -332,7 +335,7 @@
           </div>
 
           <!-- FEATURES -->
-          <div v-if="form.features?.length" class="bg-white rounded-xl  p-6">
+          <div v-if="form.features?.length" class="bg-white rounded-xl  p-1 sm:p-6">
            <h3 class="font-medium text-xl mb-3 text-gray-900">
               Amenities
             </h3>
@@ -350,7 +353,7 @@
           </div>
 
            <!-- Properties Details -->
-          <div v-if="form.features?.length" class="bg-white rounded-xl  p-6">
+          <div v-if="form.features?.length" class="bg-white rounded-xl  p-1 sm:p-6">
            <h3 class="font-medium text-xl mb-3 text-gray-900">
               Property Details
             </h3>
@@ -378,7 +381,7 @@
       
   
           <!-- LOCATION -->
-          <div class="bg-white rounded-xl  p-4">
+          <div class="bg-white rounded-xl  p-1 sm:p-4">
             <h3 class="font-semibold mb-3">Location</h3>
             <iframe
               class="w-full h-64 rounded"
@@ -399,7 +402,7 @@
 
         <!-- ================= RIGHT ================= -->
         <div class="lg:w-2/5 ">
-          <div class="     top-24   z-0 p-6 space-y-6">
+          <div class="     top-24   z-0 p-1 sm:p-6 space-y-6">
 
           
               <div class="  border   bg-white rounded-xl    p-6 space-y-6">
@@ -468,6 +471,7 @@ const form = ref({
   location: { city: '', state: '', address: '' },
   category: '',
   houseDetails: {},
+  hostelDetails:{},
   landDetails: {
     size: 0,
     unit: '',
@@ -695,6 +699,10 @@ const mergeForm = (data) => {
   form.value.pricing = {
     ...form.value.pricing,
     ...data.pricing
+  }
+  form.value.hostelDetails ={
+     ...form.value.hostelDetails,
+    ...data.hostelDetails
   }
 
   form.value.user = {

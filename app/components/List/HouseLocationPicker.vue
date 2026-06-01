@@ -216,7 +216,7 @@ GPS Accuracy: {{ accuracy }} m
 
 <div
 ref="mapRef"
-class="w-full h-[500px] rounded-xl border shadow">
+class="w-full h-[500px] rounded-xl border ">
 </div>
 <input v-model="Location.address" placeholder="Address" class="input"/>
 <div class="text-sm text-gray-600">

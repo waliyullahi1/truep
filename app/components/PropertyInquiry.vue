@@ -71,7 +71,7 @@ const whatsappLink = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl p-6 shadow-sm border">
+  <div class="bg-white rounded-2xl p-3 sm:p-6 shadow-sm border">
 
     <!-- SUCCESS -->
     <div v-if="success" class="text-center py-10">
