@@ -53,10 +53,10 @@
         </div>
 
         <!-- RIGHT -->
-        <div class="hidden items-center gap-6 md:flex">
+        <div class=" items-center gap-6 flex">
 
           <!-- ICONS -->
-          <div class="flex items-center gap-5">
+          <div class="md:flex hidden  items-center gap-5">
 
             <img
               src="/image/icon/notification.svg"
@@ -81,7 +81,7 @@
           <!-- AVATAR -->
           <button
             @click="toggleMoreMenu"
-            class="flex items-end"
+            class="flex md:mr-0 mr-6 items-end"
           >
 
             <div class="h-10 w-10 overflow-hidden rounded-full border">
@@ -106,7 +106,7 @@
         /> -->
 
       </div>
-       <div class=" flex justify-end w-full  absolute  top-4 right-2">
+       <div class=" flex justify-end w-full  absolute  top-5 right-2">
           <NavigationToggle
           :isOpen="menuRevealed"
           @revealMenu="toggleMenu"
