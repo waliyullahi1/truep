@@ -18,6 +18,8 @@
           v-for="(item, idx) in images"
           :key="idx"
         >
+
+        
           <img
             :src="item"
             class="w-full h-[350px] object-cover rounded-xl"

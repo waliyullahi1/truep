@@ -324,7 +324,7 @@ onMounted(() => {
 
       </div>
 
-      <!-- VIDEO -->
+      <!-- VIDEO
       <div class="bg-white rounded-2xl border border-gray-200 md:p-6 p-0">
 
         <h2 class="text-xl font-semibold">
@@ -343,17 +343,16 @@ onMounted(() => {
         />
 
         <div
-          v-if="embedUrl"
+          
           class="mt-6"
         >
           <iframe
-            :src="embedUrl"
-            class="w-full max-w-4xl aspect-video rounded-xl border"
-            allowfullscreen
-          />
+              src="https://www.tiktok.com/embed/v2/7647207032826694934"
+              class="w-full aspect-video"
+            ></iframe>
         </div>
 
-      </div>
+      </div> -->
 
       <!-- SURVEY -->
       <div
