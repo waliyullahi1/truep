@@ -456,276 +456,311 @@ onBeforeUnmount(() => {
 <template>
 <div class="min-h-screen bg-gray-50 py-8">
 
-   <div >
-      <ContainerUser>
+  <ContainerUser>
 
-          <!-- ================= HEADER ================= -->
-          <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-light text-gray-800">Properties</h1>
+    <!-- HEADER -->
+    <div
+      class="flex flex-col sm:flex-row gap-4 justify-between sm:items-center mb-6"
+    >
+      <h1 class="text-2xl sm:text-3xl font-light text-gray-800">
+        Properties
+      </h1>
 
-            <button @click="router.push('/user/list/new')"
-              class="bg-green-600 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-green-700 transition"
-            >
-              CREATE A NEW PROPERTY
-            </button>
+      <button
+        @click="router.push('/user/list/new')"
+        class="w-full sm:w-auto bg-green-600 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-green-700 transition"
+      >
+        CREATE A NEW PROPERTY
+      </button>
+    </div>
+
+    <!-- STATUS TABS -->
+    <div
+      class="flex gap-8 border-b text-sm mb-6 text-gray-500 font-medium overflow-x-auto whitespace-nowrap scrollbar-hide"
+    >
+      <button
+        v-for="s in statuses"
+        :key="s"
+        @click="filter=s"
+        class="pb-3 relative uppercase tracking-wide shrink-0"
+        :class="filter===s ? 'text-black border-b-2 border-black' : ''"
+      >
+        {{ s }} {{ getStatusCount(s) }}
+
+        <span
+          v-if="filter===s"
+          class="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"
+        ></span>
+      </button>
+    </div>
+
+    <!-- TABLE WRAPPER -->
+    <div class="bg-white border rounded-md overflow-x-auto">
+
+      <!-- MIN WIDTH FOR MOBILE -->
+      <div class="min-w-[950px]">
+
+        <!-- TABLE HEADER -->
+        <div
+          class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-4 text-xs font-semibold text-gray-500 border-b uppercase"
+        >
+          <div class="col-span-1"></div>
+
+          <div class="col-span-5">
+            Property
           </div>
 
-          <!-- ================= STATUS TABS ================= -->
-          <div class="flex gap-8 border-b text-sm mb-6 text-gray-500 font-medium">
-            <button
-              v-for="s in statuses"
-              :key="s"
-              @click="filter=s"
-              class="pb-3 relative uppercase tracking-wide"
-              :class="filter===s ? 'text-black border-b-2 border-black' : ''"
-            >
-              {{ s }} {{ getStatusCount(s) }}
-              <span
-                v-if="filter===s"
-                class="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"
-              ></span>
-            </button>
+          <div class="col-span-1 text-center">
+            Views
           </div>
 
-          <!-- ================= TABLE ================= -->
-          <div class="bg-white border rounded-md ">
+          <div class="col-span-1 text-center">
+            Clicks
+          </div>
 
-            <!-- HEADER -->
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 text-xs font-semibold text-gray-500 border-b uppercase">
-              <div class="col-span-1"></div>
-              <div class="col-span-5">Property</div>
-              <div class="col-span-1 text-center">Views</div>
-              <div class="col-span-1 text-center">Clicks</div>
-              <div class="col-span-1 text-center">Amount</div>
-              <div class="col-span-2 text-center">Status</div>
-              <div class="col-span-1"></div>
+          <div class="col-span-1 text-center">
+            Amount
+          </div>
+
+          <div class="col-span-2 text-center">
+            Status
+          </div>
+
+          <div class="col-span-1"></div>
+        </div>
+
+        <!-- ERROR -->
+        <div v-if="error">
+          <NetworkError
+            :error="error"
+            @retry="refreshData"
+          />
+        </div>
+
+        <!-- LOADING -->
+        <div
+          v-else-if="pending"
+          class="animate-pulse"
+        >
+
+          <div
+            v-for="i in 6"
+            :key="i"
+            class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-5 items-center border-b"
+          >
+            <div class="col-span-1">
+              <div class="w-14 h-14 bg-gray-300 rounded"></div>
             </div>
 
-            <!-- ERROR STATE -->
-              <div v-if="error">
-                  <NetworkError
-                  :error="error"
-                  @retry="refreshData"
-                />
-             </div>
-
-             <!-- LOADING STATE -->
-           <div v-else-if="pending" class="bg-white border rounded-md animate-pulse">
-
-            <!-- TABLE HEADER -->
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b">
-              <div class="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div class="col-span-5 h-4 bg-gray-200 rounded"></div>
-              <div class="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div class="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div class="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div class="col-span-2 h-4 bg-gray-200 rounded"></div>
-              <div class="col-span-1 h-4 bg-gray-200 rounded"></div>
+            <div class="col-span-5 space-y-2">
+              <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/3"></div>
             </div>
 
-            <!-- SKELETON ROWS -->
+            <div class="col-span-1 flex justify-center">
+              <div class="h-4 w-10 bg-gray-200 rounded"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-center">
+              <div class="h-4 w-10 bg-gray-200 rounded"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-center">
+              <div class="h-4 w-16 bg-gray-300 rounded"></div>
+            </div>
+
+            <div class="col-span-2 flex justify-center">
+              <div class="h-6 w-20 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-end">
+              <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- DATA -->
+        <div v-else>
+
+          <div
+            v-if="!filteredList.length"
+            class="py-20 text-center text-gray-400"
+          >
+            No properties found
+          </div>
+
+          <div
+            v-for="item in filteredList"
+            :key="item._id"
+            class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-5 items-center border-b hover:bg-gray-50 transition relative"
+          >
+
+            <!-- IMAGE -->
+            <div class="col-span-1">
+              <img
+                :src="getImage(item)"
+                class="w-14 h-14 object-cover rounded"
+              />
+            </div>
+
+            <!-- PROPERTY -->
+            <div class="col-span-5">
+              <p class="font-medium text-gray-800 line-clamp-1">
+                {{ item.title }}
+              </p>
+
+              <p class="text-xs text-gray-400 mt-1">
+                {{ formatStatus(item.type) }}
+                for
+                {{ formatStatus(item.purpose) }}
+
+                at 📍 {{ getLocation(item) }}
+
+                <br>
+
+                {{ smartMoney(item.pricing.price || 0) }}
+                {{ getPriceLabel(item) }}
+
+                <br>
+
+                Created:
+                {{ formatDate(item.createdAt) }}
+              </p>
+            </div>
+
+            <!-- VIEWS -->
             <div
-              v-for="i in 6"
-              :key="i"
-              class="grid grid-cols-12 gap-4 px-6 py-5 items-center border-b"
+              class="col-span-1 text-center text-sm text-gray-600"
             >
-
-              <!-- IMAGE -->
-              <div class="col-span-1">
-                <div class="w-14 h-14 bg-gray-300 rounded"></div>
-              </div>
-
-              <!-- TITLE + DETAILS -->
-              <div class="col-span-5 space-y-2">
-                <div class="h-4 bg-gray-300 rounded w-3/4"></div>
-                <div class="h-3 bg-gray-200 rounded w-1/2"></div>
-                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
-              </div>
-
-              <!-- VIEWS -->
-              <div class="col-span-1 flex justify-center">
-                <div class="h-4 w-10 bg-gray-200 rounded"></div>
-              </div>
-
-              <!-- CLICKS -->
-              <div class="col-span-1 flex justify-center">
-                <div class="h-4 w-10 bg-gray-200 rounded"></div>
-              </div>
-
-              <!-- PRICE -->
-              <div class="col-span-1 flex justify-center">
-                <div class="h-4 w-16 bg-gray-300 rounded"></div>
-              </div>
-
-              <!-- STATUS -->
-              <div class="col-span-2 flex justify-center">
-                <div class="h-6 w-20 bg-gray-300 rounded-full"></div>
-              </div>
-
-              <!-- ACTION -->
-              <div class="col-span-1 flex justify-end">
-                <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
-              </div>
-
+              {{ item.views || 0 }}
             </div>
 
-          </div>
-         
-            <!-- ROWS -->
-          <div v-else>
-             <div v-if="!filteredList.length" class="py-20 text-center text-gray-400">
-              No properties found
-            </div>
+            <!-- CLICKS -->
             <div
-              v-for="item in filteredList" 
-              :key="item._id"
-              class="grid grid-cols-12 gap-4 px-6 py-5 items-center border-b hover:bg-gray-50 transition relative"
+              class="col-span-1 text-center text-sm text-gray-600"
             >
-              <!-- IMAGE -->
-              <div class="col-span-1">
-                <img
-                  :src="getImage(item)"
-                  class="w-14 h-14 object-cover rounded"
-                />
-              </div>
+              {{ item.clicks || 0 }}
+            </div>
 
-              <!-- TITLE -->
-              <div class="col-span-5">
-                <p class="font-medium text-gray-800 line-clamp-1">
-                  {{ item.title }}
-                </p>
-                <p class="text-xs text-gray-400 mt-1">
-                  {{ formatStatus(item.type) }}  for {{ formatStatus(item.purpose)  }}  at  📍 {{ getLocation(item) }} <br>
-                  {{ smartMoney(item.pricing.price || 0) }}{{ getPriceLabel(item) }} <br>
-                  createAt: {{ formatDate(item.createdAt) }}
+            <!-- AMOUNT -->
+            <div
+              class="col-span-1 text-center text-sm text-gray-600"
+            >
+              {{ smartMoney(item.pricing.price || 0) }}
+              {{ getPriceLabel(item) }}
+            </div>
 
-
-                </p>
-              </div>
-
-              <!-- VIEWS -->
-              <div class="col-span-1 text-center text-sm text-gray-600">
-                {{ item.views || 0 }}
-              </div>
-
-              <!-- CLICKS -->
-              <div class="col-span-1 text-center text-sm text-gray-600">
-                {{ item.clicks || 0 }}
-              </div>
-
-              <!-- LEADS -->
-              <div class="col-span-1 text-center text-sm text-gray-600">
-                {{  smartMoney(item.pricing.price || 0 ) }}{{ getPriceLabel(item) }}
-              </div>
-
-              <!-- STATUS -->
-              <div class="col-span-2 text-center">
+            <!-- STATUS -->
+            <div class="col-span-2 text-center">
               <span
-                  class="px-3 py-1 rounded-full text-xs font-medium"
-                  :class="statusClass(item.status)"
+                class="px-3 py-1 rounded-full text-xs font-medium"
+                :class="statusClass(item.status)"
+              >
+                {{ formatStatus(item.status) }}
+              </span>
+            </div>
+
+            <!-- ACTION -->
+            <div
+              class="col-span-1 flex justify-end relative"
+            >
+
+              <button
+                @click.stop="toggleMenu(item._id)"
+                class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+              >
+                ⋮
+              </button>
+
+              <div
+                v-if="openMenuId === item._id"
+                class="absolute right-0 top-10 w-52 bg-white border rounded-md shadow-lg text-sm z-50 overflow-hidden"
+              >
+
+                <button
+                  v-if="item.status !== 'draft'"
+                  @click.stop="viewProperty(item._id)"
+                  class="block w-full text-left px-4 py-2 hover:bg-gray-100"
                 >
-                  {{ formatStatus(item.status) }}
-                </span>
-              </div>
+                  View
+                </button>
 
-            
-            
+                <button
+                  @click.stop="editproper(item._id)"
+                  class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Edit
+                </button>
 
-                <!-- DROPDOWN -->
-               <!-- ACTION -->
-                <div class="col-span-1 flex justify-end relative">
+                <div
+                  v-if="getAllowedStatuses(item.status).length"
+                  class="border-t"
+                >
 
-                  <button
-                    @click.stop="toggleMenu(item._id)"
-                    class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                  >
-                    ⋮
-                  </button>
-
-                  <!-- DROPDOWN -->
                   <div
-                    v-if="openMenuId === item._id"
-                    class="absolute right-0 top-10 w-52 bg-white border rounded-md shadow-lg text-sm z-50 overflow-hidden"
+                    class="px-4 py-2 text-[11px] uppercase text-gray-400 font-semibold"
                   >
-
-                    <!-- VIEW -->
-                    <button
-                      v-if="item.status !== 'draft'"
-                      @click.stop="viewProperty(item._id)"
-                      class="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                    >
-                      View
-                    </button>
-
-                    <!-- EDIT -->
-                    <button
-                      @click.stop="editproper(item._id)"
-                      class="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                    >
-                      Edit
-                    </button>
-
-                    <!-- STATUS SECTION -->
-                    <div
-                      v-if="getAllowedStatuses(item.status).length"
-                      class="border-t"
-                    >
-
-                      <div class="px-4 py-2 text-[11px] uppercase text-gray-400 font-semibold">
-                        Change Status
-                      </div>
-
-                      <button
-                        v-for="status in getAllowedStatuses(item.status)"
-                        :key="status"
-                        @click.stop="changeStatus(item, status)"
-                        :disabled="changingStatus === item._id"
-                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 capitalize disabled:opacity-50"
-                      >
-
-                        <span
-                          v-if="changingStatus === item._id"
-                        >
-                          Updating...
-                        </span>
-
-                        <span v-else>
-
-                          Mark as
-                          {{ status.replace('_', ' ') }}
-
-                        </span>
-
-                      </button>
-
-                    </div>
-
-                    <!-- DELETE -->
-                    <button
-                      @click.stop="removeItem(item._id)"
-                      class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 border-t"
-                    >
-                      Delete
-                    </button>
-
+                    Change Status
                   </div>
 
+                  <button
+                    v-for="status in getAllowedStatuses(item.status)"
+                    :key="status"
+                    @click.stop="changeStatus(item,status)"
+                    :disabled="changingStatus === item._id"
+                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 capitalize disabled:opacity-50"
+                  >
+                    <span
+                      v-if="changingStatus === item._id"
+                    >
+                      Updating...
+                    </span>
+
+                    <span v-else>
+                      Mark as
+                      {{ status.replace('_',' ') }}
+                    </span>
+                  </button>
+
                 </div>
-             
+
+                <button
+                  @click.stop="removeItem(item._id)"
+                  class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 border-t"
+                >
+                  Delete
+                </button>
+
+              </div>
 
             </div>
 
           </div>
-          </div>
 
-      </ContainerUser>
-   </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </ContainerUser>
 
 </div>
 </template>
 
+
 <style scoped>
 .badge {
   @apply px-2 py-1 rounded text-xs font-medium;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
