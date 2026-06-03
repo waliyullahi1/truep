@@ -29,7 +29,7 @@
       </span>
 
       <h1
-        class="text-3xl  sm:text-6xl font-bold text-white max-w-4xl"
+        class="text-4xl  sm:text-6xl font-bold text-white max-w-4xl"
       >
         Find Your Dream Property
         Across Nigeria

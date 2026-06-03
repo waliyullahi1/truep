@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-[#f5f5f5] py-10 px-4">
+  <div class="min-h-screen bg-[#f5f5f5] py-10 sm:px-4 px-1">
     <div
-      class="max-w-5xl mx-auto bg-white border border-gray-200 rounded-sm p-8"
+      class="max-w-5xl mx-auto bg-white border border-gray-200 rounded-sm p-2 sm:p-8"
     >
     <h1></h1>
       <!-- CHANGE PASSWORD -->
