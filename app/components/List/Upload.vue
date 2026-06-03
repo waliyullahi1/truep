@@ -206,89 +206,195 @@ onMounted(() => {
 })
 </script>
 <template>
-<div class="min-h-screen py-10 px-4">
+<div class="min-h-screen bg-gray-50 py-8">
   <Container>
-    <div class="space-y-10">
- 
-      <!-- ================= LAND IMAGES ================= -->
-      <div class="flex flex-wrap gap-6 items-start">
 
-        <!-- IMAGE BOXES -->
-        <div
-          v-for="(img,index) in previews"
-          :key="'img-'+index"
-          class="relative w-56 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center hover:border-black transition overflow-hidden"
-        >
-          <img v-if="img" :src="img.url" class="w-full h-full object-cover"/>
+    <div class="max-w-7xl mx-auto space-y-8">
 
-          <div v-else class="text-center">
-            <img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
-            <p class="text-xs mt-2 text-gray-500">
-              <label :for="'upload-image-'+index" class="text-blue-600 underline cursor-pointer">
-                Browse
-              </label>
+      <!-- PAGE HEADER -->
+      <div>
+        <h1 class="sm:text-3xl text-xl font-bold text-gray-900">
+          Property Media
+        </h1>
+
+        <p class="text-gray-500 md:text-lg text-sm mt-2">
+          Upload photos, survey plans, title documents and property videos.
+        </p>
+      </div>
+
+      <!-- PROPERTY IMAGES -->
+      <div class="bg-white rounded-xl border border-gray-200 p-2 sm:p-6">
+
+        <div class="flex sm:flex-row flex-col  items-start justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-semibold">
+              Property Photos
+            </h2>
+
+            <p class="text-gray-500 text-sm mt-1">
+              Upload up to 10 high-quality photos of your property.
             </p>
           </div>
-
-          <input
-            type="file"
-            accept="image/*"
-            class="hidden"
-            :id="'upload-image-'+index"
-            @change="handleUpload($event,index,'image')"
-            :disabled="loadingMap[`image-${index}`] || removingMap[`image-${index}`]"
-          />
-
-          <div
-          v-if="loadingMap[`image-${index}`] || removingMap[`image-${index}`]"
-            class="absolute inset-0 bg-black/40 flex items-center justify-center"
+          
+          <div class=" flex md:w-fit w-full justify-end">
+            <div
+            class="px-3 py-1 place-content-end flex justify-end bg-blue-50 text-blue-700 rounded-full text-xs font-medium"
           >
-            <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            {{ previews.filter(x => x).length }}/10 Uploaded
           </div>
-
-          <button
-            v-if="img && loadingIndex !== `image-${index}`"
-            @click="removeImage(index,'image')"
-            class="absolute top-2 right-2 bg-slate-400/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
-          >
-            <img src="/image/icon/delete.svg" class="w-5"/>
-          </button>
+          </div>
         </div>
 
-        <!-- ➕ ADD BOX -->
         <div
-          v-if="previews.length < MAX_IMAGES"
-          @click="addImageBox"
-          class="w-56 h-48 border-2 border-dashed border-gray-400 rounded-sm flex items-center justify-center cursor-pointer hover:border-black transition"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-5 gap-2"
         >
-          <div class="text-center text-gray-500">
-            <div class="text-4xl font-light">+</div>
-            <p class="text-xs">Add more</p>
+
+          <div
+            v-for="(img,index) in previews"
+            :key="'img-'+index"
+            class="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden bg-gray-50 hover:border-primary transition"
+          >
+
+            <img
+              v-if="img"
+              :src="img.url"
+              class="w-full h-full object-cover"
+            />
+
+            <div
+              v-else
+              class="absolute inset-0 flex flex-col items-center justify-center"
+            >
+              <img
+                src="/image/icon/picture.svg"
+                class="w-10 opacity-50"
+              >
+
+              <label
+                :for="'upload-image-'+index"
+                class="text-sm text-primary mt-3 cursor-pointer font-medium"
+              >
+                Upload Image
+              </label>
+            </div>
+
+            <input
+              type="file"
+              accept="image/*"
+              class="hidden"
+              :id="'upload-image-'+index"
+              @change="handleUpload($event,index,'image')"
+            />
+
+            <div
+              v-if="loadingMap[`image-${index}`] || removingMap[`image-${index}`]"
+              class="absolute inset-0 bg-black/50 flex items-center justify-center"
+            >
+              <div
+                class="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"
+              />
+            </div>
+
+            <button
+              v-if="img"
+              @click="removeImage(index,'image')"
+              class="absolute top-2 right-2 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center"
+            >
+              ✕
+            </button>
+
           </div>
+
+          <!-- ADD NEW -->
+          <div
+            v-if="previews.length < MAX_IMAGES"
+            @click="addImageBox"
+            class="aspect-square rounded-2xl border-2 border-dashed border-gray-300 cursor-pointer flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition"
+          >
+            <div class="text-4xl font-light">
+              +
+            </div>
+
+            <div class="text-sm text-gray-500">
+              Add Photo
+            </div>
+          </div>
+
         </div>
 
       </div>
 
-      <!-- ================= SURVEY PLAN ================= -->
-      <div v-if="purpose === 'sale'" class="border-t pt-10">
-        <h2 class="section-title">Survey Plan (Required)</h2>
-        <p class="text-gray-500 mb-4">Upload official survey plan.</p>
+      <!-- VIDEO -->
+      <div class="bg-white rounded-2xl border border-gray-200 md:p-6 p-0">
 
-        <div class="flex flex-wrap gap-6">
+        <h2 class="text-xl font-semibold">
+          Property Video
+        </h2>
+
+        <p class="text-gray-500 text-sm mt-1 mb-4">
+          Paste a YouTube, TikTok, Instagram Reel or Facebook video link.
+        </p>
+
+        <input
+          v-model="videoUrl"
+          type="url"
+          placeholder="https://youtube.com/watch?v=..."
+          class="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
+        />
+
+        <div
+          v-if="embedUrl"
+          class="mt-6"
+        >
+          <iframe
+            :src="embedUrl"
+            class="w-full max-w-4xl aspect-video rounded-xl border"
+            allowfullscreen
+          />
+        </div>
+
+      </div>
+
+      <!-- SURVEY -->
+      <div
+        v-if="purpose === 'sale'"
+        class="bg-white rounded-2xl border border-gray-200 p-2 md:p-6"
+      >
+
+        <h2 class="text-xl font-semibold">
+          Survey Plan
+        </h2>
+
+        <p class="text-gray-500 text-sm mt-1 mb-5">
+          Upload official survey plan documents.
+        </p>
+
+        <div
+          class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-5"
+        >
+
           <div
             v-for="(img,index) in survey"
             :key="'survey-'+index"
-            class="relative w-56 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center hover:border-black transition overflow-hidden"
+            class="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden"
           >
-            <img v-if="img" :src="img.url" class="w-full h-full object-cover"/>
 
-            <div v-else class="text-center">
-              <img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
-              <p class="text-xs mt-2 text-gray-500">
-                <label :for="'upload-survey-'+index" class="text-blue-600 underline cursor-pointer">
-                  Browse
-                </label>
-              </p>
+            <img
+              v-if="img"
+              :src="img.url"
+              class="w-full h-full object-cover"
+            />
+
+            <div
+              v-else
+              class="absolute inset-0 flex flex-col items-center justify-center"
+            >
+              <label
+                :for="'upload-survey-'+index"
+                class="cursor-pointer text-primary font-medium"
+              >
+                Upload Survey
+              </label>
             </div>
 
             <input
@@ -297,47 +403,54 @@ onMounted(() => {
               class="hidden"
               :id="'upload-survey-'+index"
               @change="handleUpload($event,index,'survey')"
-              :disabled="loadingIndex === `survey-${index}` || removingIndex === `survey-${index}`"
             />
 
-            <div
-              v-if="loadingIndex === `survey-${index}` || removingIndex === `survey-${index}`"
-              class="absolute inset-0 bg-black/40 flex items-center justify-center"
-            >
-              <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-
-            <button
-              v-if="img && loadingIndex !== `survey-${index}`"
-              @click="removeImage(index,'survey')"
-              class="absolute top-2 right-2   bg-slate-500 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
-            >
-              <img src="/image/icon/delete.svg" class="w-5"/>
-            </button>
           </div>
+
         </div>
+
       </div>
 
-      <!-- ================= TITLE DOCS ================= -->
-      <div v-if="purpose === 'sale'" class="border-t pt-10">
-        <h2 class="section-title">Title Document (Required)</h2>
-        <p class="text-gray-500 mb-3">C of O, Deed, Gazette, etc.</p>
+      <!-- TITLE DOCS -->
+      <div
+        v-if="purpose === 'sale'"
+        class="bg-white rounded-2xl border border-gray-200 p-2 sm:p-6"
+      >
 
-        <div class="flex flex-wrap gap-6">
+        <h2 class="text-xl font-semibold">
+          Title Documents
+        </h2>
+
+        <p class="text-gray-500 text-sm mt-1 mb-5">
+          C of O, Gazette, Deed of Assignment, Governor Consent, etc.
+        </p>
+
+        <div
+          class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-5"
+        >
+
           <div
             v-for="(img,index) in titleDocs"
             :key="'title-'+index"
-            class="relative w-56 h-48 border border-dashed border-gray-400 rounded-sm flex items-center justify-center hover:border-black transition overflow-hidden"
+            class="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden"
           >
-            <img v-if="img" :src="img.url" class="w-full h-full object-cover"/>
 
-            <div v-else class="text-center">
-              <img src="/image/icon/picture.svg" class="w-14 mx-auto opacity-50"/>
-              <p class="text-xs mt-2 text-gray-500">
-                <label :for="'upload-title-'+index" class="text-blue-600 underline cursor-pointer">
-                  Browse
-                </label>
-              </p>
+            <img
+              v-if="img"
+              :src="img.url"
+              class="w-full h-full object-cover"
+            />
+
+            <div
+              v-else
+              class="absolute inset-0 flex flex-col items-center justify-center"
+            >
+              <label
+                :for="'upload-title-'+index"
+                class="cursor-pointer text-primary font-medium"
+              >
+                Upload Document
+              </label>
             </div>
 
             <input
@@ -346,32 +459,19 @@ onMounted(() => {
               class="hidden"
               :id="'upload-title-'+index"
               @change="handleUpload($event,index,'titleDocs')"
-              :disabled="loadingIndex === `titleDocs-${index}` || removingIndex === `titleDocs-${index}`"
             />
 
-            <div
-              v-if="loadingIndex === `titleDocs-${index}` || removingIndex === `titleDocs-${index}`"
-              class="absolute inset-0 bg-black/40 flex items-center justify-center"
-            >
-              <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-
-            <button
-              v-if="img && loadingIndex !== `titleDocs-${index}`"
-              @click="removeImage(index,'titleDocs')"
-              class="absolute top-2 right-2 bg-slate-400/40 text-white w-7 h-7 flex justify-center items-center rounded-full text-xs"
-            >
-              <img src="/image/icon/delete.svg" class="w-5"/>
-            </button>
           </div>
+
         </div>
+
       </div>
 
     </div>
+
   </Container>
 </div>
 </template>
-
 <style scoped>
 .input { @apply w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black; }
 .section-title { @apply text-lg font-semibold; }

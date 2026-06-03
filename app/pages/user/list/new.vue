@@ -354,7 +354,7 @@
         </div>
 
         <!-- ================= TITLE CARD ================= -->
-        <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
+        <div class="bg-white border rounded-xl sm:p-6 p-2 shadow-sm space-y-4">
 
           <!-- TITLE HEADER -->
           <div class="flex justify-between items-start">
@@ -394,7 +394,7 @@
         </div>
 
         <!-- ================= DESCRIPTION CARD ================= -->
-        <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
+        <div class="bg-white border rounded-xl sm:p-6 p-0 shadow-sm space-y-4">
 
           <!-- DESCRIPTION HEADER -->
           <div class="sm:flex  block justify-between items-start">
@@ -410,7 +410,7 @@
             <button
               @click="generateAI"
               :disabled="loadingAigenerate"
-              class="flex items-center gap-2 bg-gradient-to-r from-black to-gray-800 text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition disabled:opacity-50"
+              class="flex sm:text-xl text-xs items-center gap-2 bg-gradient-to-r from-black to-gray-800 text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition disabled:opacity-50"
             >
               <!-- ICON -->
               <svg v-if="!loadingAigenerate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,6 @@
 <template>
   <button @click="handleLogoClick" class="flex items-center font-bold gap-3 text-4xl text-secondary marcellus">
-    <img src="@/assets/images/icons/abanise.svg" alt="Logo" :class=" big?' sm:w-20 w-10  ':'  sm:w-28 w-20  '"  class="w object-contain" />
+    <img src="@/assets/images/icons/abanise.svg" alt="Logo"   class="w  sm:w-28 w-20 object-contain" />
      
 
       
