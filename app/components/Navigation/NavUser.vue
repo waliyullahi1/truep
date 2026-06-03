@@ -4,8 +4,8 @@
     <!-- NAVBAR -->
     <nav class="border-b bg-white transition-all duration-300">
 
-      <ContainerUser
-        :addTopBottomPadding="false"
+      <div
+        
         class="flex items-center justify-between py-2"
       >
 
@@ -105,7 +105,7 @@
           @revealMenu="toggleMenu"
         /> -->
 
-      </ContainerUser>
+      </div>
        <div class=" flex justify-end w-full  absolute  top-4 right-2">
           <NavigationToggle
           :isOpen="menuRevealed"

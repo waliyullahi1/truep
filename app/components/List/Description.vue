@@ -24,7 +24,7 @@ const toolbar = [
 </script>
 
 <template>
-  <div class="p-6 bg-white rounded-xl mt-7">
+  <div class="md:p-6 p-1 bg-white rounded-xl mt-7">
 
     <ClientOnly>
 

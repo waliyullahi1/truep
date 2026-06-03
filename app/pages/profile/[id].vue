@@ -94,36 +94,92 @@ const shareProfile = async () => {
 
 /* ...your existing code above... */
 
-useSeoMeta({
-  title: () =>
-    agent.value?.name
-      ? `${agent.value.name} | Verified ${agent.value.roles} in ${agent.value?.location?.state || 'Nigeria'}`
-      : `${agent.value.name} Profile`,
+/* =============================
+   SEO / SOCIAL SHARE
+============================= */
 
-  description: () =>
-    agent.value?.about?.slice(0, 160) ||
-    'View verified real estate agent profile, properties, and contact details.',
+const siteUrl = 'https://truep-lpag.vercel.app/' // replace with your domain
 
-  ogTitle: () => agent.value?.name,
-  ogDescription: () => agent.value?.about?.slice(0, 160),
-  ogImage: () => agent.value?.avatar || '/image/no-image.png',
-  ogUrl: () => `https://yourdomain.com${route.fullPath}`,
+const profileUrl = computed(() => {
+  return `${siteUrl}${route.fullPath}`
+})
+
+const profileImage = computed(() => {
+  return (
+    agent.value?.avatar ||
+    `${siteUrl}/image/no-image.png`
+  )
+})
+
+const profileTitle = computed(() => {
+  return agent.value?.name
+    ? `${agent.value.name} | Verified Real Estate Agent`
+    : 'Agent Profile'
+})
+
+const profileDescription = computed(() => {
+  return (
+    agent.value?.about ||
+    `View ${agent.value?.name || 'this agent'} profile, properties, reviews and contact information.`
+  )
+})
+
+useServerSeoMeta({
+  title: () => profileTitle.value,
+
+  description: () => profileDescription.value,
+
+  ogTitle: () => profileTitle.value,
+
+  ogDescription: () => profileDescription.value,
+
+  ogImage: () => profileImage.value,
+
+  ogImageWidth: '1200',
+
+  ogImageHeight: '630',
+
+  ogUrl: () => profileUrl.value,
+
   ogType: 'profile',
 
   twitterCard: 'summary_large_image',
-  twitterTitle: () => agent.value?.name,
-  twitterDescription: () => agent.value?.about?.slice(0, 160),
-  twitterImage: () => agent.value?.avatar || '/image/no-image.png',
+
+  twitterTitle: () => profileTitle.value,
+
+  twitterDescription: () => profileDescription.value,
+
+  twitterImage: () => profileImage.value
 })
 
-useHead({
+useHead(() => ({
+  title: profileTitle.value,
+
+  meta: [
+    {
+      name: 'description',
+      content: profileDescription.value
+    }
+  ],
+
   link: [
     {
       rel: 'canonical',
-      href: `https://yourdomain.com${route.fullPath}`
+      href: profileUrl.value
+    },
+
+    {
+      rel: 'icon',
+      type: 'image/png',
+      href: profileImage.value
+    },
+
+    {
+      rel: 'apple-touch-icon',
+      href: profileImage.value
     }
   ]
-})
+}))
 
 /* refresh if route changes */
 watch(() => route.params.id, () => refresh())

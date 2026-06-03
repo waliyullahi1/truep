@@ -207,11 +207,11 @@ onUnmounted(() => {
     ===================================== -->
 
     <nav
-      class="relative z-50 border-b bg-white py-4 transition-all duration-300"
+      class="relative mx-1 z-50 border-b bg-white py-0 sm:py-4 transition-all duration-300"
     >
 
-      <ContainerUser
-        :addTopBottomPadding="false"
+      <div
+       
         class="flex items-center justify-between py-2"
       >
 
@@ -261,25 +261,25 @@ onUnmounted(() => {
         </div>
 
         <!-- RIGHT -->
-        <div class="hidden flex-shrink-0 sm:flex">
+        <div class=" flex-shrink-0 flex">
 
           <div class="flex items-center gap-6">
 
             <img
               src="/image/icon/notification.svg"
-              class="w-5"
+              class="w-5  sm:block hidden"
               alt="notification"
             />
 
             <img
               src="/image/icon/messages.svg"
-              class="w-5"
+              class="w-5  sm:block hidden"
               alt="messages"
             />
 
             <img
               src="/image/icon/question.svg"
-              class="w-5"
+              class="w-5  sm:block hidden"
               alt="help"
             />
 
@@ -311,7 +311,7 @@ onUnmounted(() => {
 
         </div>
 
-      </ContainerUser>
+      </div>
 
     </nav>
 
@@ -379,7 +379,7 @@ onUnmounted(() => {
 
         <!-- MOBILE LINKS -->
         <div
-          class="flex flex-col gap-7 font-medium text-slate-700"
+          class="flex flex-col gap-3 font-medium text-slate-700"
         >
 
           <NuxtLink
@@ -467,7 +467,7 @@ onUnmounted(() => {
         </div>
 
         <!-- MENU ITEMS -->
-        <div class="space-y-3 px-3 py-4">
+        <div class="space-y-3 px-3 py-">
 
           <NuxtLink to="/search">
 
@@ -481,7 +481,7 @@ onUnmounted(() => {
 
         <!-- FOOTER -->
         <div
-          class="border-t px-3 py-4"
+          class="border-t px-3 py-"
         >
 
           <button @click="handleLogout">

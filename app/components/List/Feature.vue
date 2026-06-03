@@ -141,7 +141,7 @@ const handleNumberInput = (feature, value) => {
 
 
 <template>
-  <div class="border w-full p-1 sm:p-5 rounded-xl shadow space-y-6">
+  <div class="border w-full p-1 sm:p-5 rounded-xl  space-y-6">
 
     <!-- TITLE -->
     <h2 class="text-lg font-semibold">

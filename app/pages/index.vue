@@ -1,53 +1,98 @@
 <template>
   <div class=" overflow-x-hidden bg-[#FEFEFE]">
     
-    <!-- <UiTypographyH1 color="secondary" class="text-center pt-28 mb-1">United States</UiTypographyH1> -->
-    <header class="mt-0 ]   h-[80vh]    hero-section">
-      <Container :addTopBottomPadding="true" class="text-white  h-full flex  items-center pb-4">
-        <div class=" flex justify-end flex-col items-center   bgck w-full h-full">
 
-          
+    
 
-           
-            
-            <h1
-            style="text-shadow: 0 6px 8px rgba(0,0,0,.55), 0 12px 18px rgba(0,0,0,.45), 0 18px 28px rgba(0,0,0,.35);"
-            class="text-white font-inter px-2 text-center text-3xl  sm:text-5xl/tight   "
-            >
-            Find your Next Property
-            </h1>
-          
-              <div class="mt-3 w-full sm:w-[80%] md::w-[60%] bg-white rounded-lg shadow-xl p-2 flex flex-col md:flex-row gap-3">
 
-                <input
-                  v-model="search"
-                  placeholder="Search land, houses, agents..."
-                  class="flex-1 px-2 py-1 outline-none text-gray-700"
-                />
+<!-- HERO SECTION -->
+<section class="relative mt-7 min-h-[90vh] overflow-hidden">
 
-                <button @click="router.push('/search')"
-                  class="  bg-primary text-white px-6 h-fit  py-2 rounded-lg font-medium hover:bg-secondary/80"
-                >
-                  Search
-                </button>
+  <!-- Background -->
+  <div
+    class="absolute inset-0 bg-cover bg-center"
+    style="background-image:url('/images/hero.jpg')"
+  >
+    <div class="absolute inset-0 bg-black/60"></div>
+  </div>
 
-                
+  <Container class="relative z-10">
 
-              </div>
-          
-              
-         
-          <!-- <div class="pt-4 sm:flex block sm:space-y-0 space-y-4 sm:space-x-4 hero-fade-up delay-4">
-            <UiButtonsPrimary @click="openform">
-              <span>Apply Now</span>
-            </UiButtonsPrimary>
+    <div
+      class="min-h-[90vh] flex flex-col justify-center items-center text-center"
+    >
 
-           
-          </div> -->
+      <span
+        class="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-sm mb-1"
+      >
+        🇳🇬 Nigeria's Trusted Property Marketplace
+      </span>
 
+      <h1
+        class="text-4xl sm:text-6xl font-bold text-white max-w-4xl"
+      >
+        Find Your Dream Property
+        Across Nigeria
+      </h1>
+
+      <p
+        class="mt-6 text-white/90 text-lg max-w-2xl"
+      >
+        Discover verified properties, connect with trusted agents,
+        and buy, rent, or sell with confidence.
+      </p>
+
+      <!-- Search -->
+      <div
+        class="bg-white mt-10 rounded-2xl shadow-2xl p-3 flex flex-col md:flex-row gap-3 w-full max-w-5xl"
+      >
+        <input
+          v-model="search"
+          placeholder="Search property, location, agent..."
+          class="flex-1 px-4 py-3 outline-none"
+        />
+
+        <button
+          @click="router.push('/search')"
+          class="bg-primary px-8 py-3 rounded-xl text-white font-semibold"
+        >
+          Search
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div
+        class="grid grid-cols-3 gap-10 mt-14 text-white"
+      >
+        <div>
+          <h3 class="text-3xl font-bold">15K+</h3>
+          <p>Properties</p>
         </div>
-      </Container>
-    </header>
+
+        <div>
+          <h3 class="text-3xl font-bold">5K+</h3>
+          <p>Agents</p>
+        </div>
+
+        <div>
+          <h3 class="text-3xl font-bold">25K+</h3>
+          <p>Customers</p>
+        </div>
+      </div>
+
+    </div>
+
+  </Container>
+
+</section>
+
+
+
+
+
+
+
+
 
 
      <section>

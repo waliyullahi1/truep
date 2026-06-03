@@ -154,7 +154,7 @@
     </div>
 
   <Container v-else>
-   {{ form }}
+
       <!-- ✅ STEP PROGRESS -->
     <div class="mb-12  max-w-4xl mx-auto ">
       <div class="flex  items-center justify-between text-sm font-medium">
@@ -185,7 +185,7 @@
           </div>
 
           <!-- PURPOSE & TYPE -->
-          <div class="bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-8 shadow-sm">
+          <div class="bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-4 md:p-8 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h2 class="section-title">Purpose</h2>
@@ -397,7 +397,7 @@
         <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
 
           <!-- DESCRIPTION HEADER -->
-          <div class="flex justify-between items-start">
+          <div class="sm:flex  block justify-between items-start">
 
             <div>
               <h2 class="text-lg font-semibold">Description</h2>
