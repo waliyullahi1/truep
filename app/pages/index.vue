@@ -23,20 +23,20 @@
     >
 
       <span
-        class="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-sm mb-1"
+        class="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-xs sm:text-sm mb-1"
       >
         🇳🇬 Nigeria's Trusted Property Marketplace
       </span>
 
       <h1
-        class="text-4xl sm:text-6xl font-bold text-white max-w-4xl"
+        class="text-3xl  sm:text-6xl font-bold text-white max-w-4xl"
       >
         Find Your Dream Property
         Across Nigeria
       </h1>
 
       <p
-        class="mt-6 text-white/90 text-lg max-w-2xl"
+        class="sm:mt-6 mt-3 text-white/90 text-lg max-w-2xl"
       >
         Discover verified properties, connect with trusted agents,
         and buy, rent, or sell with confidence.
@@ -44,19 +44,20 @@
 
       <!-- Search -->
       <div
-        class="bg-white mt-10 rounded-2xl shadow-2xl p-3 flex flex-col md:flex-row gap-3 w-full max-w-5xl"
+        class="bg-white sm:mt-6 mt-3 rounded-lg shadow-2xl p-1 sm:p-3 flex  gap-3 w-full max-w-5xl"
       >
         <input
           v-model="search"
           placeholder="Search property, location, agent..."
-          class="flex-1 px-4 py-3 outline-none"
+          class=" w-full  px-4 sm:py-3 py-1 outline-none"
         />
 
         <button
           @click="router.push('/search')"
-          class="bg-primary px-8 py-3 rounded-xl text-white font-semibold"
+          class="bg-primary flex justify-center items-center sm:px-8 px-4 sm:py-3 py-1 rounded-lg text-white font-semibold"
         >
-          Search
+        <Icon name="lucide:search"  class="text-white flex sm:hidden text-xl"/>
+         <span  class=" hidden sm:flex"> Search</span> 
         </button>
       </div>
 
