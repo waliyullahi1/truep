@@ -91,7 +91,7 @@
 
 
 
-<section class="py-20 bg-gradient-to-b from-white to-slate-50">
+<section class="sm:py-20 py-10 bg-gradient-to-b from-white to-slate-50">
   <Container>
     <!-- Heading -->
     <div class="text-center max-w-3xl mx-auto">
@@ -227,35 +227,44 @@
     </div>
 
     <!-- Bottom CTA -->
-    <div
-      class="mt-16 rounded-3xl   bg-[url('/image/landseller.jpg')] bg-cover    bg-no-repeat  text-white "
-    >
-        <div class="  flex flex-col md:flex-row items-center justify-between gap-6  md:p-12   w-full h-full  bg-black/60 bg-white/">
-          
-        
-          <div>
-            <h3 class="text-2xl md:text-3xl font-bold">
-              Ready To Find Your Next Property?
-            </h3>
-
-            <p class="mt-2 text-white/80">
-              Join thousands of Nigerians already using Abanise to discover homes,
-              land, and investment opportunities.
-            </p>
-          </div>
-
-          <button
-            @click="router.push('/search')"
-            class="bg-white text-primary font-semibold px-8 py-4 rounded-2xl hover:scale-105 transition"
-          >
-            Explore Properties
-          </button>
-        </div>
-    </div>
+   
   </Container>
 </section>
 
+    <section class="  bg-[#f9f9f9]  0 reason-choose-us ">
+      <Container>
+        <div class="   gap-5 ">
+           <span
+          class="inline-flex px-4 py-2 rounded-full bg-black/10 text-sm mb-4"
+        >
+          Join Abanise Today
+        </span>
+        <UiTypographyH2 class=" ">
+         Find, Rent, Buy & List Properties
+          All In One Place
+        </UiTypographyH2>
+          <div class=" ">
+            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2 ">
+           Create a free account to save properties, receive alerts,
+          manage listings, and connect directly with trusted agents
+          and property owners.
+          </UiTypographyP>
 
+          <div class="  flex gap-4 justify-end w-full ">
+          <UiButtonsPrimary   @click="router.push('/auth?type=register-page')" class="  text-left"> Create Free Account</UiButtonsPrimary>
+          <UiButtonsPrimary   @click="router.push('/auth?type=register-page')" class="  text-left">  Login </UiButtonsPrimary>
+          </div>
+          </div>
+          
+
+
+          
+
+          
+
+        </div>
+      </Container>
+    </section>
 
 
 
@@ -275,6 +284,8 @@
           </div>
         </Container>
      </section>
+
+     
      
     <!-- // recent property -->
  

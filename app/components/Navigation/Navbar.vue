@@ -47,9 +47,12 @@
          
         </div>
 
-         <div class="hidden md:flex gap-8 flex-shrink-0">
+         <div class="hidden md:flex gap-2 flex-shrink-0">
           <UiButtonsPrimary  class=" font-medium">
               <NuxtLink to="/user/list/new" >Post Property</NuxtLink>
+          </UiButtonsPrimary>
+           <UiButtonsPrimary  class=" font-medium">
+              <NuxtLink to="/user/list/new" >Login</NuxtLink>
           </UiButtonsPrimary>
         </div>
 
@@ -70,7 +73,7 @@
         <!-- Mobile Menu -->
         <div
           v-if="menuRevealed"
-            class="flex flex-col items-start gap-6 md:hidden absolute bg-white z-[150] h-screen top-[4.6rem] left-0 px-6 py-10 w-full"
+            class="flex flex-col items-start gap-4 md:hidden absolute bg-white z-[150] h-screen top-[4.6rem] left-0 px-6 py-6 w-full"
            >
        
 

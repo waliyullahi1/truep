@@ -1,186 +1,632 @@
 <template>
   <div class=" overflow-x-hidden bg-[#FEFEFE]">
     
-    <!-- <UiTypographyH1 color="secondary" class="text-center pt-28 mb-1">United States</UiTypographyH1> -->
-     <div class=" mt-20">
-    <Container class="  ">
-        <div class="  rounded-lg h-[25rem] bg-[url('/images/civil-servants.jpg')]  w-full bg-slate-800">
-            <div class="bg-gradient-to-r space-y-5 flex justify-center flex-col p-8 from-black/80 to-transparent  h-full">
-            <h1 class=" text-white font-semibold  py- font-inter l   px-2 lg:text-6xl md:text-3xl/tight text-xl/tight sm:text-2xl/tight">
-             Work the way <br> you want 
-            </h1>
-
-              <UiTypographyP class=" w-1/2 text-2xl text-white"><span class="text-lg">Find the right work for you, with great clients, at the world’s work marketplace.</span></UiTypographyP>
-              <UiButtonsPrimary>Create profile</UiButtonsPrimary>
-            </div>
-        </div>
-    </Container>
-    </div>
-     
-
 
     
+
+
+<!-- HERO SECTION -->
+<section class="relative mt-7 min-h-[90vh] overflow-hidden">
+
+  <!-- Background -->
+  <div
+    class="absolute inset-0 bg-cover bg-center"
+    style="background-image:url('/images/hero.jpg')"
+  >
+    <div class="absolute inset-0 bg-black/60"></div>
+  </div>
+
+  <Container class="relative z-10">
+
+    <div
+      class="min-h-[90vh] flex flex-col justify-center items-center text-center"
+    >
+
+      <span
+        class="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-xs sm:text-sm mb-1"
+      >
+        🇳🇬 Nigeria's Trusted Property Marketplace
+      </span>
+
+      <h1
+        class="text-4xl  sm:text-6xl font-bold text-white max-w-4xl"
+      >
+        Find Your Dream Property
+        Across Nigeria
+      </h1>
+
+      <p
+        class="sm:mt-6 mt-3 text-white/90 text-lg max-w-2xl"
+      >
+        Discover verified properties, connect with trusted agents,
+        and buy, rent, or sell with confidence.
+      </p>
+
+      <!-- Search -->
+      <div
+        class="bg-white sm:mt-6 mt-3 rounded-lg shadow-2xl p-1 sm:p-3 flex  gap-3 w-full max-w-5xl"
+      >
+        <input
+          v-model="search"
+          placeholder="Search property, location, agent..."
+          class=" w-full  px-4 sm:py-3 py-1 outline-none"
+        />
+
+        <button
+          @click="router.push('/search')"
+          class="bg-primary flex justify-center items-center sm:px-8 px-4 sm:py-3 py-1 rounded-lg text-white font-semibold"
+        >
+        <Icon name="lucide:search"  class="text-white flex sm:hidden text-xl"/>
+         <span  class=" hidden sm:flex"> Search</span> 
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div
+        class="grid grid-cols-3 gap-10 mt-14 text-white"
+      >
+        <div>
+          <h3 class="text-3xl font-bold">15K+</h3>
+          <p>Properties</p>
+        </div>
+
+        <div>
+          <h3 class="text-3xl font-bold">5K+</h3>
+          <p>Agents</p>
+        </div>
+
+        <div>
+          <h3 class="text-3xl font-bold">25K+</h3>
+          <p>Customers</p>
+        </div>
+      </div>
+
+    </div>
+
+  </Container>
+
+</section>
+
+
+
+     <section>
+        <Container>
+          <div class="  text-primary ">
+
+           <h2 class="  font-semibold text-2xl">Which type of  Property suits your needs?</h2>
+
+             <div class=" flex  overflow-x-auto  gap-5 mt-4">
+                <DiscoverMore/>
+             </div>
+          </div>
+        </Container>
+     </section>
+
+
+    <section class="py-16 bg-white">
+  <Container>
+    <div
+      class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 to-black text-white p-8 md:p-14"
+    >
+      <!-- Background Glow -->
+      <div class="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
+
+      <div class="relative z-10 max-w-4xl mx-auto text-center">
+        <span
+          class="inline-flex px-4 py-2 rounded-full bg-white/10 text-sm mb-4"
+        >
+          Join Abanise Today
+        </span>
+
+        <h2 class="text-3xl md:text-5xl font-bold">
+          Find, Rent, Buy & List Properties
+          All In One Place
+        </h2>
+
+        <p class="mt-4 text-white/80 text-lg max-w-2xl mx-auto">
+          Create a free account to save properties, receive alerts,
+          manage listings, and connect directly with trusted agents
+          and property owners.
+        </p>
+
+        <div
+          class="flex flex-col sm:flex-row justify-center gap-4 mt-8"
+        >
+          <button
+            @click="router.push('/auth?type=register-page')"
+            class="px-8 py-4 bg-primary text-white rounded-2xl font-semibold hover:scale-105 transition"
+          >
+            Create Free Account
+          </button>
+
+          <button
+            @click="router.push('/auth?type=login-page')"
+            class="px-8 py-4 border border-white/30 rounded-2xl font-semibold hover:bg-white/10 transition"
+          >
+            Login
+          </button>
+        </div>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 text-center"
+        >
+          <div>
+            <h3 class="text-2xl font-bold">15K+</h3>
+            <p class="text-white/70">Properties Listed</p>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-bold">5K+</h3>
+            <p class="text-white/70">Verified Agents</p>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-bold">25K+</h3>
+            <p class="text-white/70">Happy Customers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Container>
+</section>
+
+<section class="py-10 bg-gradient-to-b from-white to-slate-50">
+  <Container>
+    <!-- Heading -->
+    <div class="text-center max-w-3xl mx-auto">
+      <span
+        class="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm"
+      >
+        Why Choose Abanise
+      </span>
+
+      <h2
+        class="mt-4 text-3xl md:text-5xl font-bold text-slate-900 leading-tight"
+      >
+        The Smarter Way To Find
+        <span class="text-primary">Property In Nigeria</span>
+      </h2>
+
+      <p class="mt-4 text-slate-600  text-lg">
+        We make property search simple, transparent, and secure by connecting
+        buyers, renters, landlords, and agents on one trusted platform.
+      </p>
+    </div>
+
+    <!-- Features -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-green-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:badge-check"
+            class="text-green-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Verified Listings
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Browse verified properties with accurate information, photos, and
+          trusted sellers.
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-blue-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:users"
+            class="text-blue-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Trusted Agents
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Connect directly with trusted property agents and professionals across
+          Nigeria.
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-purple-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:map-pinned"
+            class="text-purple-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Smart Location Search
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Discover homes, apartments, and land near your preferred location
+          with ease.
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-amber-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:shield-check"
+            class="text-amber-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Secure Experience
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Designed to help users avoid scams and interact with confidence when
+          renting or buying.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div
+      class="mt-16 rounded-3xl   bg-[url('/image/landseller.jpg')] bg-cover    bg-no-repeat  text-white "
+    >
+        <div class="  flex flex-col md:flex-row items-center justify-between gap-6  md:p-12   w-full h-full  bg-black/60 bg-white/">
+          
+        
+          <div>
+            <h3 class="text-2xl md:text-3xl font-bold">
+              Ready To Find Your Next Property?
+            </h3>
+
+            <p class="mt-2 text-white/80">
+              Join thousands of Nigerians already using Abanise to discover homes,
+              land, and investment opportunities.
+            </p>
+          </div>
+
+          <button
+            @click="router.push('/search')"
+            class="bg-white text-primary font-semibold px-8 py-4 rounded-2xl hover:scale-105 transition"
+          >
+            Explore Properties
+          </button>
+        </div>
+    </div>
+  </Container>
+</section>
+
+
+
+
+
+
+
+
+
+     
+    <!-- // recent property -->
+ 
+    
+    <!-- hidden this section (what are will do) -->
+    
+    <!-- recent service and post -->
+          <!-- <CategorySlider /> -->
+    
     <!-- Simple Process Steps  details here -->
-    <section class="   0 reason-choose-us ">
+    <section class="    0 reason-choose-us ">
       <Container>
         <div class="   gap-5 ">
          <UiTypographyH2 class=" ">
-           <span class="text-5xl leading-snug font-medium">
-            How it works
-         </span>
+          Latest Properties
          </UiTypographyH2>
+          <div class=" ">
+            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2 ">
+            By default, we use your location to show properties around you.  
+            You can also change your location to explore listings in other areas.
+          </UiTypographyP>
+
+          <div class="  flex justify-end w-full ">
+          <NuxtLink to="/search" class=" text-left"><span class=" underline text-right font-semibold  text-sm">See all</span> </NuxtLink>
+          </div>
+          </div>
+          
 
 
-          <div class=" grid grid-cols-3 mt-6 gap-4 ">
-            <div v-for="value  in  howitwork " class="  px-3 space-y-2 rounded-md border-x-2">
-                <div>
-                    <img :src="`/image/icon/${value.image}`" class=" w-16" alt="  note icon" srcset="">
-                </div>
+          
 
-                <p class="  text-xl">{{value.title}}</p>
-                <UiTypographyP>{{value.desc}}</UiTypographyP>
-                <div class=" mt-5"> 
-                   <UiButtonsTertiary class=" mt-5">Create profile</UiButtonsTertiary>  
-                </div>
-               
-            </div>
+          <div class=" ">
+         
+             <PropertyList class=" mt-1" ></PropertyList>
           </div>
 
         </div>
       </Container>
     </section>
-    
-    
 
-    <!-- You can collect your fund back    -->
-    <section >
+    <section class="  bg-[#f9f9f9]  0 reason-choose-us ">
       <Container>
-         <UiTypographyH3 class=" ">
-               <span class="text-4xl leading-snug font-medium">
-                Explore the different ways to earn
-               </span>
-               </UiTypographyH3>
+        <div class="   gap-5 ">
+        <UiTypographyH2 class=" ">
+        Create a free Search Agent
+        </UiTypographyH2>
+          <div class=" ">
+            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2 ">
+          Let us find your next home. Create a free Search Agent and receive instant email updates for new listings that match your criteria, so you're always first to know.
+          </UiTypographyP>
+
+          <div class="  flex justify-end w-full ">
+          <UiButtonsPrimary   @click="router.push('/auth?type=register-page')" class="  text-left">Create a Search Agent </UiButtonsPrimary>
+          </div>
+          </div>
+          
+
+
+          
+
+          
+
+        </div>
+      </Container>
+    </section>
+
+   
+
+  
+
+    <section class="   0 reason-choose-us ">
+      <Container>
+        <div class="   gap-5 ">
+          <UiTypographyH2 class="">
              
-        <div class=" mt-16 r justify-center items-center rounded-lg flex bg-/50 ">
-            <div class=" w-1/2 px-3">
+               Popular Cities
+              
+            </UiTypographyH2>
+          <div>
+
+          </div>
+          
+            <UiTypographyP class="w-1/2 mt-2  ">
+               Discover properties in Nigeria's most sought-after locations
+          </UiTypographyP> 
+          <div>
                
-             <UiTypographyH2 class=" ">
-           <span class="text-5xl  font-medium">
-           Find your next opportunity
-         </span>
-         
-         </UiTypographyH2>
-              <UiTypographyP class=" mt-5">Search on Talent Marketplace™ for the hourly or fixed-price work you’re looking for. Submit a proposal, set your rate, and show how great you’ll be. Give a little extra by sharing your unique approach and offering a rapport-building interview.</UiTypographyP>
+                <Masonry></Masonry>
+ 
+          </div>
 
-                <div class=" mt-5"> 
-                     <UiButtonsTertiary class=" mt-5">Find Work</UiButtonsTertiary>  
-                    </div>
-                   
-            </div>
-            <div class=" w-1/2  flex rounded-md overflow-hidden">
-              <img src="/image/indro.jpg" alt="" srcset="">
-            </div>
         </div>
       </Container>
     </section>
 
-
-        <section >
+     <section class="    0 reason-choose-us ">
       <Container>
-         <UiTypographyH3 class=" ">
-               <span class="text-4xl leading-snug font-medium">
-                Explore the different ways to earn
-               </span>
-               </UiTypographyH3>
-             
-        <div class=" mt-16 r justify-center items-center rounded-lg flex bg-/50 ">
-             <div class=" w-1/2  flex rounded-md overflow-hidden">
-              <img src="/image/second-how.avif" alt="" srcset="">
-            </div>
-            <div class=" w-1/2 px-3">
-        <div>      
-            <UiTypographyH2 class=" "><span class="text-2xl  font-medium">How payments work</span></UiTypographyH2>
-            <UiTypographyP class=" mt-1">Whether you’re paid hourly or on a fixed-price contract, all the work you complete comes with payment protection.</UiTypographyP>
-        </div>
+        <div class="   gap-5 ">
+           <UiTypographyH2 class=" ">Who Is This For? </UiTypographyH2>
+          
+            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2">
+              Whether you're looking to buy, rent, or invest in property, this platform is designed for individuals and families who want a simple, reliable way to find the right home or opportunity.
+            </UiTypographyP>
 
-        <div>      
-            <UiTypographyH2 class=" "><span class="text-2xl  font-medium">All in one place</span></UiTypographyH2>
-            <UiTypographyP class=" mt-1">Invoice clients and track your earnings on Upwork for a simple and streamlined process..</UiTypographyP>
-        </div>
-        <div>      
-            <UiTypographyH2 class=" "><span class="text-2xl  font-medium">Choose how you get paid</span></UiTypographyH2>
-            <UiTypographyP class=" mt-1">Use what works best for you—including direct deposit, PayPal, Payoneer, wire transfer, and more.</UiTypographyP>
-        </div>
-          <div class=" mt-4">      
-            <UiTypographyH2 class=" "><span class="text-2xl  font-medium">No fees until you complete your work</span></UiTypographyH2>
-            <UiTypographyP class=" mt-1">You’ll pay a 10% freelancer service fee on what you earn on Upwork.</UiTypographyP>
-        </div>
-        <UiButtonsSecondary class=" mt-7">Learn more about service fees</UiButtonsSecondary> 
-                   
-            </div>
+          <div class=" mt-4 md:grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1  gap-5   ">
            
+                <div  v-for="value in who_is_this_for"  class=" space-y-3 rounded-md bg-white cursor-pointer px-2 sm:px-4 py-4 w-full h-full shadow-md  gap-3 items-center ">
+                  <div class=" w-full flex justify-center items-center">
+                     <div class="bg-[#f9f9f9] rounded-full w-fit h-fit p-3">
+                        <img :src="`/image/${value.image}`" class=" w-10" alt="" srcset="">
+                     </div>
+                  </div>
+                 
+                  <UiTypographyH3 class=" text-center">{{value.title}}</UiTypographyH3>
+                  <UiTypographyP class=" text-center text-gray-700">{{value.description}}</UiTypographyP>
+                </div>
+             
+           
+          </div>
         </div>
       </Container>
     </section>
+    
+    <!-- What You Can Do -->
+    <section class="   bg-gray-100">
+     <Container>
+      <div>
+        <UiTypographyH2 class=" text-center">
+             What You Can Do
+        </UiTypographyH2>
+
+        <div class="mt-6 flex  justify-center">
+          <div  class=" grid md:w-[80%] w-full md:grid-cols-3  sm:grid-cols-2 gap-4">
+            <div  v-for="value in whatyoucando"  class=" bg-white cursor-pointer px-2 py-4 w-full h-full shadow-md flex gap-3 items-center ">
+              <img :src="`/image/${value.image}`" alt="" class=" w-7 " srcset="">
+              <UiTypographyP>{{ value.title }}</UiTypographyP>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-center mt-10">
+           <UiButtonsPrimary @click="router.push('/auth?type=register-page')">Get Stated </UiButtonsPrimary>
+        </div>
+       
+      </div>
+     </Container>
+     
+    </section>
+
+    <section class="   -100">
+     <Container>
+      <div class=" md:flex  block items-center  gap-7 ">
+        
+        <div class="mt-6 flex  justify-center">
+          <img src="@/assets/images/hero-image.png" alt="" srcset=""> 
+        </div>
+
+        <div>
+             <UiTypographyH2 class="  ">
+               <span class=" md:text-3xl text-xl font-medium " >
+                Get Your Property and Apartment Listed
+               </span> 
+            </UiTypographyH2>
+            <UiTypographyP class=" text-gray-600">Register and get your home listed as a property owner</UiTypographyP>
+            <div class="flex items-center justify-center mt-10">
+           <UiButtonsPrimary>GET LISTED</UiButtonsPrimary>
+           </div>
+        </div>
+       
+       
+       
+      </div>
+     </Container>
+     
+    </section>
+      <section class=" hidden  bg-slate-50 ">
+     <Container>
+      <div>
+        <UiTypographyH3>
+         
+          <span class="text-4xl leading-snug  font-medium">
+              Customers are saying
+              </span>
+        </UiTypographyH3>
+        <UiTypographyP class=" w-1/2 mt-2">
+          Hear from tenants, landlords, and agents who've made renting, listing, and managing property easier with our platform.
+        </UiTypographyP>
+
+        <Review></Review>
+      </div>
+     </Container>
+
+    </section>   
+ 
 
 
-  <NavigationFooter />
+
+
+
+   
+
+
+    
+
+ <NavigationFooter />
+       
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import Button from '~/components/Form/Button.vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
 definePageMeta({
   layout: 'main'
-})  
+}) 
+
 const config = useRuntimeConfig()
-const projectName = config.public.projectName
-const router = useRouter()
 
-const openChat = () => {
 
-}
-const openform = () => {
-  
-  
-  router.push('/warning')
-}
- const workandservice = ref([
-  'Architecture & Interior Design', 'Survey', 'Land Agent', ' Bryclayer', 'etc'
- ])
 
-const howitwork = ref([
-   {
+
+const whatyoucando = ref([
+  {
     id: 1,
-    title: 'Create your profile (it’s free)',
-    desc : 'An eye-catching title and client-focused overview help us match you to the work you want. Include your work history, your skills, and your photo. Add more, like an introduction video, to create a profile that really stands out.',
-    image: 'note.svg',
+    title: 'Discover verified properties across Nigeria',
+    image: 'search.png',
   },
-     {
+  {
     id: 2,
-    title: 'Explore ways to earn',
-    desc : 'Work and earn in different ways. Bid for jobs. Pitch your projects. Discuss your in-demand skills with our recruiters so they can find opportunities aligned with your passions and career goals. Do all three. Create a predictable pipeline and build your network.',
-     image: 'note_search.svg',
+    title: 'Sign secure digital lease agreements online',
+    image: 'file.png'
   },
   {
     id: 3,
-    title: 'Get paid securely',
-    desc: 'Choose how you get paid. Our fixed-price protection releases client payments at project milestones. Hourly protection bills clients every week. However you work, our service fees are the same. Spend less time chasing, more earning.',
-    image: 'security.svg',
+    title: 'Measure land size accurately using our map tools',
+    image: '/icon/map.svg'
   },
-   
+  {
+    id: 4,
+    title: 'List your land or property for sale or rent',
+    image: 'document.png'
+  },
+  {
+    id: 5,
+    title: 'Find nearby agents, land sellers, and service providers on the map',
+    image: '/icon/doc_search.svg'
+  },
+  {
+    id: 6,
+    title: 'Save and manage your favorite properties in one place',
+    image: 'hugeicons.png'
+  },
+  {
+    id: 7,
+    title: 'Track and manage your property listings ',
+    image: 'briefcase.png'
+  }
 ])
 
-const trustedByLogos = ref([
-  
-  'google.svg',
-  'meta.svg',
-  'netflix.svg',
-  'paynoor.svg',
-  'p&q.svg',
+const who_is_this_for = ref([
+  { 
+    image: 'user-multiple.png',
+    title: 'For Buyers & Renters',
+    description: 'Explore verified land and property listings, compare options, and easily connect with agents or owners to buy, rent, or invest with confidence.'
+  },
+  { 
+    image: 'homee.png',
+    title: 'For Property Owners',
+    description: 'List your land, houses, or rental properties, reach serious buyers or tenants, and manage inquiries seamlessly from one platform.'
+  },
+  { 
+    image: 'briefcase.png',
+    title: 'For Agents',
+    description: 'Promote your listings, connect with qualified clients, and close deals faster across land sales, home sales, and rentals.'
+  }
 ])
-
+const categories = [
+  'All',
+  'Land',
+  'House',
+  'Flat / Apartment',
+  'Duplex'
+]
 const serviceoffer = ref([
   
  { 
@@ -215,17 +661,18 @@ const serviceoffer = ref([
 
 <style>
 header {
-  background: linear-gradient(rgba(31, 31, 31, 0.838), rgba(41, 41, 41, 0.7)), url('/images/hero.jpg');
+  background: linear-gradient(rgba(4, 4, 4, 0.300), rgba(9, 9, 9, 0.1)), url('assets/images/hero.webp');
   background-blend-mode: multiply;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
 }
 
-
+.shadow{
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;  }
 
 .cta {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/images/unilorin_gate.jpg');
+  background: rgba(0, 0, 0, 0.1), url('/images/unilorin_gate.jpg');
   background-blend-mode: multiply;
   background-repeat: no-repeat;
   background-size: cover;
