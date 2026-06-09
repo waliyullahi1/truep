@@ -306,7 +306,7 @@
               </div>
 
               <!-- FEATURES -->
-              <div v-if="activeSection === 'features'">
+              <div id="features-section" v-if="activeSection === 'features'">
                 <ListFeature
                   :type="propertyType"
                   v-model:house="form.houseDetails"
@@ -315,7 +315,7 @@
               </div>
 
               <!-- OTHERS -->
-              <div v-if="activeSection === 'others'">
+              <div id="others-section" v-if="activeSection === 'others'">
                 <!-- Header -->
                 
 
@@ -473,7 +473,7 @@
 
 <script setup>
 import { Form } from 'lucide-vue-next'
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, nextTick,  onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 const ownershipType = ref('')
 const agentName = ref('')
@@ -481,11 +481,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-// definePageMeta({
-//   layout: 'auth',
-//   access: 'seller',
-//    isPrivateRoute : true
-// })
+definePageMeta({
+  layout: 'auth',
+  access: 'seller',
+   isPrivateRoute : true
+})
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -544,7 +544,7 @@ ownership: {
     lga: "",
     city: "",
     address: "",
-    source: "gps",
+    source: "manual",
     geometry: { type: "Polygon", coordinates: [] }
   },
 
@@ -814,7 +814,7 @@ const bedroom = form.value.houseDetails?.bedroom
 /* ================= NAVIGATION ================= */
 const next = async () => {
   if (submitloading.value) return
-
+  
   /* ---------------- STEP VALIDATION ---------------- */
   if (step.value === 1) {
     if (!form.value.purpose) {
@@ -830,7 +830,27 @@ const next = async () => {
     }
 
     const featureCount = form.value.features?.filter(Boolean).length || 0
+    if (featureCount === 0) {
+  activeSection.value = 'features'
 
+  await nextTick()
+
+  document.getElementById('features-section')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  })
+
+  $toast.error("Please select at least one feature.")
+  return
+}
+  nextTick(() => {
+    document
+      .getElementById('features-section')
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+  })
     if (form.value.type === 'House' && featureCount < 2) {
       return $toast.error("Please select at least bedroom and one more house feature.")
     }
@@ -840,7 +860,17 @@ const next = async () => {
     }
 
     if (!form.value.pricing?.price) {
-      return $toast.error("Please add a price to your property.")
+    
+      activeSection.value = 'others'
+
+        await nextTick()
+
+      document.getElementById('others-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+
+    $toast.error("Please add a price to your property.")
     }
   }
 

@@ -91,6 +91,173 @@
 
 
 
+<section class="py-20 bg-gradient-to-b from-white to-slate-50">
+  <Container>
+    <!-- Heading -->
+    <div class="text-center max-w-3xl mx-auto">
+      <span
+        class="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm"
+      >
+        Why Choose Abanise
+      </span>
+
+      <h2
+        class="mt-4 text-3xl md:text-5xl font-bold text-slate-900 leading-tight"
+      >
+        The Smarter Way To Find
+        <span class="text-primary">Property In Nigeria</span>
+      </h2>
+
+      <p class="mt-4 text-slate-600  text-lg">
+        We make property search simple, transparent, and secure by connecting
+        buyers, renters, landlords, and agents on one trusted platform.
+      </p>
+    </div>
+
+    <!-- Features -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-green-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:badge-check"
+            class="text-green-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Verified Listings
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Browse verified properties with accurate information, photos, and
+          trusted sellers.
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-blue-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:users"
+            class="text-blue-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Trusted Agents
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Connect directly with trusted property agents and professionals across
+          Nigeria.
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-purple-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:map-pinned"
+            class="text-purple-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Smart Location Search
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Discover homes, apartments, and land near your preferred location
+          with ease.
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div
+        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <div
+          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-amber-100 blur-2xl opacity-70"
+        ></div>
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center"
+        >
+          <Icon
+            name="lucide:shield-check"
+            class="text-amber-600 text-2xl"
+          />
+        </div>
+
+        <h3 class="mt-6 text-xl font-semibold text-slate-900">
+          Secure Experience
+        </h3>
+
+        <p class="mt-3 text-slate-600 leading-relaxed">
+          Designed to help users avoid scams and interact with confidence when
+          renting or buying.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div
+      class="mt-16 rounded-3xl   bg-[url('/image/landseller.jpg')] bg-cover    bg-no-repeat  text-white "
+    >
+        <div class="  flex flex-col md:flex-row items-center justify-between gap-6  md:p-12   w-full h-full  bg-black/60 bg-white/">
+          
+        
+          <div>
+            <h3 class="text-2xl md:text-3xl font-bold">
+              Ready To Find Your Next Property?
+            </h3>
+
+            <p class="mt-2 text-white/80">
+              Join thousands of Nigerians already using Abanise to discover homes,
+              land, and investment opportunities.
+            </p>
+          </div>
+
+          <button
+            @click="router.push('/search')"
+            class="bg-white text-primary font-semibold px-8 py-4 rounded-2xl hover:scale-105 transition"
+          >
+            Explore Properties
+          </button>
+        </div>
+    </div>
+  </Container>
+</section>
+
+
+
+
 
 
 

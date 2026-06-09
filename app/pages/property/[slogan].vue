@@ -425,7 +425,8 @@
                     Contact Agent
                   </a>
               </div>
-              
+         
+              <BookInspection  :propertyId="form.id"/>
               <PropertyInquiry :title="form.title" :price="formattedPrice" :propertyId="property?._id"/>
               
               <SafetyTips/>
@@ -491,6 +492,7 @@ suspended: {
 })
 
 /* ================= UI STATE ================= */
+const showBookingModal = ref(false)
 const showFull = ref(false)
 const isWishlisted = ref(false)
 const activeTab = ref('Details')

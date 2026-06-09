@@ -13,6 +13,11 @@ const props = defineProps({
   email: {
     type: String,
     required: true
+  },
+
+  redirect: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -21,7 +26,7 @@ const config = useRuntimeConfig()
 const loading = ref(false)
 const code = ref(['', '', '', '', '', ''])
 const message = ref('') // success or error message
-
+const emit = defineEmits(['close'])
 /* =============================
    Move cursor automatically
 ============================= */
@@ -85,10 +90,18 @@ const verifyCode = async () => {
     auth.value.authenticated = true
     auth.value.checked = true
     auth.value.serverError = false
+
+    if(props.redirect){
     setTimeout(() => {
       console.log('otp processed');
       router.push('/user/dashboard')
     }, 800)
+    
+    }else{
+      // emit event to parent to close modal
+      emit('close')
+    }
+ 
     // clear OTP
     code.value = ['', '', '', '', '', '']
 

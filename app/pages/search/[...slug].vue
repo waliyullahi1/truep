@@ -741,9 +741,7 @@ const categories = [
         </div>
 
       </section>
-    <div  v-if="!filteredResults.length">
-      <EmptyPropertyState @reset="handleResetFilters" />
-    </div>
+
     
       <!-- CARDS -->
       <section  class="">
@@ -765,9 +763,12 @@ const categories = [
                 </div>
               </div>
           </div>
+              <div  v-if="!filteredResults.length">
+                  <EmptyPropertyState @reset="handleResetFilters" />
+                </div>
                 
           <div class="  grid md:grid-cols-3 gap-6">
-          
+            
             <NuxtLink :to="`/property/${item.slug}`"
               v-for="item in paginatedResults"
               :key="item._id"

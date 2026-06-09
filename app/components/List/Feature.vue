@@ -145,7 +145,13 @@ const handleNumberInput = (feature, value) => {
 
     <!-- TITLE -->
     <h2 class="text-lg font-semibold">
-      {{ type === 'house' ? 'House Features' : 'Land Features' }}
+      {{ 
+  type === 'house'
+    ? 'House Features'
+    : type === 'hostel'
+      ? 'Hostel Features'
+      : 'Land Features'
+}}
     </h2>
 
     <!-- ================= LAND ================= -->
