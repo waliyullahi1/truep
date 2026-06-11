@@ -313,8 +313,6 @@
                   v-model:features="form.features"
                 />
 
-                {{ Form.houseDetails }}
-                <ListHouseDeails :type="propertyType"  :house="form.houseDetails"/>
               </div>
 
               <!-- OTHERS -->
