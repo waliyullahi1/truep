@@ -144,7 +144,9 @@ const handleNumberInput = (feature, value) => {
   <div class="border w-full p-1 sm:p-5 rounded-xl  space-y-6">
 
     <!-- TITLE -->
-
+    <h2 class="text-lg font-semibold">
+       Features
+    </h2>
 
     <!-- ================= LAND ================= -->
     <div v-if="type === 'land'" class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -174,6 +176,7 @@ const handleNumberInput = (feature, value) => {
               type="text"
               inputmode="numeric"
               :value="house[f.key] || ''"
+
               class="input mt-1"
             />
         </div>

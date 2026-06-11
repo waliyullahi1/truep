@@ -171,7 +171,7 @@
       </div>
     </div>
     
- 
+   
     <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="md:max-w-4xl w-full list-disc mx-auto space-y-4">
@@ -279,17 +279,7 @@
                 </div>
 
                 <!-- ================= MAP ================= -->
-                <div v-if="form.location.source === 'gps'">
-
-                  <div v-if="propertyType === 'land'">
-                    <ListLandMap v-model="form" />
-                  </div>
-
-                  <div v-if="propertyType === 'house' || propertyType === 'hostel' ">
-                    <ListHouseLocationPicker v-model="form" />
-                  </div>
-
-                </div>
+               
 
                 <!-- ================= MANUAL ================= -->
                 <div v-if="form.location.source === 'manual'">
@@ -309,11 +299,9 @@
               <div id="features-section" v-if="activeSection === 'features'">
                 <ListFeature
                   :type="propertyType"
-                  :house="form.houseDetails"
+                  v-model:house="form.houseDetails"
                   v-model:features="form.features"
                 />
-
-                
               </div>
 
               <!-- OTHERS -->
@@ -483,11 +471,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-// definePageMeta({
-//   layout: 'auth',
-//   access: 'seller',
-//    isPrivateRoute : true
-// })
+definePageMeta({
+  layout: 'auth',
+  access: 'seller',
+   isPrivateRoute : true
+})
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -667,8 +655,8 @@ const refreshData = async (stopLoading) => {
   stopLoading()     // tell child to stop loading
 }
 
-function onCategoryChange() {
-  // const value = e.target.value
+function onCategoryChange(e) {
+  const value = e.target.value
   
     form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
   form.value.houseDetails = {}
@@ -816,177 +804,98 @@ const bedroom = form.value.houseDetails?.bedroom
 /* ================= NAVIGATION ================= */
 const next = async () => {
   if (submitloading.value) return
-
-  /* ==========================
-      STEP 1 VALIDATION
-  ========================== */
+  
+  /* ---------------- STEP VALIDATION ---------------- */
   if (step.value === 1) {
     if (!form.value.purpose) {
-      return $toast.error('Please select purpose.')
+      return $toast.error("Please select purpose.")
     }
 
     if (!form.value.category) {
-      return $toast.error('Please select category.')
+      return $toast.error("Please select category.")
     }
 
-    if (
-      !form.value.location?.state ||
-      !form.value.location?.city
-    ) {
-      activeSection.value = 'location'
-
-      await nextTick()
-
-      document
-        .getElementById('location-section')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-
-      return $toast.error(
-        'Please select a location.'
-      )
+    if (!form.value.location?.state || !form.value.location?.city) {
+      return $toast.error("Please select location or enter it manually.")
     }
 
-    const featureCount =
-      form.value.features?.filter(Boolean)
-        .length || 0
-
+    const featureCount = form.value.features?.filter(Boolean).length || 0
     if (featureCount === 0) {
-      activeSection.value = 'features'
+  activeSection.value = 'features'
 
-      await nextTick()
+  await nextTick()
 
-      document
-        .getElementById('features-section')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
+  document.getElementById('features-section')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  })
 
-      return $toast.error(
-        'Please select at least one feature.'
-      )
+  $toast.error("Please select at least one feature.")
+  return
+}
+  nextTick(() => {
+    document
+      .getElementById('features-section')
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+  })
+    if (form.value.type === 'House' && featureCount < 2) {
+      return $toast.error("Please select at least bedroom and one more house feature.")
     }
 
-    if (
-      form.value.type === 'house' &&
-      featureCount < 1
-    ) {
-      activeSection.value = 'features'
-
-      await nextTick()
-
-      document
-        .getElementById('features-section')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-
-      return $toast.error(
-        'Please add house features.'
-      )
-    }
-
-    if (
-      form.value.type === 'land' &&
-      featureCount < 3
-    ) {
-      activeSection.value = 'features'
-
-      await nextTick()
-
-      document
-        .getElementById('features-section')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-
-      return $toast.error(
-        'Please select at least 3 land features.'
-      )
+    if (form.value.type === 'Land' && featureCount < 3) {
+      return $toast.error("Please select at least 3 land features.")
     }
 
     if (!form.value.pricing?.price) {
+    
       activeSection.value = 'others'
 
-      await nextTick()
+        await nextTick()
 
-      document
-        .getElementById('others-section')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
+      document.getElementById('others-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
 
-      return $toast.error(
-        'Please enter a property price.'
-      )
+    $toast.error("Please add a price to your property.")
     }
   }
 
+ 
+
+  /* ---------------- SAVE ---------------- */
   submitloading.value = true
 
   try {
-    /* ==========================
-        GENERATE TITLE
-    ========================== */
-    const generatedTitle =
-      generateTitle(form.value)
-
-    if (
-      generatedTitle &&
-      generatedTitle !== form.value.title
-    ) {
+    // Auto-generate title if changed
+    const generatedTitle = generateTitle(form.value)
+    if (generatedTitle !== form.value.title) {
       form.value.title = generatedTitle
     }
 
-    /* ==========================
-        SAVE PROPERTY
-    ========================== */
-    const response =
-      await useApiFetch(
-        `/property/${
-          form.value.id || 'undefined'
-        }`,
-        {
-          method: 'POST',
-          body: {
-            details: form.value
+    const response = await useApiFetch(`/property/${form.value.id || 'undefine'}`, {
+      method: 'POST',
+      body: { details: form.value }
+    })
+    if (!response.success) {
+          $toast.error("An Error occur")
+           submitloading.value = false
+          return
+
+    }
+  
+     
+     if (step.value === 3) {
+
+          const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
+          if (imageCount < 3) {
+            return $toast.error("Please upload at least 3 images.")
           }
-        }
-      )
-
-    if (!response?.success) {
-      throw new Error(
-        response?.message ||
-          'Failed to save property'
-      )
-    }
-
-    const property =
-      response?.data?.data ||
-      response?.data
-
-    /* ==========================
-        STEP 3 VALIDATION
-    ========================== */
-    if (step.value === 3) {
-      const imageCount =
-        property?.media?.files?.filter(
-          (file) => file.type === 'image'
-        ).length || 0
-
-      if (imageCount < 3) {
-        return $toast.error(
-          'Please upload at least 3 images.'
-        )
       }
-    }
-
+    const property = response.data?.data || response.data
     mergeForm(property)
 
     if (property?._id) {
@@ -999,20 +908,14 @@ const next = async () => {
       })
     }
 
-    if (step.value < 4) {
-      step.value++
-    }
+    $toast.success("Saved successfully")
 
-    $toast.success(
-      'Saved successfully'
-    )
+    // Move to next step ONLY after successful save
+    if (step.value < 5) step.value++
+
   } catch (err) {
     console.error(err)
-
-    $toast.error(
-      err?.message ||
-        'Something went wrong'
-    )
+    $toast.error(err?.message || "Something went wrong")
   } finally {
     submitloading.value = false
   }
