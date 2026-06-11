@@ -481,7 +481,39 @@
  
 
 
+    <section class="py-16 bg-green-50 border-t border-green-100">
+  <Container>
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+        <Icon
+          name="logos:whatsapp-icon"
+          class="text-4xl"
+        />
+      </div>
 
+      <h2 class="text-3xl font-bold mb-3">
+        Join Our WhatsApp Community
+      </h2>
+
+      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+        Get instant property updates, new listings, investment opportunities,
+        hostel vacancies, and exclusive deals directly on WhatsApp.
+      </p>
+
+      <a
+        href="https://chat.whatsapp.com/YOUR_COMMUNITY_LINK"
+        target="_blank"
+        class="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold transition"
+      >
+        <Icon
+          name="logos:whatsapp-icon"
+          class="text-2xl"
+        />
+        Join Community
+      </a>
+    </div>
+  </Container>
+</section>
 
 
    
