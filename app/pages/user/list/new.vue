@@ -279,7 +279,17 @@
                 </div>
 
                 <!-- ================= MAP ================= -->
-               
+                <!-- <div v-if="form.location.source === 'gps'">
+
+                  <div v-if="propertyType === 'land'">
+                    <ListLandMap v-model="form" />
+                  </div>
+
+                  <div v-if="propertyType === 'house' || propertyType === 'hostel' ">
+                    <ListHouseLocationPicker v-model="form" />
+                  </div>
+
+                </div> -->
 
                 <!-- ================= MANUAL ================= -->
                 <div v-if="form.location.source === 'manual'">
@@ -758,31 +768,101 @@ const generateAI = async () => {
     loadingAigenerate.value = false
   }
 }
-function generateTitle(data){
-  const category = data.category?.replace(/_/g, ' ')|| ''
-    if(data.type === 'land'){
-    return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
-    }
+function generateTitle(data) {
 
-    if (data.type === 'hostel') {
+  const city =
+    data?.location?.city || ''
 
-      const school =  data.hostelDetails?.school?.abbreviation.toUpperCase() ||  data.hostelDetails?.school?.name.toUpperCase() || ''
+  const state =
+    data?.location?.state || ''
 
-      const gender = data.hostelDetails?.gender.toUpperCase() || 'Mixed'
+  const category =
+    data?.category
+      ?.replace(/_/g, ' ')
+      ?.toUpperCase() || ''
 
-      const hostelName =  data.hostelDetails?.name.toUpperCase() || ''
+  /* ---------- LAND ---------- */
 
-    return `${  hostelName ? hostelName + ' - ' : '' }${gender} HOSTEL FOR RENT NEAR ${school} IN, ${data.location.state.toUpperCase()} `
+  if (data?.type === 'land') {
+
+    return `${data?.landDetails?.quantity || 1}
+${data?.landDetails?.unit || 'PLOT'}
+OF LAND FOR SALE AT
+${city}
+${state}`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase()
   }
 
+  /* ---------- HOSTEL ---------- */
 
-    if(data.category === 'office_space'){
-    return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
-    }
+  if (data?.type === 'hostel') {
 
-const bedroom = form.value.houseDetails?.bedroom 
-    return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
+    const school =
+      data?.hostelDetails?.school?.abbreviation
+      ||
+      data?.hostelDetails?.school?.name
+      ||
+      ''
 
+    const gender =
+      data?.hostelDetails?.gender
+      || 'Mixed'
+
+    const hostelName =
+      data?.hostelDetails?.name
+      || ''
+
+    return `
+${hostelName ? hostelName + ' - ' : ''}
+${gender}
+HOSTEL FOR RENT
+${school ? 'NEAR ' + school : ''}
+${state}
+`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase()
+  }
+
+  /* ---------- OFFICE ---------- */
+
+  if (
+    data?.category ===
+    'office_space'
+  ) {
+
+    return `
+${data?.landDetails?.size || 0}
+SQM OFFICE SPACE
+IN
+${city}
+${state}
+`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase()
+  }
+
+  /* ---------- HOUSE ---------- */
+
+  const bedroom =
+    data?.houseDetails?.bedroom || 0
+
+  return `
+${bedroom}
+BEDROOM
+${category}
+AT
+${city}
+${state}
+FOR
+${data?.purpose || ''}
+`
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase()
 }
 
 // function generateTitle(data){
@@ -803,121 +883,198 @@ const bedroom = form.value.houseDetails?.bedroom
 
 /* ================= NAVIGATION ================= */
 const next = async () => {
+  // Prevent double click
   if (submitloading.value) return
-  
-  /* ---------------- STEP VALIDATION ---------------- */
-  if (step.value === 1) {
-    if (!form.value.purpose) {
-      return $toast.error("Please select purpose.")
-    }
 
-    if (!form.value.category) {
-      return $toast.error("Please select category.")
-    }
-
-    if (!form.value.location?.state || !form.value.location?.city) {
-      return $toast.error("Please select location or enter it manually.")
-    }
-
-    const featureCount = form.value.features?.filter(Boolean).length || 0
-    if (featureCount === 0) {
-  activeSection.value = 'features'
-
-  await nextTick()
-
-  document.getElementById('features-section')?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  })
-
-  $toast.error("Please select at least one feature.")
-  return
-}
-  nextTick(() => {
-    document
-      .getElementById('features-section')
-      ?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
-  })
-    if (form.value.type === 'House' && featureCount < 2) {
-      return $toast.error("Please select at least bedroom and one more house feature.")
-    }
-
-    if (form.value.type === 'Land' && featureCount < 3) {
-      return $toast.error("Please select at least 3 land features.")
-    }
-
-    if (!form.value.pricing?.price) {
-    
-      activeSection.value = 'others'
-
-        await nextTick()
-
-      document.getElementById('others-section')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
-
-    $toast.error("Please add a price to your property.")
-    }
-  }
-
- 
-
-  /* ---------------- SAVE ---------------- */
   submitloading.value = true
 
   try {
-    // Auto-generate title if changed
-    const generatedTitle = generateTitle(form.value)
-    if (generatedTitle !== form.value.title) {
-      form.value.title = generatedTitle
-    }
+    /* ================= STEP 1 VALIDATION ================= */
+    if (step.value === 1) {
 
-    const response = await useApiFetch(`/property/${form.value.id || 'undefine'}`, {
-      method: 'POST',
-      body: { details: form.value }
-    })
-    if (!response.success) {
-          $toast.error("An Error occur")
-           submitloading.value = false
-          return
-
-    }
-  
-     
-     if (step.value === 3) {
-
-          const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
-          if (imageCount < 3) {
-            return $toast.error("Please upload at least 3 images.")
-          }
+      if (!form.value.purpose) {
+        $toast.error("Please select purpose.")
+        return
       }
-    const property = response.data?.data || response.data
+
+      if (!form.value.category) {
+        $toast.error("Please select category.")
+        return
+      }
+
+      if (
+        !form.value.location?.state ||
+        !form.value.location?.city
+      ) {
+        activeSection.value = "location"
+
+        await nextTick()
+
+        $toast.error(
+          "Please select location or enter manually."
+        )
+
+        return
+      }
+
+      const featureCount =
+        form.value.features?.filter(Boolean).length || 0
+
+      if (featureCount < 1) {
+
+        activeSection.value = "features"
+
+        await nextTick()
+
+        document
+          .getElementById("features-section")
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          })
+
+        $toast.error(
+          "Please select at least one feature."
+        )
+
+        return
+      }
+
+      if (
+        form.value.type === "house" &&
+        featureCount < 2
+      ) {
+        activeSection.value = "features"
+
+        $toast.error(
+          "Please select bedroom and one more feature."
+        )
+
+        return
+      }
+
+      if (
+        form.value.type === "land" &&
+        featureCount < 3
+      ) {
+        activeSection.value = "features"
+
+        $toast.error(
+          "Please select at least 3 land features."
+        )
+
+        return
+      }
+
+      if (!form.value.pricing?.price) {
+
+        activeSection.value = "others"
+
+        await nextTick()
+
+        document
+          .getElementById("others-section")
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          })
+
+        $toast.error(
+          "Please add property price."
+        )
+
+        return
+      }
+    }
+
+    /* ================= AUTO TITLE ================= */
+
+    if (!form.value.title) {
+      try {
+      form.value.title =  generateTitle(form.value)
+       } catch (e) {
+       console.log(e)
+    } 
+    }
+
+    /* ================= SAVE ================= */
+
+    const response = await useApiFetch(
+      `/property/${form.value.id || "undefine"}`,
+      {
+        method: "POST",
+        body: {
+          details: form.value
+        }
+      }
+    )
+
+    if (!response?.success) {
+      throw new Error(
+        response?.message ||
+        "Save failed"
+      )
+    }
+
+    const property =
+      response.data?.data ||
+      response.data
+
+    /* ================= STEP 3 MEDIA ================= */
+
+    if (step.value === 3) {
+
+      const imageCount =
+        property?.media?.files
+          ?.filter(
+            f => f.type === "image"
+          )
+          .length || 0
+
+      if (imageCount < 3) {
+
+        $toast.error(
+          "Upload at least 3 images."
+        )
+
+        return
+      }
+    }
+
     mergeForm(property)
 
-    if (property?._id) {
-      router.replace({
+    /* ================= MOVE STEP ================= */
+
+    if (step.value < 4) {
+
+      step.value++
+
+      await router.replace({
         query: {
           ...route.query,
           id: property._id,
-          step: step.value + 1
+          step: step.value
         }
       })
     }
 
-    $toast.success("Saved successfully")
-
-    // Move to next step ONLY after successful save
-    if (step.value < 5) step.value++
+    $toast.success(
+      "Saved successfully"
+    )
 
   } catch (err) {
+
     console.error(err)
-    $toast.error(err?.message || "Something went wrong")
+
+    $toast.error(
+      err?.message ||
+      "Something went wrong"
+    )
+
   } finally {
+
     submitloading.value = false
+
   }
 }
 
