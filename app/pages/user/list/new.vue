@@ -309,9 +309,12 @@
               <div id="features-section" v-if="activeSection === 'features'">
                 <ListFeature
                   :type="propertyType"
-                  v-model:house="form.houseDetails"
+                  
                   v-model:features="form.features"
                 />
+
+                {{ Form.houseDetails }}
+                <ListHouseDeails :type="propertyType"  :house="form.houseDetails"/>
               </div>
 
               <!-- OTHERS -->
@@ -481,11 +484,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-definePageMeta({
-  layout: 'auth',
-  access: 'seller',
-   isPrivateRoute : true
-})
+// definePageMeta({
+//   layout: 'auth',
+//   access: 'seller',
+//    isPrivateRoute : true
+// })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -665,7 +668,7 @@ const refreshData = async (stopLoading) => {
   stopLoading()     // tell child to stop loading
 }
 
-function onCategoryChange(e) {
+function onCategoryChange() {
   // const value = e.target.value
   
     form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }

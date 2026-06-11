@@ -19,15 +19,15 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits([
-  'update:house',
-  'update:features'
-])
+const emit = defineEmits(['update:house', 'update:features'])
+
 
 /* ======================
    FEATURES DATA
 ====================== */
 
+/* LAND FEATURES */
+/* LAND FEATURES */
 const landFeatures = [
   { key: 'dry', label: 'Dry Land', icon: '🌵' },
   { key: 'roadAccess', label: 'Good Road Access', icon: '🛣️' },
@@ -48,6 +48,7 @@ const landFeatures = [
   { key: 'rocky', label: 'Rocky Soil', icon: '🪨' }
 ]
 
+/* HOUSE NUMBER FEATURES */
 const houseFeatures = [
   { key: 'bedroom', label: 'Bedrooms', icon: '🛏️' },
   { key: 'bathroom', label: 'Bathrooms', icon: '🛁' },
@@ -57,6 +58,7 @@ const houseFeatures = [
   { key: 'swimmingPool', label: 'Swimming Pools', icon: '🏊' }
 ]
 
+/* HOUSE BOOLEAN FEATURES */
 const otherHouseFeatures = [
   { key: 'airConditioning', label: 'Air Conditioning', icon: '❄️' },
   { key: 'borehole', label: 'Borehole Water', icon: '💧' },
@@ -79,64 +81,56 @@ const otherHouseFeatures = [
 /* ======================
    COMPUTED
 ====================== */
-
 const featuresList = computed(() =>
-  props.type === 'house' || props.type === 'hostel'
-    ? houseFeatures
-    : landFeatures
+  props.type === 'house' ? houseFeatures : landFeatures
 )
-
-const selectedFeatures = computed(() => {
-  return new Set(
-    props.features.map(feature => feature.key)
-  )
-})
 
 /* ======================
    METHODS
 ====================== */
 
+/* TOGGLE BOOLEAN FEATURE */
 const toggleFeature = (feature) => {
-  const exists = selectedFeatures.value.has(
-    feature.key
-  )
+  const exists = props.features.find(f => f.key === feature.key)
+
+  let newFeatures = [...props.features]
 
   if (exists) {
-    emit(
-      'update:features',
-      props.features.filter(
-        item => item.key !== feature.key
-      )
-    )
+    newFeatures = newFeatures.filter(f => f.key !== feature.key)
   } else {
-    emit('update:features', [
-      ...props.features,
-      {
-        key: feature.key,
-        label: feature.label,
-        icon: feature.icon,
-        value: true
-      }
-    ])
+    newFeatures.push({
+      key: feature.key,
+      label: feature.label,
+      icon: feature.icon,
+      value: true
+    })
   }
+
+  emit('update:features', newFeatures)
 }
 
-const handleNumberInput = (
-  feature,
-  value
-) => {
-  const cleaned = String(value).replace(
-    /\D/g,
-    ''
-  )
+/* HANDLE NUMBER INPUT → HOUSE OBJECT */
+// const handleNumberInput = (feature, value) => {
+//   const newHouse = { ...props.house }
 
-  const newHouse = {
-    ...props.house
-  }
+//   if (value !== null && value !== '' && value >= 0) {
+//     newHouse[feature.key] = value
+//   } else {
+//     delete newHouse[feature.key]
+//   }
 
-  if (cleaned !== '') {
-    newHouse[feature.key] =
-      Number(cleaned)
+//   emit('update:house', newHouse)
+// }
+
+
+const handleNumberInput = (feature, value) => {
+  // Remove anything that is not a digit
+  value = String(value).replace(/\D/g, '')
+
+  const newHouse = { ...props.house }
+
+  if (value !== '') {
+    newHouse[feature.key] = Number(value)
   } else {
     delete newHouse[feature.key]
   }
@@ -144,6 +138,7 @@ const handleNumberInput = (
   emit('update:house', newHouse)
 }
 </script>
+
 
 <template>
   <div class="border w-full p-1 sm:p-5 rounded-xl  space-y-6">
@@ -187,7 +182,7 @@ const handleNumberInput = (
               type="text"
               inputmode="numeric"
               :value="house[f.key] || ''"
-              @input="handleNumberInput(f, $event.target.value)"
+                @input="$event.target.value = $event.target.value.replace(/\D/g, '')"
               class="input mt-1"
             />
         </div>

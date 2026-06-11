@@ -501,7 +501,7 @@
       </p>
 
       <a
-        href="https://chat.whatsapp.com/YOUR_COMMUNITY_LINK"
+        href="https://chat.whatsapp.com/G2j3YKO35PKAHIM43DuBK6"
         target="_blank"
         class="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold transition"
       >
