@@ -9,17 +9,14 @@ const props = defineProps({
     type: String,
     default: 'land'
   },
-  house: {
-    type: Object,
-    default: () => ({})
-  },
+
   features: {
     type: Array,
     default: () => []
   }
 })
 
-const emit = defineEmits(['update:house', 'update:features'])
+const emit = defineEmits([ 'update:features'])
 
 
 /* ======================
@@ -123,20 +120,6 @@ const toggleFeature = (feature) => {
 // }
 
 
-const handleNumberInput = (feature, value) => {
-  // Remove anything that is not a digit
-  value = String(value).replace(/\D/g, '')
-
-  const newHouse = { ...props.house }
-
-  if (value !== '') {
-    newHouse[feature.key] = Number(value)
-  } else {
-    delete newHouse[feature.key]
-  }
-
-  emit('update:house', newHouse)
-}
 </script>
 
 
@@ -171,22 +154,7 @@ const handleNumberInput = (feature, value) => {
     <!-- ================= HOUSE ================= -->
     <div v-if="type === 'house'  || type === 'hostel'" class="space-y-6">
 
-      <!-- NUMBER INPUTS -->
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div v-for="f in houseFeatures" :key="f.key">
-          <label class="text-sm text-gray-500">
-            {{ f.icon }} {{ f.label }}
-          </label>
-
-          <input
-              type="text"
-              inputmode="numeric"
-              :value="house[f.key] || ''"
-
-              class="input mt-1"
-            />
-        </div>
-      </div>
+     
 
       <!-- BOOLEAN FEATURES -->
       <div>
