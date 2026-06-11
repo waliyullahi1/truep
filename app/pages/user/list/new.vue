@@ -481,11 +481,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-definePageMeta({
-  layout: 'auth',
-  access: 'seller',
-   isPrivateRoute : true
-})
+// definePageMeta({
+//   layout: 'auth',
+//   access: 'seller',
+//    isPrivateRoute : true
+// })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)

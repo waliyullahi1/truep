@@ -1,74 +1,136 @@
 <script setup>
-import { computed } from "vue"
-import PaymentType from "./PaymentType.vue"
+import { computed, watch } from "vue"
 
 /* ================= PROPS ================= */
 
 const props = defineProps({
   purpose: {
     type: String,
-    default: "sell"
+    default: "sale"
   },
+
   type: {
     type: String,
-    default: "sell"
+    default: ""
   },
+
   modelValue: {
     type: Object,
     required: true
   }
 })
 
-const emit = defineEmits(["update:modelValue"])
+const emit = defineEmits([
+  "update:modelValue"
+])
 
 /* ================= PRICING MODEL ================= */
 
 const pricing = computed({
   get() {
-    return props.modelValue.pricing || {
-      price: 0,
-      currency: "NGN",
-      rentDuration: "monthly"
-    }
+    return (
+      props.modelValue.pricing || {
+        price: null,
+        currency: "NGN",
+        paymentType: "outright",
+
+        rent: {
+          duration: {
+            value: 1,
+            unit: "monthly"
+          }
+        },
+
+        installment: {
+          months: null,
+          monthlyAmount: null
+        }
+      }
+    )
   },
+
   set(val) {
     emit("update:modelValue", {
       ...props.modelValue,
-      pricing: val
+
+      pricing: {
+        ...val
+      }
     })
   }
 })
 
-/* ================= EDITABLE FIELDS ================= */
+/* ================= PRICE ================= */
 
 const price = computed({
-  get: () => pricing.value.price,
-  set: (val) => {
+  get() {
+    return pricing.value.price
+  },
+
+  set(val) {
     pricing.value = {
       ...pricing.value,
-      price: val
+      price: Number(val) || null
     }
   }
 })
 
-const rentDuration = computed({
-  get: () => pricing.value?.rent?.duration?.unit || "monthly",
+/* ================= RENT DURATION ================= */
 
-  set: (val) => {
+const rentDuration = computed({
+  get() {
+    return (
+      pricing.value?.rent?.duration?.unit ||
+      "monthly"
+    )
+  },
+
+  set(val) {
     pricing.value = {
       ...pricing.value,
-      PaymentType:'rent',
+
+      paymentType: "rent",
+
       rent: {
         ...pricing.value.rent,
 
         duration: {
-          ...pricing.value.rent?.duration,
+          ...pricing.value?.rent?.duration,
           unit: val
         }
       }
     }
   }
 })
+
+/* ================= PURPOSE WATCH ================= */
+
+watch(
+  () => props.purpose,
+  (purpose) => {
+
+    if (!purpose) return
+
+    const expectedType =
+      purpose === "sale"
+        ? "outright"
+        : "rent"
+
+    if (
+      pricing.value.paymentType !==
+      expectedType
+    ) {
+
+      pricing.value = {
+        ...pricing.value,
+        paymentType: expectedType
+      }
+    }
+  },
+  {
+    immediate: true
+  }
+)
 
 /* ================= LABELS ================= */
 
@@ -84,21 +146,11 @@ const totalRentLabel = computed(() =>
     : "Yearly Rent"
 )
 
-
-watchEffect(() => {
-  if (props.purpose !== "sale") {
-    pricing.value = {
-      ...pricing.value,
-      PaymentType: "rent"
-    }
-  }
-})
-/* ================= MONEY FORMAT ================= */
-
-
+/* ================= MONEY ================= */
 
 const money = (v) =>
-  "₦ " + Number(v || 0).toLocaleString()
+  "₦ " +
+  Number(v || 0).toLocaleString()
 </script>
 <template>
 

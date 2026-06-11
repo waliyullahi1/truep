@@ -176,7 +176,7 @@ const handleNumberInput = (feature, value) => {
               type="text"
               inputmode="numeric"
               :value="house[f.key] || ''"
-
+              @input="handleNumberInput(f, $event.target.value)"
               class="input mt-1"
             />
         </div>
