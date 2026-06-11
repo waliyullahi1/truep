@@ -171,7 +171,7 @@
       </div>
     </div>
     
-   {{ form }}
+ 
     <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="md:max-w-4xl w-full list-disc mx-auto space-y-4">
@@ -666,7 +666,7 @@ const refreshData = async (stopLoading) => {
 }
 
 function onCategoryChange(e) {
-  const value = e.target.value
+  // const value = e.target.value
   
     form.value.landDetails = { unit: "plot", size: null, quantity: 1, totalSqm: null }
   form.value.houseDetails = {}
