@@ -814,98 +814,177 @@ const bedroom = form.value.houseDetails?.bedroom
 /* ================= NAVIGATION ================= */
 const next = async () => {
   if (submitloading.value) return
-  
-  /* ---------------- STEP VALIDATION ---------------- */
+
+  /* ==========================
+      STEP 1 VALIDATION
+  ========================== */
   if (step.value === 1) {
     if (!form.value.purpose) {
-      return $toast.error("Please select purpose.")
+      return $toast.error('Please select purpose.')
     }
 
     if (!form.value.category) {
-      return $toast.error("Please select category.")
+      return $toast.error('Please select category.')
     }
 
-    if (!form.value.location?.state || !form.value.location?.city) {
-      return $toast.error("Please select location or enter it manually.")
+    if (
+      !form.value.location?.state ||
+      !form.value.location?.city
+    ) {
+      activeSection.value = 'location'
+
+      await nextTick()
+
+      document
+        .getElementById('location-section')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+
+      return $toast.error(
+        'Please select a location.'
+      )
     }
 
-    const featureCount = form.value.features?.filter(Boolean).length || 0
+    const featureCount =
+      form.value.features?.filter(Boolean)
+        .length || 0
+
     if (featureCount === 0) {
-  activeSection.value = 'features'
+      activeSection.value = 'features'
 
-  await nextTick()
+      await nextTick()
 
-  document.getElementById('features-section')?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  })
+      document
+        .getElementById('features-section')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
 
-  $toast.error("Please select at least one feature.")
-  return
-}
-  nextTick(() => {
-    document
-      .getElementById('features-section')
-      ?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
-  })
-    if (form.value.type === 'House' && featureCount < 2) {
-      return $toast.error("Please select at least bedroom and one more house feature.")
+      return $toast.error(
+        'Please select at least one feature.'
+      )
     }
 
-    if (form.value.type === 'Land' && featureCount < 3) {
-      return $toast.error("Please select at least 3 land features.")
+    if (
+      form.value.type === 'house' &&
+      featureCount < 1
+    ) {
+      activeSection.value = 'features'
+
+      await nextTick()
+
+      document
+        .getElementById('features-section')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+
+      return $toast.error(
+        'Please add house features.'
+      )
+    }
+
+    if (
+      form.value.type === 'land' &&
+      featureCount < 3
+    ) {
+      activeSection.value = 'features'
+
+      await nextTick()
+
+      document
+        .getElementById('features-section')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+
+      return $toast.error(
+        'Please select at least 3 land features.'
+      )
     }
 
     if (!form.value.pricing?.price) {
-    
       activeSection.value = 'others'
 
-        await nextTick()
+      await nextTick()
 
-      document.getElementById('others-section')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
+      document
+        .getElementById('others-section')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
 
-    $toast.error("Please add a price to your property.")
+      return $toast.error(
+        'Please enter a property price.'
+      )
     }
   }
 
- 
-
-  /* ---------------- SAVE ---------------- */
   submitloading.value = true
 
   try {
-    // Auto-generate title if changed
-    const generatedTitle = generateTitle(form.value)
-    if (generatedTitle !== form.value.title) {
+    /* ==========================
+        GENERATE TITLE
+    ========================== */
+    const generatedTitle =
+      generateTitle(form.value)
+
+    if (
+      generatedTitle &&
+      generatedTitle !== form.value.title
+    ) {
       form.value.title = generatedTitle
     }
 
-    const response = await useApiFetch(`/property/${form.value.id || 'undefine'}`, {
-      method: 'POST',
-      body: { details: form.value }
-    })
-    if (!response.success) {
-          $toast.error("An Error occur")
-           submitloading.value = false
-          return
-
-    }
-  
-     
-     if (step.value === 3) {
-
-          const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
-          if (imageCount < 3) {
-            return $toast.error("Please upload at least 3 images.")
+    /* ==========================
+        SAVE PROPERTY
+    ========================== */
+    const response =
+      await useApiFetch(
+        `/property/${
+          form.value.id || 'undefined'
+        }`,
+        {
+          method: 'POST',
+          body: {
+            details: form.value
           }
+        }
+      )
+
+    if (!response?.success) {
+      throw new Error(
+        response?.message ||
+          'Failed to save property'
+      )
+    }
+
+    const property =
+      response?.data?.data ||
+      response?.data
+
+    /* ==========================
+        STEP 3 VALIDATION
+    ========================== */
+    if (step.value === 3) {
+      const imageCount =
+        property?.media?.files?.filter(
+          (file) => file.type === 'image'
+        ).length || 0
+
+      if (imageCount < 3) {
+        return $toast.error(
+          'Please upload at least 3 images.'
+        )
       }
-    const property = response.data?.data || response.data
+    }
+
     mergeForm(property)
 
     if (property?._id) {
@@ -918,14 +997,20 @@ const next = async () => {
       })
     }
 
-    $toast.success("Saved successfully")
+    if (step.value < 4) {
+      step.value++
+    }
 
-    // Move to next step ONLY after successful save
-    if (step.value < 5) step.value++
-
+    $toast.success(
+      'Saved successfully'
+    )
   } catch (err) {
     console.error(err)
-    $toast.error(err?.message || "Something went wrong")
+
+    $toast.error(
+      err?.message ||
+        'Something went wrong'
+    )
   } finally {
     submitloading.value = false
   }
