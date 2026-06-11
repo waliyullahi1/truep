@@ -182,7 +182,7 @@ const handleNumberInput = (feature, value) => {
               type="text"
               inputmode="numeric"
               :value="house[f.key] || ''"
-                @input="$event.target.value = $event.target.value.replace(/\D/g, '')"
+
               class="input mt-1"
             />
         </div>

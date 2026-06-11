@@ -82,18 +82,14 @@ const handleNumberInput = (feature, value) => {
   :placeholder="`Enter ${feature.label}`"
 />
         <input
-         type="number"
+         type="text"
          min="0"
           step="1"
           class="input"
           :placeholder="`Enter ${feature.label}`"
           :value="house?.[feature.key] || ''"
-          @input="
-            handleNumberInput(
-              feature,
-              $event.target.value
-            )
-          "
+         
+          
         />
       </div>
 
