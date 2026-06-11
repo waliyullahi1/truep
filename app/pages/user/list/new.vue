@@ -309,9 +309,11 @@
               <div id="features-section" v-if="activeSection === 'features'">
                 <ListFeature
                   :type="propertyType"
+                  :house="form.houseDetails"
                   v-model:features="form.features"
                 />
 
+                
               </div>
 
               <!-- OTHERS -->
