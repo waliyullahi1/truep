@@ -32,7 +32,6 @@
       ref="video"
       autoplay
       playsinline
-       webkit-playsinline
       muted
         
       class="absolute w-full h-full object-cover mirror"
@@ -156,83 +155,82 @@ const getFaceVectorFromVideo = async () => {
 }
 /* ================= CAMERA ================= */
 const startCamera = async () => {
-
   stream = await navigator.mediaDevices.getUserMedia({
-
-    video:{
-      facingMode:{
-        ideal:"user"
-      }
-    },
-
-    audio:false
-
+    video: { facingMode: 'user', width: 480, height: 480 },
+    audio: false
   })
-
-
   video.value.srcObject = stream
-
-  await new Promise(resolve=>{
-    video.value.onloadedmetadata = resolve
-  })
-
-
-  await video.value.play()
-
-
-  canvas.value.width =
-      video.value.videoWidth
-
-  canvas.value.height =
-      video.value.videoHeight
-
+  await new Promise(r => (video.value.onloadedmetadata = r))
+  canvas.value.width = video.value.videoWidth
+canvas.value.height = video.value.videoHeight
 }
 
 /* ================= LOAD MODEL (ONCE) ================= */
 const loadModel = async () => {
-  if (modelLoaded) return
 
-  const vision = await FilesetResolver.forVisionTasks(
-    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
-  )
+  if (modelLoaded) {
+    console.log("MODEL ALREADY LOADED")
+    return
+  }
 
-  faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath:
-        'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
-    },
-    runningMode: 'VIDEO',
-    numFaces: 1,
-    outputFaceBlendshapes: true,
-    outputFacialTransformationMatrixes: true
-  })
+  try {
 
-  modelLoaded = true
+    console.log("START LOADING MEDIAPIPE")
+
+
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+    )
+
+
+    console.log("WASM LOADED")
+
+
+    faceLandmarker = await FaceLandmarker.createFromOptions(
+      vision,
+      {
+        baseOptions:{
+          modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+        },
+
+        runningMode:"VIDEO",
+
+        numFaces:1,
+
+        outputFaceBlendshapes:true,
+
+        outputFacialTransformationMatrixes:true
+      }
+    )
+
+
+    console.log("MODEL CREATED")
+
+
+    modelLoaded = true
+
+
+  } catch(error){
+
+    console.error(
+      "MEDIAPIPE LOAD ERROR",
+      error
+    )
+
+  }
+
 }
 
 /* ================= CAPTURE ================= */
 const captureCleanImage = () => {
   const c = document.createElement('canvas')
-
   c.width = video.value.videoWidth
   c.height = video.value.videoHeight
-
-  const ctx = c.getContext('2d')
-
-  // iPhone needs explicit drawing
-  ctx.drawImage(
-    video.value,
-    0,
-    0,
-    c.width,
-    c.height
-  )
-
-  return c.toDataURL(
-    'image/jpeg',
-    0.8
-  )
+  c.getContext('2d').drawImage(video.value, 0, 0)
+  return c.toDataURL('image/png')
 }
+
 const isMouthOpen = (face) => {
   const topLip = face[13]
   const bottomLip = face[14]
@@ -267,7 +265,7 @@ const isBlinking = (face) => {
 }
 
 /* ================= DETECTION LOOP ================= */
-const detect = async () => {
+const detect = () => {
   if (!video.value || video.value.readyState !== 4) {
     animationId = requestAnimationFrame(detect)
     return
@@ -310,61 +308,42 @@ const detect = async () => {
   console.log('mouthOpen score:', score('mouthOpen'))
   const isBlink = isBlinking(face)
   const isMouth = isMouthOpen(face)
-  console.log('Step passed1')
+
   const current = stepsList[step]
-  console.log('Step passed2')
+
   if (current !== 'left') leftCount = 0
-    console.log('Step passed3')
   if (current !== 'right') rightCount = 0
-    console.log('Step passed4')
   if (current !== 'blink') blinkCount = 0
-    console.log('Step passed5')
   if (current !== 'mouth') mouthCount = 0
-    console.log('Step passed6')
 
   let passed = false
-  console.log('Step passed7')
+
   if (current === 'left' && isLeft && ++leftCount > STABLE_FRAMES) passed = true
-    console.log('Step passed8')
   if (current === 'right' && isRight && ++rightCount > STABLE_FRAMES) passed = true
-    console.log('Step passed9')
   if (current === 'blink' && isBlink && ++blinkCount > STABLE_FRAMES) passed = true
-    console.log('Step passed10')
 if (current === 'mouth') {
-    console.log('Step passed11')
   if (isMouth) {
-      console.log('Step passed12')
     mouthCount++
     if (mouthCount > STABLE_FRAMES) passed = true
-      console.log('Step passed13')
   } else {
-      console.log('Step passed14')
     mouthCount = 0
   }
 }
 
   if (passed) {
-        console.log('Step passed:', 'dwfsdfdsdfdsfsdf0')
     step++
-      console.log('Step passed16')
     updateInstruction()
-    console.log('Step passed:', 'dwfsdfdsdfdsfsdf')
-    setTimeout( async () => {
+
+    setTimeout(() => {
       if (step >= stepsList.length) {
-            console.log('Step passed:', 'dwfsdfdsdfdsfsdf2')
         stopCamera()
-        console.log('finalImage', 'finalImage');
-            console.log('Step passed:', 'dwfsdfdsdfdsfsdf3')
         const finalImage = captureCleanImage()
-            console.log('Step passed:', 'dwfsdfdsdfdsfsdf4')
-        console.log(finalImage, 'finalImage');
-        
-        // const vector = await getFaceVectorFromVideo()
+    
         statusMessage.value = '✅ Verification Complete!'
         finished.value = true
         started.value = false
 
-        emit('completed', { finalImage, vector })
+        emit('completed', { finalImage })
       }
     }, 400)
   }
@@ -387,19 +366,13 @@ const startVerification = async () => {
   stepsList = generateSteps()
   step = 0
 
-  console.log('Steps:', stepsList)
-  console.log('startVerification1');
-   // debug
-  // await loadModel()
-  // console.log('startVerification2');
+  console.log('Steps:', stepsList) // debug
+  await loadModel()
   await startCamera()
-  console.log('startVerification3');
+
   loading.value = false
-  console.log('startVerification4');
   updateInstruction()
-  console.log('startVerification5');
   detect()
-  console.log('startVerification6');
 }
 
 onBeforeUnmount(stopCamera)
