@@ -1970,8 +1970,7 @@ const categories=[
         </div>
 
        </section>
-      fsvndjncdo{{   selectedSchool.value  }}
-      fjisdfnsdifs{{schoolParam.value }}
+     
     
       <!-- CARDS -->
       <section  class="">
