@@ -310,24 +310,35 @@ const detect = async () => {
   console.log('mouthOpen score:', score('mouthOpen'))
   const isBlink = isBlinking(face)
   const isMouth = isMouthOpen(face)
-
+  console.log('Step passed1')
   const current = stepsList[step]
-
+  console.log('Step passed2')
   if (current !== 'left') leftCount = 0
+    console.log('Step passed3')
   if (current !== 'right') rightCount = 0
+    console.log('Step passed4')
   if (current !== 'blink') blinkCount = 0
+    console.log('Step passed5')
   if (current !== 'mouth') mouthCount = 0
+    console.log('Step passed6')
 
   let passed = false
-
+  console.log('Step passed7')
   if (current === 'left' && isLeft && ++leftCount > STABLE_FRAMES) passed = true
+    console.log('Step passed8')
   if (current === 'right' && isRight && ++rightCount > STABLE_FRAMES) passed = true
+    console.log('Step passed9')
   if (current === 'blink' && isBlink && ++blinkCount > STABLE_FRAMES) passed = true
+    console.log('Step passed10')
 if (current === 'mouth') {
+    console.log('Step passed11')
   if (isMouth) {
+      console.log('Step passed12')
     mouthCount++
     if (mouthCount > STABLE_FRAMES) passed = true
+      console.log('Step passed13')
   } else {
+      console.log('Step passed14')
     mouthCount = 0
   }
 }
@@ -335,6 +346,7 @@ if (current === 'mouth') {
   if (passed) {
         console.log('Step passed:', 'dwfsdfdsdfdsfsdf0')
     step++
+      console.log('Step passed16')
     updateInstruction()
     console.log('Step passed:', 'dwfsdfdsdfdsfsdf')
     setTimeout( async () => {
