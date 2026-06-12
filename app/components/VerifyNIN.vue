@@ -461,7 +461,8 @@ const handleFaceResult = async (data) => {
   onVerify.value = false
   form.value.faceImage = data.finalImage
   form.value.faceVector = data.vector
-    console.log(data.vector);
+    console.log(data.vector, "ata.vector");
+      console.log(form.value.faceVector, "form.value.faceVector");
     
   const fd = new FormData()
   if (data.vector) {
@@ -473,7 +474,8 @@ const handleFaceResult = async (data) => {
     const faceFile = await base64ToFile(data.finalImage, 'face.jpg')
     fd.append('faceImage', faceFile)
   }
-
+  console.log(faceFile, 'facefile');
+  console.log(faceFile, 'facefile');
 
   try {
      await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
