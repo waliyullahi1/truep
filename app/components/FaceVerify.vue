@@ -167,59 +167,49 @@ canvas.value.height = video.value.videoHeight
 
 /* ================= LOAD MODEL (ONCE) ================= */
 const loadModel = async () => {
-
-  if (modelLoaded) {
-    console.log("MODEL ALREADY LOADED")
-    return
-  }
+  if (modelLoaded) return
 
   try {
-
-    console.log("START LOADING MEDIAPIPE")
-
+    console.log("Loading WASM")
 
     const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
     )
 
-
-    console.log("WASM LOADED")
+    console.log("WASM loaded")
 
 
     faceLandmarker = await FaceLandmarker.createFromOptions(
       vision,
       {
-        baseOptions:{
+        baseOptions: {
           modelAssetPath:
-          "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float32/1/face_landmarker.task"
         },
 
-        runningMode:"VIDEO",
+        runningMode: "VIDEO",
 
-        numFaces:1,
+        numFaces: 1,
 
-        outputFaceBlendshapes:true,
+        outputFaceBlendshapes: true,
 
-        outputFacialTransformationMatrixes:true
+        outputFacialTransformationMatrixes: true
       }
     )
 
 
     console.log("MODEL CREATED")
 
-
     modelLoaded = true
 
-
-  } catch(error){
+  } catch (error) {
 
     console.error(
-      "MEDIAPIPE LOAD ERROR",
+      "FACE MODEL ERROR:",
       error
     )
 
   }
-
 }
 
 /* ================= CAPTURE ================= */
