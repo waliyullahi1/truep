@@ -387,13 +387,19 @@ const startVerification = async () => {
   stepsList = generateSteps()
   step = 0
 
-  console.log('Steps:', stepsList) // debug
+  console.log('Steps:', stepsList)
+  console.log('startVerification1');
+   // debug
   await loadModel()
+  console.log('startVerification2');
   await startCamera()
-
+  console.log('startVerification3');
   loading.value = false
+  console.log('startVerification4');
   updateInstruction()
+  console.log('startVerification5');
   detect()
+  console.log('startVerification6');
 }
 
 onBeforeUnmount(stopCamera)
