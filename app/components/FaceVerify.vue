@@ -333,14 +333,18 @@ if (current === 'mouth') {
 }
 
   if (passed) {
+        console.log('Step passed:', 'dwfsdfdsdfdsfsdf0')
     step++
     updateInstruction()
-
+    console.log('Step passed:', 'dwfsdfdsdfdsfsdf')
     setTimeout( async () => {
       if (step >= stepsList.length) {
+            console.log('Step passed:', 'dwfsdfdsdfdsfsdf2')
         stopCamera()
         console.log('finalImage', 'finalImage');
+            console.log('Step passed:', 'dwfsdfdsdfdsfsdf3')
         const finalImage = captureCleanImage()
+            console.log('Step passed:', 'dwfsdfdsdfdsfsdf4')
         console.log(finalImage, 'finalImage');
         
         // const vector = await getFaceVectorFromVideo()
