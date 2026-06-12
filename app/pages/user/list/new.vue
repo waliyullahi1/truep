@@ -279,7 +279,7 @@
                 </div>
 
                 <!-- ================= MAP ================= -->
-                <!-- <div v-if="form.location.source === 'gps'">
+                <div v-if="form.location.source === 'gps'">
 
                   <div v-if="propertyType === 'land'">
                     <ListLandMap v-model="form" />
@@ -289,7 +289,7 @@
                     <ListHouseLocationPicker v-model="form" />
                   </div>
 
-                </div> -->
+                </div>
 
                 <!-- ================= MANUAL ================= -->
                 <div v-if="form.location.source === 'manual'">
@@ -481,11 +481,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-// definePageMeta({
-//   layout: 'auth',
-//   access: 'seller',
-//    isPrivateRoute : true
-// })
+ definePageMeta({
+   layout: 'auth',
+   access: 'seller',
+    isPrivateRoute : true
+   })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)

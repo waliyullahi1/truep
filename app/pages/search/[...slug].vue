@@ -1,153 +1,471 @@
 <script setup>
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Pagination, Navigation } from 'swiper/modules'
+
+import { 
+  ref, 
+  computed, 
+  watch, 
+  watchEffect, 
+  onMounted, 
+  onUnmounted, 
+  nextTick 
+} from 'vue'
+
+import { 
+  useRoute, 
+  useRouter 
+} from 'vue-router'
+
+import { 
+  Swiper, 
+  SwiperSlide 
+} from 'swiper/vue'
+
+import { 
+  Pagination, 
+  Navigation 
+} from 'swiper/modules'
+
 import 'swiper/css'
 import 'swiper/css/pagination'
+
+
 import loadstates from '@/data/nigeria-states.js'
 import { propertyTypes } from '@/data/property-types'
+import schoolsByState from '@/data/institutions.js'
 
 
 definePageMeta({
-  layout: 'auth'
+  layout:'auth'
 })
+
+
 const route = useRoute()
 const router = useRouter()
+
+
 
 /* =================================
    STATE
 ================================= */
+
+
 const search = ref('')
 const location = ref('')
+
 const category = ref('All')
+
 const visibleCount = ref(9)
+
 const isMap = ref(false)
+
 
 const isFixed = ref(false)
 const isShrink = ref(false)
+
+
 const searchRef = ref(null)
 const searchTop = ref(0)
+
+
+
 const selectedState = ref('')
 const selectedCity = ref('')
 
+/*
+ SCHOOL FILTER
+ value will be abbreviation
+ example:
+ OAU
+ UNILAG
+ ABSU
+*/
+const selectedSchool = ref('')
+
+
+
 const page = ref(1)
-const perPage = 20
+
+const perPage = 10
+
+
 const showFilter = ref(false)
+
+
 const sortType = ref('suggested')
+
 
 const filters = ref({})
 
+
+
 const selectedFilter = ref({
-  type: '',
-  category: '',
-  city: '',
-  state: '',
-  purpose: ''
+
+  type:'',
+  category:'',
+  city:'',
+  state:'',
+  purpose:'',
+  school:''
+
 })
 
+
+
+
+
 /* =================================
-   🔥 NORMALIZE (MASTER FIX)
+   NORMALIZE
 ================================= */
-const normalize = (str = '') =>
-  decodeURIComponent(str)
+
+
+const normalize = (str='') => {
+
+  return decodeURIComponent(str)
     .toString()
     .toLowerCase()
-    .replace(/[\s-_]/g, '') // removes space, dash, underscore
+    .replace(/[\s-_]/g,'')
+
+}
+
+
+
+
+
 
 /* =================================
-   🔥 ROUTE SEGMENTS
+   ROUTE SEGMENTS
 ================================= */
-const segments = computed(() => {
+
+
+const segments = computed(()=>{
+
+
   const slug = route.params.slug
-  return Array.isArray(slug) ? slug : slug ? [slug] : []
+
+
+  return Array.isArray(slug)
+    ? slug
+    : slug
+      ? [slug]
+      : []
+
+
 })
+
+
+
+
+
 
 /* =================================
    STATE PARAM
 ================================= */
-const stateParam = computed(() => {
-  return segments.value.find(seg =>
-    loadstates.some(s => normalize(s.name) === normalize(seg))
-  ) || ''
+
+
+const stateParam = computed(()=>{
+
+
+ return segments.value.find(seg =>
+
+    loadstates.some(
+      s => 
+      normalize(s.name) === normalize(seg)
+    )
+
+ ) || ''
+
+
 })
+
+
+
+
+
+
+
+/* =================================
+   CITY OPTIONS
+================================= */
+
+
+const cityOptions = computed(()=>{
+
+
+ if(!stateParam.value)
+    return []
+
+
+ const state = loadstates.find(
+
+    s =>
+    normalize(s.name)
+    ===
+    normalize(stateParam.value)
+
+ )
+
+
+ return state?.lgas || []
+
+
+})
+
+
+
+
+
+
 
 /* =================================
    CITY PARAM
 ================================= */
-const cityOptions = computed(() => {
-  if (!stateParam.value) return []
 
-  const state = loadstates.find(
-    s => normalize(s.name) === normalize(stateParam.value)
-  )
 
-  return state ? state.lgas : []
+const cityParam = computed(()=>{
+
+
+ if(!stateParam.value)
+    return ''
+
+
+
+ return segments.value.find(seg =>
+
+
+    cityOptions.value.some(
+
+       city =>
+       normalize(city)
+       ===
+       normalize(seg)
+
+    )
+
+
+ ) || ''
+
+
 })
 
-const cityParam = computed(() => {
-  if (!stateParam.value) return ''
 
-  return segments.value.find(seg =>
-    cityOptions.value.some(city => normalize(city) === normalize(seg))
-  ) || ''
-})
+
+
+
+
+
+
 
 /* =================================
    TYPE PARAM
 ================================= */
-const typeParam = computed(() =>
-  segments.value.find(s => ['land', 'house'].includes(normalize(s))) || ''
-)
+
+
+const typeParam = computed(()=>{
+
+
+ return segments.value.find(s =>
+
+
+    [
+      'land',
+      'house',
+      'hostel'
+    ]
+    .includes(normalize(s))
+
+
+ ) || ''
+
+
+})
+
+
+
+
+
+
+
+/* =================================
+   CATEGORY OPTIONS
+================================= */
+
+
+const categoryOptions = computed(()=>{
+
+
+ const type = normalize(typeParam.value)
+
+
+ return propertyTypes[type] || []
+
+
+})
+
+
+
+
+
+
 
 /* =================================
    CATEGORY PARAM
 ================================= */
-const categoryOptions = computed(() => {
-  const type = normalize(typeParam.value)
-  return propertyTypes[type] || []
-})
 
-const categoryParam = computed(() => {
-  return segments.value.find(seg =>
+
+const categoryParam = computed(()=>{
+
+
+ return segments.value.find(seg =>
+
+
     categoryOptions.value.some(c =>
-      normalize(c.key) === normalize(seg)
+
+
+       normalize(c.key)
+       ===
+       normalize(seg)
+
+
     )
-  ) || ''
+
+
+ ) || ''
+
+
 })
 
-const finalCategory = computed(() => {
-  const found = categoryOptions.value.find(c =>
-    normalize(c.key) === normalize(categoryParam.value)
-  )
-  return found?.key || ''
+
+
+
+
+
+
+/* =================================
+   FINAL CATEGORY
+================================= */
+
+
+const finalCategory = computed(()=>{
+
+
+ const found = categoryOptions.value.find(c =>
+
+
+    normalize(c.key)
+    ===
+    normalize(categoryParam.value)
+
+
+ )
+
+
+ return found?.key || ''
+
+
 })
+
+
+
+
+
+
+
+
+/* =================================
+   SCHOOL OPTIONS BY STATE
+================================= */
+
+
+const schoolOptions = computed(()=>{
+
+
+ if(!selectedState.value)
+    return []
+
+
+
+ const state = schoolsByState.find(
+
+    s =>
+    normalize(s.state)
+    ===
+    normalize(selectedState.value)
+
+ )
+
+
+ return state?.schools || []
+
+
+})
+
+
+
+
+
+
+
 
 /* =================================
    PURPOSE PARAM
 ================================= */
-const purposeParam = computed(() => {
-  return segments.value.find(seg =>
-    ['sale', 'rent'].includes(normalize(seg))
-  ) || ''
+
+
+const purposeParam = computed(()=>{
+
+
+ return segments.value.find(seg =>
+
+
+    [
+      'sale',
+      'rent'
+    ]
+    .includes(normalize(seg))
+
+
+ ) || ''
+
+
 })
 
 /* =================================
    SORT
 ================================= */
-const handleSort = (type) => {
+
+const handleSort = (type)=>{
+
   sortType.value = type
+
 }
 
-const stateOptions = computed(() =>
-  loadstates.map(s => s.name)
-)
+
+
+
 
 /* =================================
-   🔥 FETCH DATA
+   STATE OPTIONS
 ================================= */
+
+
+const stateOptions = computed(()=>
+
+
+  loadstates.map(
+    s=>s.name
+  )
+
+)
+
+
+
+
+
+
+
+
 /* =================================
-   🔥 FETCH DATA
+   FETCH DATA
 ================================= */
 
 
@@ -156,330 +474,1330 @@ const {
   pending,
   error,
   refresh
-} = await useAsyncData(
-  'properties',
-  async () => {
 
-    const res = await useApiFetch('/property/all', {
-      method: 'GET',
-      params: {
-        purpose: purposeParam.value || undefined,
-        search: search.value || undefined,
-        type: typeParam.value || undefined,
-        category: finalCategory.value || undefined,
-        city: cityParam.value || undefined,
-        state: stateParam.value || undefined
-      }
+} = await useAsyncData(
+
+'properties',
+
+async()=>{
+
+
+ const res = await useApiFetch('/property/all',{
+
+    method:'GET',
+
+    params:{
+
+
+      purpose:
+      purposeParam.value || undefined,
+
+
+      search:
+      search.value || undefined,
+
+
+      type:
+      typeParam.value || undefined,
+
+
+      category:
+      finalCategory.value || undefined,
+
+
+      city:
+      cityParam.value || undefined,
+
+
+      state:
+      stateParam.value || undefined,
+
+
+      /*
+        HOSTEL SCHOOL FILTER
+
+        Example:
+        OAU
+        UNILAG
+
+      */
+
+      school:
+      selectedSchool.value || undefined
+
+
+    }
+
+
+ })
+
+
+
+
+ if(!res?.success){
+
+
+    throw createError({
+
+       statusCode:500,
+
+       statusMessage:
+       res?.message ||
+       'Failed to fetch properties'
+
     })
 
-    // throw error properly
-    if (!res?.success) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: res?.message || 'Failed to fetch properties'
-      })
-    }
 
-    const safe = res?.data?.data || res?.data || []
-    console.log(safe);
-    
-    
+ }
 
-    return safe
-  },
-  {
-    lazy: true,
-    server: true
-  }
-)
 
-const refreshData = async (stopLoading) => {
-  await refresh()   // or your API call
-  stopLoading()     // tell child to stop loading
+
+
+ return res?.data?.data || res?.data || []
+
+
+
+},
+
+{
+
+
+ lazy:true,
+
+ server:true
+
+
 }
 
-const results = computed(() => resultsData.value || [])
+)
+
+
+
+
+
+
+
+const refreshData = async(stopLoading)=>{
+
+
+ await refresh()
+
+ stopLoading()
+
+
+}
+
+
+
+
+
+
+
+
+const results = computed(()=>{
+
+
+ return resultsData.value || []
+
+
+})
+
+
+
+
+
+
+
+
 
 /* =================================
-   🔥 SYNC ROUTE → STATE
+   ROUTE SYNC
 ================================= */
+
+
 watch(
-  () => route.fullPath,
-  () => {
-    selectedState.value = stateParam.value || ''
-    selectedCity.value = cityParam.value || ''
 
-    selectedFilter.value = {
-      type: typeParam.value || '',
-      category: finalCategory.value || '',
-      city: cityParam.value || '',
-      state: stateParam.value || '',
-      purpose: purposeParam.value || ''
-    }
+()=>route.fullPath,
 
-    refresh()
-  },
-  { immediate: true }
+()=>{
+
+
+ selectedState.value =
+ stateParam.value || ''
+
+
+
+ selectedCity.value =
+ cityParam.value || ''
+
+
+
+ selectedFilter.value = {
+
+
+    type:
+    typeParam.value || '',
+
+
+
+    category:
+    finalCategory.value || '',
+
+
+
+    city:
+    cityParam.value || '',
+
+
+
+    state:
+    stateParam.value || '',
+
+
+
+    purpose:
+    purposeParam.value || '',
+
+
+
+    school:
+    selectedSchool.value || ''
+
+ }
+
+
+
+ refresh()
+
+
+
+},
+
+
+{
+ immediate:true
+}
+
+
 )
 
-watch([selectedState, selectedCity], () => {
-  const path = [
+
+
+
+
+
+
+
+/* =================================
+   ROUTE CHANGE WHEN FILTER CHANGE
+================================= */
+
+
+watch(
+
+[
+ selectedState,
+ selectedCity
+
+],
+
+()=>{
+
+
+ const path = [
+
+
     selectedState.value,
+
+
     selectedCity.value,
+
+
     typeParam.value,
+
+
     finalCategory.value,
+
+
     purposeParam.value
-  ].filter(Boolean).join('/')
 
-  const newPath = `/search/${path}`
 
-  if (route.fullPath !== newPath) {
+ ]
+
+ .filter(Boolean)
+
+ .join('/')
+
+
+
+ const newPath =
+ `/search/${path}`
+
+
+
+
+ if(route.fullPath !== newPath){
+
+
     router.push(newPath)
-  }
-})
-/* reset city when state changes */
-watch(selectedState, () => {
-  selectedCity.value = ''
-})
-/* DEBUG */
-watchEffect(() => {
-  // console.log('SEGMENTS:', segments.value)
-  // console.log('STATE:', stateParam.value)
-  // console.log('CITY:', cityParam.value)
-  // console.log('TYPE:', typeParam.value)
-  // console.log('CATEGORY:', categoryParam.value)
-  // console.log('FINAL CATEGORY:', finalCategory.value)
-})
 
-/* =================================
-   FILTER
-================================= */
-const filteredResults = computed(() =>
-  results.value.filter(item => {
-    const itemState = normalize(item.location?.state)
-    const itemCity = normalize(item.location?.city)
 
-    return (
-      (!search.value || `${item.title}`.toLowerCase().includes(search.value.toLowerCase())) &&
+ }
 
-      // ✅ STATE FILTER
-      (!selectedState.value || itemState === normalize(selectedState.value)) &&
 
-      // ✅ CITY FILTER
-      (!selectedCity.value || itemCity === normalize(selectedCity.value)) &&
+}
 
-      // ✅ TYPE
-      (!selectedFilter.value.type || item.type === selectedFilter.value.type) &&
-
-      // ✅ CATEGORY
-      (!selectedFilter.value.category || item.category === selectedFilter.value.category)
-    )
-  })
 )
 
+
+
+
+
+
+
+
 /* =================================
-   SORTED RESULTS (FIXED ORDER)
+   RESET CITY + SCHOOL
 ================================= */
-const sortedResults = computed(() => {
-  let data = [...filteredResults.value]
 
-  switch (sortType.value) {
-    case 'newest':
-      return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
-    case 'cheapest':
-      return data.sort((a, b) => getPrice(a) - getPrice(b))
+watch(selectedState,()=>{
 
-    case 'expensive':
-      return data.sort((a, b) => getPrice(b) - getPrice(a))
 
-    case 'smallest':
-      return data.sort((a, b) => (a.size || 0) - (b.size || 0))
+ selectedCity.value=''
 
-    case 'biggest':
-      return data.sort((a, b) => (b.size || 0) - (a.size || 0))
 
-    default:
-      return data
+ selectedSchool.value=''
+
+
+})
+
+
+
+
+
+
+
+
+/* =================================
+   DEBUG
+================================= */
+
+
+watchEffect(()=>{
+
+
+ // console.log(
+ // "SCHOOL",
+ // selectedSchool.value
+ // )
+
+
+})
+
+
+
+
+
+
+
+
+
+/* =================================
+   FILTER RESULTS
+================================= */
+
+
+const filteredResults = computed(()=>
+
+
+results.value.filter(item=>{
+
+
+ const itemState =
+ normalize(item.location?.state)
+
+
+
+ const itemCity =
+ normalize(item.location?.city)
+
+
+
+ /*
+  NEW HOSTEL SCHOOL FILTER
+
+  database:
+
+  hostelDetails:{
+     school:{
+        abbreviation:"OAU"
+     }
   }
+
+ */
+
+ const itemSchool =
+
+ normalize(
+ item.hostelDetails?.school?.abbreviation
+ )
+
+
+
+
+
+ return (
+
+
+
+ (!search.value ||
+
+ `${item.title}`
+ .toLowerCase()
+ .includes(
+ search.value.toLowerCase()
+ )
+
+ )
+
+
+
+ &&
+
+
+
+ (!selectedState.value ||
+
+ itemState ===
+ normalize(selectedState.value)
+
+ )
+
+
+
+ &&
+
+
+
+ (!selectedCity.value ||
+
+ itemCity ===
+ normalize(selectedCity.value)
+
+ )
+
+
+
+ &&
+
+
+
+ (!selectedFilter.value.type ||
+
+ item.type ===
+ selectedFilter.value.type
+
+ )
+
+
+
+ &&
+
+
+
+ (!selectedFilter.value.category ||
+
+ item.category ===
+ selectedFilter.value.category
+
+ )
+
+
+
+ &&
+
+
+
+ (!selectedSchool.value ||
+
+ itemSchool ===
+ normalize(selectedSchool.value)
+
+ )
+
+
+
+ )
+
+
+
 })
 
-/* =================================
-   PAGINATION (NOW USE SORTED ✅)
-================================= */
-const paginatedResults = computed(() => {
-  const start = (page.value - 1) * perPage
-  return sortedResults.value.slice(start, start + perPage)
-})
-
-const displayedResults = computed(() =>
-  sortedResults.value.slice(0, visibleCount.value)
 )
 
-function loadMore() {
-  visibleCount.value += 9
+
+
+
+
+
+
+
+/* =================================
+   SORTED RESULTS
+================================= */
+
+
+const sortedResults = computed(()=>{
+
+
+ let data =
+ [...filteredResults.value]
+
+
+
+ switch(sortType.value){
+
+
+
+ case 'newest':
+
+ return data.sort(
+ (a,b)=>
+ new Date(b.createdAt)
+ -
+ new Date(a.createdAt)
+ )
+
+
+
+ case 'cheapest':
+
+ return data.sort(
+ (a,b)=>
+ getPrice(a)
+ -
+ getPrice(b)
+ )
+
+
+
+ case 'expensive':
+
+ return data.sort(
+ (a,b)=>
+ getPrice(b)
+ -
+ getPrice(a)
+ )
+
+
+
+ case 'smallest':
+
+ return data.sort(
+ (a,b)=>
+ (a.size || 0)
+ -
+ (b.size || 0)
+ )
+
+
+
+ case 'biggest':
+
+ return data.sort(
+ (a,b)=>
+ (b.size || 0)
+ -
+ (a.size || 0)
+ )
+
+
+
+ default:
+
+ return data
+
+
+ }
+
+
+})
+
+
+
+
+
+
+
+
+
+/* =================================
+   PAGINATION
+================================= */
+
+
+const paginatedResults = computed(()=>{
+
+
+ const start =
+ (page.value - 1)
+ *
+ perPage
+
+
+
+ return sortedResults.value.slice(
+
+ start,
+
+ start + perPage
+
+ )
+
+
+})
+
+
+
+
+
+
+
+
+const displayedResults = computed(()=>{
+
+
+ return sortedResults.value.slice(
+ 0,
+ visibleCount.value
+ )
+
+
+})
+
+
+
+function loadMore(){
+ visibleCount.value +=9
 }
 
 /* =================================
    RESET FILTERS
 ================================= */
-const handleResetFilters = () => {
-  search.value = ''
-  location.value = ''
-  sortType.value = 'suggested'
-  selectedFilter.value = {
-    type: '',
-    category: '',
-    city: '',
-    state: '',
-    purpose: ''
-  }
 
-  router.push('/search')
+
+const handleResetFilters = ()=>{
+
+
+ search.value=''
+
+
+ location.value=''
+
+
+ sortType.value='suggested'
+
+
+
+ selectedSchool.value=''
+
+
+ selectedFilter.value={
+
+
+   type:'',
+
+   category:'',
+
+   city:'',
+
+   state:'',
+
+   purpose:'',
+
+   school:''
+
+ }
+
+
+
+ router.push('/search')
+
+
 }
+
+
+
+
+
+
+
+
 
 /* =================================
    SCROLL
 ================================= */
-function handleScroll() {
-  const scrollY = window.scrollY
-  isFixed.value = scrollY > searchTop.value
-  isShrink.value = scrollY > searchTop.value + 100
+
+
+function handleScroll(){
+
+
+ const scrollY =
+ window.scrollY
+
+
+
+ isFixed.value =
+ scrollY > searchTop.value
+
+
+
+ isShrink.value =
+ scrollY > searchTop.value + 100
+
+
+
 }
+
+
+
+
+
+
+
+
 
 /* =================================
    CATEGORY CLICK
 ================================= */
-const selectCategory = (c) => {
-  let type = ''
-  let cat = ''
 
-  if (c === 'Land') type = 'land'
-  else if (c === 'House') type = 'house'
-  else if (c === 'Flat / Apartment') {
-    type = 'house'
-    cat = 'flat'
-  } else if (c !== 'All') {
-    cat = normalize(c)
-  }
 
-  const path = [
+const selectCategory = (c)=>{
+
+
+ let type=''
+
+ let cat=''
+
+
+
+ if(c === 'Land'){
+
+
+   type='land'
+
+
+ }
+
+
+
+ else if(c === 'House'){
+
+
+   type='house'
+
+
+ }
+
+
+
+ else if(c === 'Hostel'){
+
+
+   type='hostel'
+
+
+ }
+
+
+
+ else if(c === 'School Hostel'){
+
+
+   type='hostel'
+
+   cat='school'
+
+
+ }
+
+
+
+ else if(c === 'Flat / Apartment'){
+
+
+   type='house'
+
+   cat='flat'
+
+
+ }
+
+
+
+ else if(c !== 'All'){
+
+
+   cat=normalize(c)
+
+
+ }
+
+
+
+
+
+ const path=[
+
+
     stateParam.value,
+
+
     cityParam.value,
+
+
     type,
-    cat
-  ].filter(Boolean).join('/')
 
-  router.push(`/search/${path}`)
+
+    cat,
+
+
+    purposeParam.value
+
+
+ ]
+
+ .filter(Boolean)
+
+ .join('/')
+
+
+
+
+
+ router.push(`/search/${path}`)
+
+
+
 }
 
-const isActive = (c) => {
-  if (c === 'All') return !typeParam.value && !categoryParam.value
-  if (c === 'Land') return normalize(typeParam.value) === 'land'
-  if (c === 'House') return normalize(typeParam.value) === 'house' && !categoryParam.value
-  if (c === 'Flat / Apartment') {
-    return normalize(typeParam.value) === 'house' && normalize(categoryParam.value) === 'flat'
-  }
-  return normalize(categoryParam.value) === normalize(c)
+
+
+
+
+
+
+
+
+/* =================================
+   ACTIVE CATEGORY
+================================= */
+
+
+const isActive=(c)=>{
+
+
+ if(c === 'All'){
+
+
+   return !typeParam.value &&
+   !categoryParam.value
+
+
+ }
+
+
+
+
+ if(c === 'Land'){
+
+
+   return normalize(typeParam.value)
+   ===
+   'land'
+
+
+ }
+
+
+
+
+ if(c === 'Hostel'){
+
+
+   return normalize(typeParam.value)
+   ===
+   'hostel'
+   &&
+   normalize(categoryParam.value)
+   !==
+   'school'
+
+
+ }
+
+
+
+
+ if(c === 'School Hostel'){
+
+
+   return normalize(typeParam.value)
+   ===
+   'hostel'
+   &&
+   normalize(categoryParam.value)
+   ===
+   'school'
+
+
+ }
+
+
+
+
+
+ if(c === 'House'){
+
+
+   return normalize(typeParam.value)
+   ===
+   'house'
+   &&
+   !categoryParam.value
+
+
+ }
+
+
+
+
+ if(c === 'Flat / Apartment'){
+
+
+   return normalize(typeParam.value)
+   ===
+   'house'
+   &&
+   normalize(categoryParam.value)
+   ===
+   'flat'
+
+
+ }
+
+
+
+
+
+ return normalize(categoryParam.value)
+ ===
+ normalize(c)
+
+
+
 }
+
+
+
+
+
+
+
+
 
 /* =================================
    LOCATION OPTIONS
 ================================= */
-const locationOptions = computed(() =>
-  [...new Set(results.value.map(r =>
-    r.location?.state || r.location?.city || r.location?.address
-  ).filter(Boolean))]
-)
+
+
+const locationOptions = computed(()=>{
+
+
+ return [
+
+ ...new Set(
+
+ results.value.map(r=>
+
+ r.location?.state ||
+ r.location?.city ||
+ r.location?.address
+
+
+ )
+
+ .filter(Boolean)
+
+ )
+
+ ]
+
+
+})
+
+
+
+
+
+
+
+
 
 /* =================================
-   HELPERS
+   PRICE HELPER
 ================================= */
-const getPrice = (item) => {
-  if (!item?.pricing) return 0
-  if (item.pricing.paymentType === 'outright') return item.pricing.price || 0
-  if (item.pricing.paymentType === 'installment') return item.pricing.installment?.monthlyAmount || 0
-  if (item.pricing.paymentType === 'rent') return item.pricing.price || 0
-  return 0
+
+
+const getPrice=(item)=>{
+
+
+ if(!item?.pricing)
+ return 0
+
+
+
+ if(
+ item.pricing.paymentType
+ ===
+ 'outright'
+ )
+ return item.pricing.price || 0
+
+
+
+
+ if(
+ item.pricing.paymentType
+ ===
+ 'installment'
+ )
+ return (
+ item.pricing.installment?.monthlyAmount
+ || 0
+ )
+
+
+
+
+
+ if(
+ item.pricing.paymentType
+ ===
+ 'rent'
+ )
+ return item.pricing.price || 0
+
+
+
+ return 0
+
+
 }
 
-const getPriceLabel = (item) => {
-  const pricing = item?.pricing || {}
 
-  if (item?.type === 'house') {
-    if (item?.purpose === 'sale') {
-      return pricing.paymentType === 'installment' ? '/month' : '/outright'
-    }
 
-    if (item?.purpose === 'rent') {
-      return pricing.rent?.duration?.unit ? `/${pricing.rent.duration?.unit}` : ''
-    }
+
+
+
+
+
+
+/* =================================
+   PRICE LABEL
+================================= */
+
+
+const getPriceLabel=(item)=>{
+
+
+ const pricing =
+ item?.pricing || {}
+
+
+
+
+ if(item?.type === 'house'){
+
+
+   if(item?.purpose === 'sale'){
+
+
+    return pricing.paymentType === 'installment'
+    ? '/month'
+    : '/outright'
+
+
+   }
+
+
+
+   if(item?.purpose === 'rent'){
+
+
+    return pricing.rent?.duration?.unit
+
+    ?
+    `/${pricing.rent.duration.unit}`
+
+    :
+
+    ''
+
+
+   }
+
+
+ }
+
+
+
+
+
+
+ if(item?.type === 'land'){
+
+
+  if(pricing.paymentType === 'outright'){
+
+
+    return item.landDetails?.unit
+
+    ?
+    `/per ${item.landDetails.unit}`
+
+    :
+    ''
+
+
   }
 
-  if (item?.type === 'land') {
-    if (pricing.paymentType === 'outright') {
-      return item.landDetails?.unit ? `/per ${item.landDetails.unit}` : ''
-    }
 
-    if (pricing.paymentType === 'installment') {
-      return `/per ${item.landDetails?.unit || 'plot'} /monthly`
-    }
+
+
+  if(pricing.paymentType === 'installment'){
+
+
+    return `/per ${
+      item.landDetails?.unit || 'plot'
+    } /monthly`
+
+
   }
 
-  return ''
+
+ }
+
+
+
+ return ''
+
 }
 
-const smartMoney = (value) => {
-  const num = Number(value || 0)
 
-  if (num >= 1_000_000_000) return "₦" + (num / 1_000_000_000).toFixed(1) + "B"
-  if (num >= 1_000_000) return "₦" + (num / 1_000_000).toFixed(1) + "M"
-  if (num >= 1_000) return "₦" + (num / 1_000).toFixed(1) + "K"
 
-  return "₦" + num.toLocaleString()
+
+
+
+
+
+
+/* =================================
+   MONEY FORMAT
+================================= */
+
+
+const smartMoney=(value)=>{
+
+
+ const num =
+ Number(value || 0)
+
+
+
+ if(num >= 1000000000)
+
+
+ return "₦" +
+ (num / 1000000000)
+ .toFixed(1)
+ +"B"
+
+
+
+
+ if(num >= 1000000)
+
+
+ return "₦" +
+ (num / 1000000)
+ .toFixed(1)
+ +"M"
+
+
+
+
+
+ if(num >= 1000)
+
+
+ return "₦" +
+ (num / 1000)
+ .toFixed(1)
+ +"K"
+
+
+
+
+
+ return "₦" +
+ num.toLocaleString()
+
+
+
 }
 
-const getOptimizedImage = (url) => {
-  if (!url) return '/image/no-image.png'
 
-  // If it's Cloudinary, optimize it
-  if (url.includes('res.cloudinary.com')) {
-    return url.replace(
-      '/upload/',
-      '/upload/w_400,h_300,c_fill,f_auto,q_auto/'
-    )
-  }
-  
-  return url
+
+
+
+
+
+
+
+/* =================================
+   IMAGE OPTIMIZER
+================================= */
+
+
+const getOptimizedImage=(url)=>{
+
+
+ if(!url)
+
+ return '/image/no-image.png'
+
+
+
+
+ if(
+ url.includes(
+ 'res.cloudinary.com'
+ )
+ ){
+
+
+ return url.replace(
+
+ '/upload/',
+
+ '/upload/w_400,h_300,c_fill,f_auto,q_auto/'
+
+ )
+
+
+ }
+
+
+
+ return url
+
+
 }
+
+
+
+
+
+
+
+
 
 /* =================================
    MOUNT
 ================================= */
-onMounted(async () => {
-  await nextTick()
 
-  if (searchRef.value) {
-    searchTop.value = searchRef.value.offsetTop
-  }
 
-  window.addEventListener('scroll', handleScroll)
+onMounted(async()=>{
+
+
+ await nextTick()
+
+
+
+ if(searchRef.value){
+
+
+   searchTop.value =
+   searchRef.value.offsetTop
+
+
+ }
+
+
+
+ window.addEventListener(
+ 'scroll',
+ handleScroll
+ )
+
+
+
 })
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+
+
+
+
+
+
+onUnmounted(()=>{
+
+
+ window.removeEventListener(
+ 'scroll',
+ handleScroll
+ )
+
+
 })
+
+
+
+
+
+
+
+
 
 /* =================================
-   FILTER OPTIONS
+   FILTER BUTTONS
 ================================= */
-const categories = [
-  'All',
-  'Land',
-  'House',
-  'Flat / Apartment',
-  'Duplex'
+
+
+const categories=[
+
+
+ 'All',
+
+ 'Land',
+
+ 'Hostel',
+
+ 'School Hostel',
+
+ 'House',
+
+ 'Flat / Apartment',
+
+ 'Duplex'
+
+
 ]
+
+
 </script>
 <template>
 <div>
@@ -738,6 +2056,31 @@ const categories = [
             </option>
           </select>
 
+          <!-- SCHOOL -->
+          <select
+          v-if="typeParam === 'hostel'"
+          v-model="selectedSchool"
+          class="px-4 h-11 border rounded"
+          >
+
+          <option value="">
+          All Schools
+          </option>
+
+
+          <option
+          v-for="school in schoolOptions"
+          :key="school.name"
+          :value="school.name"
+          >
+
+          {{ school.name }}
+
+          </option>
+
+
+          </select>
+
         </div>
 
       </section>
@@ -862,21 +2205,11 @@ const categories = [
           </div>
         </Container>
       </section>
-
+     
   <Paginat v-model="page" :total="filteredResults.length" :perPage="perPage"/>
     
   <!-- LOAD MORE -->
-  <div
-    v-if="visibleCount < filteredResults.length"
-    class="flex justify-center pb-10"
-  >
-    <button
-      @click="loadMore"
-      class="px-6 py-3 bg-primary text-white rounded"
-    >
-      View More
-    </button>
-  </div>
+ 
   </div>
 
    <NavigationFooter />

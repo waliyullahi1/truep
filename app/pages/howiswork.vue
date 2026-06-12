@@ -1,699 +1,983 @@
-<template>
-  <div class=" overflow-x-hidden bg-[#FEFEFE]">
-    
-
-    
-
-
-<!-- HERO SECTION -->
-<section class="relative mt-7 min-h-[90vh] overflow-hidden">
-
-  <!-- Background -->
-  <div
-    class="absolute inset-0 bg-cover bg-center"
-    style="background-image:url('/images/hero.jpg')"
-  >
-    <div class="absolute inset-0 bg-black/60"></div>
-  </div>
-
-  <Container class="relative z-10">
-
-    <div
-      class="min-h-[90vh] flex flex-col justify-center items-center text-center"
-    >
-
-      <span
-        class="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-xs sm:text-sm mb-1"
-      >
-        🇳🇬 Nigeria's Trusted Property Marketplace
-      </span>
-
-      <h1
-        class="text-4xl  sm:text-6xl font-bold text-white max-w-4xl"
-      >
-        Find Your Dream Property
-        Across Nigeria
-      </h1>
-
-      <p
-        class="sm:mt-6 mt-3 text-white/90 text-lg max-w-2xl"
-      >
-        Discover verified properties, connect with trusted agents,
-        and buy, rent, or sell with confidence.
-      </p>
-
-      <!-- Search -->
-      <div
-        class="bg-white sm:mt-6 mt-3 rounded-lg shadow-2xl p-1 sm:p-3 flex  gap-3 w-full max-w-5xl"
-      >
-        <input
-          v-model="search"
-          placeholder="Search property, location, agent..."
-          class=" w-full  px-4 sm:py-3 py-1 outline-none"
-        />
-
-        <button
-          @click="router.push('/search')"
-          class="bg-primary flex justify-center items-center sm:px-8 px-4 sm:py-3 py-1 rounded-lg text-white font-semibold"
-        >
-        <Icon name="lucide:search"  class="text-white flex sm:hidden text-xl"/>
-         <span  class=" hidden sm:flex"> Search</span> 
-        </button>
-      </div>
-
-      <!-- Stats -->
-      <div
-        class="grid grid-cols-3 gap-10 mt-14 text-white"
-      >
-        <div>
-          <h3 class="text-3xl font-bold">15K+</h3>
-          <p>Properties</p>
-        </div>
-
-        <div>
-          <h3 class="text-3xl font-bold">5K+</h3>
-          <p>Agents</p>
-        </div>
-
-        <div>
-          <h3 class="text-3xl font-bold">25K+</h3>
-          <p>Customers</p>
-        </div>
-      </div>
-
-    </div>
-
-  </Container>
-
-</section>
-
-
-
-     <section>
-        <Container>
-          <div class="  text-primary ">
-
-           <h2 class="  font-semibold text-2xl">Which type of  Property suits your needs?</h2>
-
-             <div class=" flex  overflow-x-auto  gap-5 mt-4">
-                <DiscoverMore/>
-             </div>
-          </div>
-        </Container>
-     </section>
-
-
-    <section class="py-16 bg-white">
-  <Container>
-    <div
-      class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 to-black text-white p-8 md:p-14"
-    >
-      <!-- Background Glow -->
-      <div class="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
-
-      <div class="relative z-10 max-w-4xl mx-auto text-center">
-        <span
-          class="inline-flex px-4 py-2 rounded-full bg-white/10 text-sm mb-4"
-        >
-          Join Abanise Today
-        </span>
-
-        <h2 class="text-3xl md:text-5xl font-bold">
-          Find, Rent, Buy & List Properties
-          All In One Place
-        </h2>
-
-        <p class="mt-4 text-white/80 text-lg max-w-2xl mx-auto">
-          Create a free account to save properties, receive alerts,
-          manage listings, and connect directly with trusted agents
-          and property owners.
-        </p>
-
-        <div
-          class="flex flex-col sm:flex-row justify-center gap-4 mt-8"
-        >
-          <button
-            @click="router.push('/auth?type=register-page')"
-            class="px-8 py-4 bg-primary text-white rounded-2xl font-semibold hover:scale-105 transition"
-          >
-            Create Free Account
-          </button>
-
-          <button
-            @click="router.push('/auth?type=login-page')"
-            class="px-8 py-4 border border-white/30 rounded-2xl font-semibold hover:bg-white/10 transition"
-          >
-            Login
-          </button>
-        </div>
-
-        <div
-          class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 text-center"
-        >
-          <div>
-            <h3 class="text-2xl font-bold">15K+</h3>
-            <p class="text-white/70">Properties Listed</p>
-          </div>
-
-          <div>
-            <h3 class="text-2xl font-bold">5K+</h3>
-            <p class="text-white/70">Verified Agents</p>
-          </div>
-
-          <div>
-            <h3 class="text-2xl font-bold">25K+</h3>
-            <p class="text-white/70">Happy Customers</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Container>
-</section>
-
-<section class="py-10 bg-gradient-to-b from-white to-slate-50">
-  <Container>
-    <!-- Heading -->
-    <div class="text-center max-w-3xl mx-auto">
-      <span
-        class="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm"
-      >
-        Why Choose Abanise
-      </span>
-
-      <h2
-        class="mt-4 text-3xl md:text-5xl font-bold text-slate-900 leading-tight"
-      >
-        The Smarter Way To Find
-        <span class="text-primary">Property In Nigeria</span>
-      </h2>
-
-      <p class="mt-4 text-slate-600  text-lg">
-        We make property search simple, transparent, and secure by connecting
-        buyers, renters, landlords, and agents on one trusted platform.
-      </p>
-    </div>
-
-    <!-- Features -->
-    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
-
-      <!-- Card -->
-      <div
-        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
-      >
-        <div
-          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-green-100 blur-2xl opacity-70"
-        ></div>
-
-        <div
-          class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center"
-        >
-          <Icon
-            name="lucide:badge-check"
-            class="text-green-600 text-2xl"
-          />
-        </div>
-
-        <h3 class="mt-6 text-xl font-semibold text-slate-900">
-          Verified Listings
-        </h3>
-
-        <p class="mt-3 text-slate-600 leading-relaxed">
-          Browse verified properties with accurate information, photos, and
-          trusted sellers.
-        </p>
-      </div>
-
-      <!-- Card -->
-      <div
-        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
-      >
-        <div
-          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-blue-100 blur-2xl opacity-70"
-        ></div>
-
-        <div
-          class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center"
-        >
-          <Icon
-            name="lucide:users"
-            class="text-blue-600 text-2xl"
-          />
-        </div>
-
-        <h3 class="mt-6 text-xl font-semibold text-slate-900">
-          Trusted Agents
-        </h3>
-
-        <p class="mt-3 text-slate-600 leading-relaxed">
-          Connect directly with trusted property agents and professionals across
-          Nigeria.
-        </p>
-      </div>
-
-      <!-- Card -->
-      <div
-        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
-      >
-        <div
-          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-purple-100 blur-2xl opacity-70"
-        ></div>
-
-        <div
-          class="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center"
-        >
-          <Icon
-            name="lucide:map-pinned"
-            class="text-purple-600 text-2xl"
-          />
-        </div>
-
-        <h3 class="mt-6 text-xl font-semibold text-slate-900">
-          Smart Location Search
-        </h3>
-
-        <p class="mt-3 text-slate-600 leading-relaxed">
-          Discover homes, apartments, and land near your preferred location
-          with ease.
-        </p>
-      </div>
-
-      <!-- Card -->
-      <div
-        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
-      >
-        <div
-          class="absolute top-0 right-0 h-24 w-24 rounded-full bg-amber-100 blur-2xl opacity-70"
-        ></div>
-
-        <div
-          class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center"
-        >
-          <Icon
-            name="lucide:shield-check"
-            class="text-amber-600 text-2xl"
-          />
-        </div>
-
-        <h3 class="mt-6 text-xl font-semibold text-slate-900">
-          Secure Experience
-        </h3>
-
-        <p class="mt-3 text-slate-600 leading-relaxed">
-          Designed to help users avoid scams and interact with confidence when
-          renting or buying.
-        </p>
-      </div>
-    </div>
-
-    <!-- Bottom CTA -->
-    <div
-      class="mt-16 rounded-3xl   bg-[url('/image/landseller.jpg')] bg-cover    bg-no-repeat  text-white "
-    >
-        <div class="  flex flex-col md:flex-row items-center justify-between gap-6  md:p-12   w-full h-full  bg-black/60 bg-white/">
-          
-        
-          <div>
-            <h3 class="text-2xl md:text-3xl font-bold">
-              Ready To Find Your Next Property?
-            </h3>
-
-            <p class="mt-2 text-white/80">
-              Join thousands of Nigerians already using Abanise to discover homes,
-              land, and investment opportunities.
-            </p>
-          </div>
-
-          <button
-            @click="router.push('/search')"
-            class="bg-white text-primary font-semibold px-8 py-4 rounded-2xl hover:scale-105 transition"
-          >
-            Explore Properties
-          </button>
-        </div>
-    </div>
-  </Container>
-</section>
-
-
-
-
-
-
-
-
-
-     
-    <!-- // recent property -->
- 
-    
-    <!-- hidden this section (what are will do) -->
-    
-    <!-- recent service and post -->
-          <!-- <CategorySlider /> -->
-    
-    <!-- Simple Process Steps  details here -->
-    <section class="    0 reason-choose-us ">
-      <Container>
-        <div class="   gap-5 ">
-         <UiTypographyH2 class=" ">
-          Latest Properties
-         </UiTypographyH2>
-          <div class=" ">
-            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2 ">
-            By default, we use your location to show properties around you.  
-            You can also change your location to explore listings in other areas.
-          </UiTypographyP>
-
-          <div class="  flex justify-end w-full ">
-          <NuxtLink to="/search" class=" text-left"><span class=" underline text-right font-semibold  text-sm">See all</span> </NuxtLink>
-          </div>
-          </div>
-          
-
-
-          
-
-          <div class=" ">
-         
-             <PropertyList class=" mt-1" ></PropertyList>
-          </div>
-
-        </div>
-      </Container>
-    </section>
-
-    <section class="  bg-[#f9f9f9]  0 reason-choose-us ">
-      <Container>
-        <div class="   gap-5 ">
-        <UiTypographyH2 class=" ">
-        Create a free Search Agent
-        </UiTypographyH2>
-          <div class=" ">
-            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2 ">
-          Let us find your next home. Create a free Search Agent and receive instant email updates for new listings that match your criteria, so you're always first to know.
-          </UiTypographyP>
-
-          <div class="  flex justify-end w-full ">
-          <UiButtonsPrimary   @click="router.push('/auth?type=register-page')" class="  text-left">Create a Search Agent </UiButtonsPrimary>
-          </div>
-          </div>
-          
-
-
-          
-
-          
-
-        </div>
-      </Container>
-    </section>
-
-   
-
-  
-
-    <section class="   0 reason-choose-us ">
-      <Container>
-        <div class="   gap-5 ">
-          <UiTypographyH2 class="">
-             
-               Popular Cities
-              
-            </UiTypographyH2>
-          <div>
-
-          </div>
-          
-            <UiTypographyP class="w-1/2 mt-2  ">
-               Discover properties in Nigeria's most sought-after locations
-          </UiTypographyP> 
-          <div>
-               
-                <Masonry></Masonry>
- 
-          </div>
-
-        </div>
-      </Container>
-    </section>
-
-     <section class="    0 reason-choose-us ">
-      <Container>
-        <div class="   gap-5 ">
-           <UiTypographyH2 class=" ">Who Is This For? </UiTypographyH2>
-          
-            <UiTypographyP class="md:w-1/2 w-full text-gray-600 mt-2 mb-2">
-              Whether you're looking to buy, rent, or invest in property, this platform is designed for individuals and families who want a simple, reliable way to find the right home or opportunity.
-            </UiTypographyP>
-
-          <div class=" mt-4 md:grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1  gap-5   ">
-           
-                <div  v-for="value in who_is_this_for"  class=" space-y-3 rounded-md bg-white cursor-pointer px-2 sm:px-4 py-4 w-full h-full shadow-md  gap-3 items-center ">
-                  <div class=" w-full flex justify-center items-center">
-                     <div class="bg-[#f9f9f9] rounded-full w-fit h-fit p-3">
-                        <img :src="`/image/${value.image}`" class=" w-10" alt="" srcset="">
-                     </div>
-                  </div>
-                 
-                  <UiTypographyH3 class=" text-center">{{value.title}}</UiTypographyH3>
-                  <UiTypographyP class=" text-center text-gray-700">{{value.description}}</UiTypographyP>
-                </div>
-             
-           
-          </div>
-        </div>
-      </Container>
-    </section>
-    
-    <!-- What You Can Do -->
-    <section class="   bg-gray-100">
-     <Container>
-      <div>
-        <UiTypographyH2 class=" text-center">
-             What You Can Do
-        </UiTypographyH2>
-
-        <div class="mt-6 flex  justify-center">
-          <div  class=" grid md:w-[80%] w-full md:grid-cols-3  sm:grid-cols-2 gap-4">
-            <div  v-for="value in whatyoucando"  class=" bg-white cursor-pointer px-2 py-4 w-full h-full shadow-md flex gap-3 items-center ">
-              <img :src="`/image/${value.image}`" alt="" class=" w-7 " srcset="">
-              <UiTypographyP>{{ value.title }}</UiTypographyP>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center justify-center mt-10">
-           <UiButtonsPrimary @click="router.push('/auth?type=register-page')">Get Stated </UiButtonsPrimary>
-        </div>
-       
-      </div>
-     </Container>
-     
-    </section>
-
-    <section class="   -100">
-     <Container>
-      <div class=" md:flex  block items-center  gap-7 ">
-        
-        <div class="mt-6 flex  justify-center">
-          <img src="@/assets/images/hero-image.png" alt="" srcset=""> 
-        </div>
-
-        <div>
-             <UiTypographyH2 class="  ">
-               <span class=" md:text-3xl text-xl font-medium " >
-                Get Your Property and Apartment Listed
-               </span> 
-            </UiTypographyH2>
-            <UiTypographyP class=" text-gray-600">Register and get your home listed as a property owner</UiTypographyP>
-            <div class="flex items-center justify-center mt-10">
-           <UiButtonsPrimary>GET LISTED</UiButtonsPrimary>
-           </div>
-        </div>
-       
-       
-       
-      </div>
-     </Container>
-     
-    </section>
-      <section class=" hidden  bg-slate-50 ">
-     <Container>
-      <div>
-        <UiTypographyH3>
-         
-          <span class="text-4xl leading-snug  font-medium">
-              Customers are saying
-              </span>
-        </UiTypographyH3>
-        <UiTypographyP class=" w-1/2 mt-2">
-          Hear from tenants, landlords, and agents who've made renting, listing, and managing property easier with our platform.
-        </UiTypographyP>
-
-        <Review></Review>
-      </div>
-     </Container>
-
-    </section>   
- 
-
-
-
-
-
-   
-
-
-    
-
- <NavigationFooter />
-       
-  </div>
-</template>
-
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Pagination, Navigation } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import loadstates from '@/data/nigeria-states.js'
+import { propertyTypes } from '@/data/property-types'
+import  schoolsByState  from '@/data/institutions.js'
 
-const router = useRouter()
-const route = useRoute()
 definePageMeta({
-  layout: 'main'
-}) 
+  layout: 'auth'
+})
+const route = useRoute()
+const router = useRouter()
 
-const config = useRuntimeConfig()
+/* =================================
+   STATE
+================================= */
+const search = ref('')
+const location = ref('')
+const category = ref('All')
+const visibleCount = ref(9)
+const isMap = ref(false)
+
+const isFixed = ref(false)
+const isShrink = ref(false)
+const searchRef = ref(null)
+const searchTop = ref(0)
+const selectedState = ref('')
+const selectedCity = ref('')
+const selectedSchool = ref('')
 
 
+const page = ref(1)
+const perPage = 10
+const showFilter = ref(false)
+const sortType = ref('suggested')
+
+const filters = ref({})
+
+const selectedFilter = ref({
+  type: '',
+  category: '',
+  city: '',
+  state: '',
+  purpose: '',
+  school: ''
+})
+
+/* =================================
+   🔥 NORMALIZE (MASTER FIX)
+================================= */
+const normalize = (str = '') =>
+  decodeURIComponent(str)
+    .toString()
+    .toLowerCase()
+    .replace(/[\s-_]/g, '') // removes space, dash, underscore
+
+/* =================================
+   🔥 ROUTE SEGMENTS
+================================= */
+const segments = computed(() => {
+  const slug = route.params.slug
+  return Array.isArray(slug) ? slug : slug ? [slug] : []
+})
+
+/* =================================
+   STATE PARAM
+================================= */
+const stateParam = computed(() => {
+  return segments.value.find(seg =>
+    loadstates.some(s => normalize(s.name) === normalize(seg))
+  ) || ''
+})
+
+/* =================================
+   CITY PARAM
+================================= */
+const cityOptions = computed(() => {
+  if (!stateParam.value) return []
+
+  const state = loadstates.find(
+    s => normalize(s.name) === normalize(stateParam.value)
+  )
+
+  return state ? state.lgas : []
+})
+
+const cityParam = computed(() => {
+  if (!stateParam.value) return ''
+
+  return segments.value.find(seg =>
+    cityOptions.value.some(city => normalize(city) === normalize(seg))
+  ) || ''
+})
+
+/* =================================
+   TYPE PARAM
+================================= */
+const typeParam = computed(() =>
+  segments.value.find(s => ['land', 'hostel', 'house'].includes(normalize(s))) || ''
+)
+
+/* =================================
+   CATEGORY PARAM
+================================= */
+const categoryOptions = computed(() => {
+  const type = normalize(typeParam.value)
+  return propertyTypes[type] || []
+})
+
+const categoryParam = computed(() => {
+  return segments.value.find(seg =>
+    categoryOptions.value.some(c =>
+      normalize(c.key) === normalize(seg)
+    )
+  ) || ''
+})
+
+const schoolOptions = computed(() => {
+
+  if (!selectedState.value) return []
+
+  const state = schoolsByState.find(
+    s => normalize(s.state) === normalize(selectedState.value)
+  )
+
+  return state?.schools || []
+
+})
+
+const finalCategory = computed(() => {
+  const found = categoryOptions.value.find(c =>
+    normalize(c.key) === normalize(categoryParam.value)
+  )
+  return found?.key || ''
+})
+
+/* =================================
+   PURPOSE PARAM
+================================= */
+const purposeParam = computed(() => {
+  return segments.value.find(seg =>
+    ['sale', 'rent'].includes(normalize(seg))
+  ) || ''
+})
+
+/* =================================
+   SORT
+================================= */
+const handleSort = (type) => {
+  sortType.value = type
+}
+
+const stateOptions = computed(() =>
+  loadstates.map(s => s.name)
+)
+
+/* =================================
+   🔥 FETCH DATA
+================================= */
+/* =================================
+   🔥 FETCH DATA
+================================= */
 
 
-const whatyoucando = ref([
-  {
-    id: 1,
-    title: 'Discover verified properties across Nigeria',
-    image: 'search.png',
+const {
+  data: resultsData,
+  pending,
+  error,
+  refresh
+} = await useAsyncData(
+  'properties',
+  async () => {
+
+    const res = await useApiFetch('/property/all', {
+      method: 'GET',
+      params: {
+        purpose: purposeParam.value || undefined,
+        search: search.value || undefined,
+        type: typeParam.value || undefined,
+        category: finalCategory.value || undefined,
+        city: cityParam.value || undefined,
+        state: stateParam.value || undefined,
+         state: stateParam.value || undefined
+      }
+    })
+
+    // throw error properly
+    if (!res?.success) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: res?.message || 'Failed to fetch properties'
+      })
+    }
+  
+    
+    const safe = res?.data?.data || res?.data || []
+
+    
+    
+
+    return safe
   },
   {
-    id: 2,
-    title: 'Sign secure digital lease agreements online',
-    image: 'file.png'
-  },
-  {
-    id: 3,
-    title: 'Measure land size accurately using our map tools',
-    image: '/icon/map.svg'
-  },
-  {
-    id: 4,
-    title: 'List your land or property for sale or rent',
-    image: 'document.png'
-  },
-  {
-    id: 5,
-    title: 'Find nearby agents, land sellers, and service providers on the map',
-    image: '/icon/doc_search.svg'
-  },
-  {
-    id: 6,
-    title: 'Save and manage your favorite properties in one place',
-    image: 'hugeicons.png'
-  },
-  {
-    id: 7,
-    title: 'Track and manage your property listings ',
-    image: 'briefcase.png'
+    lazy: true,
+    server: true
   }
-])
+)
 
-const who_is_this_for = ref([
-  { 
-    image: 'user-multiple.png',
-    title: 'For Buyers & Renters',
-    description: 'Explore verified land and property listings, compare options, and easily connect with agents or owners to buy, rent, or invest with confidence.'
+const refreshData = async (stopLoading) => {
+  await refresh()   // or your API call
+  stopLoading()     // tell child to stop loading
+}
+
+const results = computed(() => resultsData.value || [])
+
+/* =================================
+   🔥 SYNC ROUTE → STATE
+================================= */
+watch(
+  () => route.fullPath,
+  () => {
+    selectedState.value = stateParam.value || ''
+    selectedCity.value = cityParam.value || ''
+
+    selectedFilter.value = {
+      type: typeParam.value || '',
+      category: finalCategory.value || '',
+      city: cityParam.value || '',
+      state: stateParam.value || '',
+      purpose: purposeParam.value || ''
+    }
+
+    refresh()
   },
-  { 
-    image: 'homee.png',
-    title: 'For Property Owners',
-    description: 'List your land, houses, or rental properties, reach serious buyers or tenants, and manage inquiries seamlessly from one platform.'
-  },
-  { 
-    image: 'briefcase.png',
-    title: 'For Agents',
-    description: 'Promote your listings, connect with qualified clients, and close deals faster across land sales, home sales, and rentals.'
+  { immediate: true }
+)
+
+watch([selectedState, selectedCity], () => {
+  const path = [
+    selectedState.value,
+    selectedCity.value,
+    typeParam.value,
+    finalCategory.value,
+    purposeParam.value
+  ].filter(Boolean).join('/')
+
+  const newPath = `/search/${path}`
+
+  if (route.fullPath !== newPath) {
+    router.push(newPath)
   }
-])
+})
+/* reset city when state changes */
+watch(selectedState, () => {
+  selectedCity.value = ''
+  selectedSchool.value = ''
+})
+/* DEBUG */
+watchEffect(() => {
+  // console.log('SEGMENTS:', segments.value)
+  // console.log('STATE:', stateParam.value)
+  // console.log('CITY:', cityParam.value)
+  // console.log('TYPE:', typeParam.value)
+  // console.log('CATEGORY:', categoryParam.value)
+  // console.log('FINAL CATEGORY:', finalCategory.value)
+})
+
+/* =================================
+   FILTER
+================================= */
+const filteredResults = computed(() =>
+  results.value.filter(item => {
+    const itemState = normalize(item.location?.state)
+    const itemCity = normalize(item.location?.city)
+
+    return (
+
+      (!search.value || 
+      `${item.title}`.toLowerCase().includes(search.value.toLowerCase()))
+
+      &&
+
+      (!selectedState.value ||
+      itemState === normalize(selectedState.value))
+
+      &&
+
+      (!selectedCity.value ||
+      itemCity === normalize(selectedCity.value))
+
+      &&
+
+      (!selectedFilter.value.type ||
+      item.type === selectedFilter.value.type)
+
+      &&
+
+      (!selectedFilter.value.category ||
+      item.category === selectedFilter.value.category)
+
+      &&
+
+      (!selectedSchool.value ||
+      itemSchool === normalize(selectedSchool.value))
+
+      )
+  })
+)
+
+/* =================================
+   SORTED RESULTS (FIXED ORDER)
+================================= */
+const sortedResults = computed(() => {
+  let data = [...filteredResults.value]
+
+  switch (sortType.value) {
+    case 'newest':
+      return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    case 'cheapest':
+      return data.sort((a, b) => getPrice(a) - getPrice(b))
+
+    case 'expensive':
+      return data.sort((a, b) => getPrice(b) - getPrice(a))
+
+    case 'smallest':
+      return data.sort((a, b) => (a.size || 0) - (b.size || 0))
+
+    case 'biggest':
+      return data.sort((a, b) => (b.size || 0) - (a.size || 0))
+
+    default:
+      return data
+  }
+})
+
+/* =================================
+   PAGINATION (NOW USE SORTED ✅)
+================================= */
+const paginatedResults = computed(() => {
+  const start = (page.value - 1) * perPage
+  return sortedResults.value.slice(start, start + perPage)
+})
+
+const displayedResults = computed(() =>
+  sortedResults.value.slice(0, visibleCount.value)
+)
+
+function loadMore() {
+  visibleCount.value += 9
+}
+
+/* =================================
+   RESET FILTERS
+================================= */
+const handleResetFilters = () => {
+  search.value = ''
+  location.value = ''
+  sortType.value = 'suggested'
+  selectedFilter.value = {
+    type: '',
+    category: '',
+    city: '',
+    state: '',
+    purpose: ''
+  }
+
+  router.push('/search')
+}
+
+/* =================================
+   SCROLL
+================================= */
+function handleScroll() {
+  const scrollY = window.scrollY
+  isFixed.value = scrollY > searchTop.value
+  isShrink.value = scrollY > searchTop.value + 100
+}
+
+/* =================================
+   CATEGORY CLICK
+================================= */
+const selectCategory = (c) => {
+  let type = ''
+  let cat = ''
+
+  if (c === 'Land') type = 'land'
+  else if (c === 'House') type = 'house'
+  else if (c === 'Flat / Apartment') {
+    type = 'house'
+    cat = 'flat'
+  } else if (c !== 'All') {
+    cat = normalize(c)
+  }else if(c === 'School Hostel'){
+     type='hostel'
+       cat='school'
+    }
+
+  const path = [
+    stateParam.value,
+    cityParam.value,
+    type,
+    cat
+  ].filter(Boolean).join('/')
+
+  router.push(`/search/${path}`)
+}
+
+const isActive = (c) => {
+  if (c === 'All') return !typeParam.value && !categoryParam.value
+  if (c === 'Land') return normalize(typeParam.value) === 'land'
+    if (c === 'Hostel') return normalize(typeParam.value) === 'hostel'
+
+  if (c === 'House') return normalize(typeParam.value) === 'house' && !categoryParam.value
+  if (c === 'Flat / Apartment') {
+    return normalize(typeParam.value) === 'house' && normalize(categoryParam.value) === 'flat'
+  }
+    if (c === 'School Hostel') {
+    return normalize(typeParam.value) === 'hostel' && normalize(categoryParam.value) === 'hostel'
+  }
+  return normalize(categoryParam.value) === normalize(c)
+}
+
+/* =================================
+   LOCATION OPTIONS
+================================= */
+const locationOptions = computed(() =>
+  [...new Set(results.value.map(r =>
+    r.location?.state || r.location?.city || r.location?.address
+  ).filter(Boolean))]
+)
+
+/* =================================
+   HELPERS
+================================= */
+const getPrice = (item) => {
+  if (!item?.pricing) return 0
+  if (item.pricing.paymentType === 'outright') return item.pricing.price || 0
+  if (item.pricing.paymentType === 'installment') return item.pricing.installment?.monthlyAmount || 0
+  if (item.pricing.paymentType === 'rent') return item.pricing.price || 0
+  return 0
+}
+
+const getPriceLabel = (item) => {
+  const pricing = item?.pricing || {}
+
+  if (item?.type === 'house') {
+    if (item?.purpose === 'sale') {
+      return pricing.paymentType === 'installment' ? '/month' : '/outright'
+    }
+
+    if (item?.purpose === 'rent') {
+      return pricing.rent?.duration?.unit ? `/${pricing.rent.duration?.unit}` : ''
+    }
+  }
+
+  if (item?.type === 'land') {
+    if (pricing.paymentType === 'outright') {
+      return item.landDetails?.unit ? `/per ${item.landDetails.unit}` : ''
+    }
+
+    if (pricing.paymentType === 'installment') {
+      return `/per ${item.landDetails?.unit || 'plot'} /monthly`
+    }
+  }
+
+  return ''
+}
+
+const smartMoney = (value) => {
+  const num = Number(value || 0)
+
+  if (num >= 1_000_000_000) return "₦" + (num / 1_000_000_000).toFixed(1) + "B"
+  if (num >= 1_000_000) return "₦" + (num / 1_000_000).toFixed(1) + "M"
+  if (num >= 1_000) return "₦" + (num / 1_000).toFixed(1) + "K"
+
+  return "₦" + num.toLocaleString()
+}
+
+const getOptimizedImage = (url) => {
+  if (!url) return '/image/no-image.png'
+
+  // If it's Cloudinary, optimize it
+  if (url.includes('res.cloudinary.com')) {
+    return url.replace(
+      '/upload/',
+      '/upload/w_400,h_300,c_fill,f_auto,q_auto/'
+    )
+  }
+  
+  return url
+}
+
+/* =================================
+   MOUNT
+================================= */
+onMounted(async () => {
+  await nextTick()
+
+  if (searchRef.value) {
+    searchTop.value = searchRef.value.offsetTop
+  }
+
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+/* =================================
+   FILTER OPTIONS
+================================= */
 const categories = [
   'All',
   'Land',
+  'Hostel',
+  'School Hostel',
   'House',
   'Flat / Apartment',
   'Duplex'
 ]
-const serviceoffer = ref([
-  
- { 
-  title:'Land Seller',
-  image: 'landlord.svg'
-
- },
-  
- { 
-  title:'Agent land/rent', 
-  image: 'survey.svg'
-
- },
-  { 
-  title:'Surveyor', 
-  image: 'survey.svg'
-
- },
-   { 
-  title:'Arctechecture', 
-  image: 'arch.svg'
-
- },
- { 
-  title:'Landlord', 
-  image: 'landlord.svg'
-
- },
- 
-])
 </script>
+<template>
+<div>
 
-<style>
-header {
-  background: linear-gradient(rgba(4, 4, 4, 0.300), rgba(9, 9, 9, 0.1)), url('assets/images/hero.webp');
-  background-blend-mode: multiply;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
+      <div v-if="isFixed"   class="fixed  z-20 top-0 h-fit left-0 w-full   backdrop-blur bg-white/90"   ref="searchRef">
+        <div class="   border  border-primary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+          <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
+            
+            <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
+          </div>
+          <input
+            v-model="search"
+            placeholder="Search land, houses, agents..."
+            class="flex-1  h text-sm font-normal sm:text-md  outline-none text-gray-700"
+          />
+          <div class=" bg-primary text-sm h-full  -0">
+              <PropertyFilterModal
+              v-model="showFilter"
+              :initialFilters="filters"
+              @apply="(data) => {
+                filters = data
+               
+              }"
+            />
+               <button @click="showFilter = true" class=" bg-primary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-primary/80">
+                <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                <p>Filters</p> 
+              </button>
+          </div>
+          
+
+        </div>
+        <div class="flex gap-3  overflow-x-auto  px-1 py-1 border-t-2 mt-1">
+            <button
+            v-for="c in categories"
+            :key="c"
+            @click="selectCategory(c)"
+            class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
+            :class="isActive(c) ? ' bg-tertiary text-white' : ' bg-white/40 text-tertiary  border border-tertiary text'"
+          >
+            {{ c }}
+          </button>
+        </div>
+    </div>
+    
+          <div    class="  mt-5  w-full   backdrop-blur bg-white/90"   ref="searchRef">
+              <div v-if="!isFixed"  ref="searchRef" class="   border  border-primary  mx-2 mt-1   h-fit   bg-white items-center overflow-hidden rounded-md -xl  p- flex">
+                <div class="  w-8  flex justify-center items-center  md:h-6 h-7  -0">
+                  
+                  <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
+                </div>
+                <input
+                  v-model="search"
+                  placeholder="Search land, houses, agents..."
+                  class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
+                />
+                <div class=" bg-primary text-sm h-full  -0">
+                    <PropertyFilterModal
+                    v-model="showFilter"
+                    :initialFilters="filters"
+                    @apply="(data) => {
+                      filters = data
+                    
+                    }"
+                  />
+                    <button @click="showFilter = true" class=" bg-primary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-tertiary/80">
+                      <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                      <p>Filters</p> 
+                    </button>
+                </div>
+                
+
+              </div>
+              <div class="flex gap-3  overflow-x-auto  px-1 py-1 border-t-2 mt-1">
+                  <button
+                  v-for="c in categories"
+                  :key="c"
+                  @click="selectCategory(c)"
+                  class="md:px-4 md:py-2 text-nowrap  px-2 py-1 rounded text-sm"
+                  :class="isActive(c) ? 'bg-primary text-white' : ' bg-white/40 text-primary border border-primary text'"
+                >
+                  {{ c }}
+                </button>
+              </div>
+
+             
+            </div>
+  <!-- HERO -->
+  <section class="relative z-10 hidden  h-screen-80 flex items-center justify-center text-center">
+
+    <img
+      src="/images/hero.jpg"
+      class="absolute inset-0 w-full h-full object-cover"
+    />
+
+    <div class="absolute inset-0 bg-black/60"></div>
+
+    <div class="relative z-10 max-w-3xl px-6 text-white">
+
+      <h1 class="text-3xl md:text-4xl font-semibold leading-tight">
+        Find Your Perfect Property in Nigeria
+      </h1>
+
+      <p class="mt-1 text-sm  sm:text-lg text-gray-200">
+        Buy land • Sell houses • Rent apartments • Discover great deals
+      </p>
+          <!-- PLACEHOLDER -->
+      <div v-if="isFixed" class="h-[90px]"></div>
+      <!-- SEARCH -->
+      <div v-if="!isFixed"  class=""   ref="searchRef"
+          
+      >
+          <div class="mt-8     bg-white  overflow-hidden rounded-lg -xl shadow-xl p- flex ">
+            <div class="  w-8  flex justify-center items-center  h-12  -0">
+              
+              <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-5" srcset="">
+            </div>
+            <input
+              v-model="search"
+              placeholder="Search land, houses, agents..."
+              class="flex-1   outline-none text-gray-700"
+            />
+            <div class="  -0">
+              
+              <button  @click="showFilter = true" class=" bg-secondary flex items-center justify-center gap-2 text-white px-2 h-full  py-2  font-normal hover:bg-secondary/80">
+                  <img src="@/assets/images/icons/list.svg" alt="" class=" w-5" srcset="">
+                  <p>Filter</p> 
+                </button>
+            </div>
+            
+
+          </div>
+          <div class="flex gap-3  items-center justify-center  flex-wrap mt-7">
+              <button
+              v-for="c in categories"
+              :key="c"
+             @click="selectCategory(c)"
+              class="px-4 py-2 rounded text-sm"
+              :class="isActive(c) ? 'bg-secondary text-white' : ' bg-white/40 text'"
+            >
+              {{ c }} 
+            </button>
+          </div>
+      </div> 
+      
+
+    </div>
+
+  </section>
+
+     <div v-if="error">
+      <NetworkError
+      :error="error"
+      @retry="refreshData"
+    />
+    </div>
+
+    <!-- SKELETON -->
+<section v-else-if="pending" class="">
+  <Container>
+
+    <!-- TOP TEXT -->
+    <div class="mb-4">
+      <div class="h-6 w-72 bg-gray-200 rounded animate-pulse mb-3"></div>
+
+      <div class="flex justify-between items-center">
+        <div class="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+
+        <div class="flex gap-3">
+          <div class="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+          <div class="h-10 w-28 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPERTY GRID -->
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <div
+        v-for="i in 9"
+        :key="i"
+        class="border rounded-xl overflow-hidden"
+      >
+
+        <!-- IMAGE -->
+        <div class="relative">
+          <div class="h-44 w-full bg-gray-200 animate-pulse"></div>
+
+          <!-- BADGES -->
+          <div class="absolute top-2 left-2 h-6 w-20 bg-gray-300 rounded animate-pulse"></div>
+
+          <div class="absolute top-2 right-2 h-6 w-16 bg-gray-300 rounded animate-pulse"></div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="p-4">
+
+          <!-- PROFILE -->
+          <div class="flex gap-3 items-center mb-4">
+
+            <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+
+            <div class="flex-1">
+              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+
+          </div>
+
+          <!-- TITLE -->
+          <div class="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+
+          <!-- LOCATION -->
+          <div class="h-4 w-full bg-gray-200 rounded animate-pulse mb-3"></div>
+
+          <!-- PRICE -->
+          <div class="h-6 w-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+
+          <!-- DETAILS -->
+          <div class="flex gap-3">
+
+            <div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+
+            <div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+
+            <div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </Container>
+</section>
+    <div v-else class="v-else">
+  <!-- FILTERS -->
+      <section class="p-6 flex flex-wrap gap-3">
+
+        <div class="flex gap-3 flex-wrap">
+
+          <select v-model="selectedState" class="px-4 h-11 border rounded">
+            <option value="">All States</option>
+            <option v-for="s in stateOptions" :key="s" :value="s">
+              {{ s }}
+            </option>
+          </select>
+
+          <!-- CITY -->
+          <select v-model="selectedCity" class="px-4 h-11 border rounded">
+            <option value="">All Cities</option>
+            <option v-for="c in cityOptions" :key="c" :value="c">
+              {{ c }}
+            </option>
+          </select>
+
+          <!-- SCHOOL -->
+          <select
+          v-if="typeParam === 'hostel'"
+          v-model="selectedSchool"
+          class="px-4 h-11 border rounded"
+          >
+
+          <option value="">
+          All Schools
+          </option>
+
+
+          <option
+          v-for="school in schoolOptions"
+          :key="school.name"
+          :value="school.name"
+          >
+
+          {{ school.name }}
+
+          </option>
+
+
+          </select>
+
+        </div>
+
+      </section>
+
+    
+      <!-- CARDS -->
+      <section  class="">
+        <Container>
+          <div class=" text- text-tertiary">
+            <UiTypographyH3><span class=" text-tertiary  font-semibold  sm:text-lg text-sm">10,000 available properties for sale/rent worldwide</span></UiTypographyH3>
+              <div  class=" flex justify-between items-center py-3">
+                <p  class="  sm:text-lg text-sm "> <span class="font-semibold ">10000</span> results </p> 
+                <div class=" flex ">
+                  
+                  <div class="flex gap-3   px-1 py-1 ">
+                    <SortDropdown @update="handleSort" />
+
+
+                        <button  class="md:px-4 md:py-2 text-nowrap flex gap-2 font-normal px-2 py-1 rounded text-sm" :class="  isMap ? 'bg-tertiary text-white' : ' bg-white/40 text-tertiary border border-tertiary text'">
+                        <img src="@/assets/images/icons/map.svg" class=" w-4" alt=""> Map
+                      </button>
+                  </div>
+                </div>
+              </div>
+          </div>
+              <div  v-if="!filteredResults.length">
+                  <EmptyPropertyState @reset="handleResetFilters" />
+                </div>
+                
+          <div class="  grid md:grid-cols-3 gap-6">
+            
+            <NuxtLink :to="`/property/${item.slug}`"
+              v-for="item in paginatedResults"
+              :key="item._id"
+              class="border rounded-xl  transition overflow-hidden"
+            >
+          
+              <!-- IMAGE SLIDER -->
+              <div class="relative">
+
+                <!-- badge -->
+                <span class="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
+                  FOR {{ item.purpose.toUpperCase() }} 
+                </span>
+
+                <span class="absolute top-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  {{ item.category }} 
+                </span>
+               <ClientOnly>
+                    <Swiper
+                      :modules="[Pagination, Navigation]"
+                      :pagination="{ clickable: true }"
+                      :navigation="true"
+                      class="property-swiper"
+                    >
+                      <SwiperSlide
+                        v-for="img in (
+                          item?.media?.files?.filter(f => f.type === 'image' && f.url)?.length
+                            ? item.media.files.filter(f => f.type === 'image' && f.url)
+                            : [{ url: '/image/no-image.png' }]
+                        )"
+                        :key="img.url"
+                      >
+
+                        <img
+                          :src="getOptimizedImage(img.url)"
+                          loading="lazy"
+                          decoding="async"
+                          class="h-44 w-full object-cover"
+                          alt="property image"
+                        />
+
+                      </SwiperSlide>
+                    </Swiper>
+                  </ClientOnly>
+              </div>
+
+              <!-- CONTENT -->
+              <div class="p-4 text-sm">
+                <!-- <div class="flex gap-4  mb-4 items-center bg-priary/10  rounded">
+
+                    <img
+                      src="/image/profile.webp"
+                      class="w-12 h-12 rounded-full object-cover"
+                    />
+
+                    <div class=" text-xs ">
+                      <h2 class="font-semibold">{{ item.user?.name || 'Walheed Khinde' }}</h2>
+                      <p class="text-xs text-gray-500">Survey • {{ item.user?.location || getLocationLabel(item.location) }}</p>
+                      
+                    </div>
+
+                  </div> -->
+
+                <h2 class="font-semibold">
+                  {{ item.title }}
+                </h2>
+
+                <p class="text-gray-500">
+                {{item.location.address}}, {{item.location.city}}, {{item.location.state}}
+                </p> 
+
+                <p class="text-primary text-md font-bold mt-1">
+                  {{smartMoney(item.pricing.price || 0) }} {{ getPriceLabel(item) }}
+                </p>
+
+                <!-- hide for land -->
+                
+                <div
+                  v-if="item.type !== 'land'"
+                  class="flex gap-3 mt-2 text-xs"
+                >
+                  <span>{{ item.houseDetails?.bathroom }} Beds</span>
+                  <span>{{ item.houseDetails?.bedroom }} Baths</span>
+                  <span>{{ item.houseDetails?.toilet }} Toilets</span>
+                </div>
+
+              
+
+              </div>
+            </NuxtLink>
+          </div>
+        </Container>
+      </section>
+     
+  <Paginat v-model="page" :total="filteredResults.length" :perPage="perPage"/>
+    
+  <!-- LOAD MORE -->
+ 
+  </div>
+
+   <NavigationFooter />
+</div>
+</template>
+
+<style scoped>
+/* make arrows small circle */
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
 }
 
-.shadow{
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;  }
-
-.cta {
-  background: rgba(0, 0, 0, 0.1), url('/images/unilorin_gate.jpg');
-  background-blend-mode: multiply;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: top;
+/* smaller arrow icon */
+:deep(.swiper-button-prev::after),
+:deep(.swiper-button-next::after) {
+  font-size: 12px;
+  font-weight: bolder;
 }
 
-.custom-scroll::-webkit-scrollbar {
-  width: 6px;
+/* spacing */
+:deep(.swiper-button-prev) {
+  left: 6px;
 }
 
-.custom-scroll::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+:deep(.swiper-button-next) {
+  right: 6px;
 }
 
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #b78d46;
-  border-radius: 10px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: #9e7636;
+/* hover effect */
+:deep(.swiper-button-prev:hover),
+:deep(.swiper-button-next:hover) {
+  background: rgba(0, 0, 0, 0.7);
 }
 </style>
