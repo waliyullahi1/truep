@@ -339,8 +339,11 @@ if (current === 'mouth') {
     setTimeout( async () => {
       if (step >= stepsList.length) {
         stopCamera()
+        console.log('finalImage', 'finalImage');
         const finalImage = captureCleanImage()
-        const vector = await getFaceVectorFromVideo()
+        console.log(finalImage, 'finalImage');
+        
+        // const vector = await getFaceVectorFromVideo()
         statusMessage.value = '✅ Verification Complete!'
         finished.value = true
         started.value = false

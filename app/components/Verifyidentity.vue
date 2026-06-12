@@ -1,6 +1,6 @@
 <template>
   <div>
-fasdansdkf,ansdjfba,
+new code 
   <!-- {{ isVerify }}
 {{ isBusinessVerify }}
 {{ isFaceVerify }} -->
