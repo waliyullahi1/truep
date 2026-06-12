@@ -404,16 +404,21 @@ const stateOptions = computed(()=>
 
 
 
-const selectSchool = (school)=>{
- selectedSchool.value = school.abbreviation
+const selectSchool = ()=>{
+
+
  const path = [
+
    stateParam.value,
 
-   typeParam.value,
+   cityParam.value,
+
+   'hostel',
 
    finalCategory.value,
 
-   school.abbreviation
+   selectedSchool.value
+
 
  ]
  .filter(Boolean)
@@ -422,22 +427,33 @@ const selectSchool = (school)=>{
 
  router.push(`/search/${path}`)
 
+
 }
 
 const schoolParam = computed(()=>{
 
 
- return segments.value.find(seg =>
+const state = schoolsByState.find(s =>
 
- schoolOptions.value.some(s =>
+normalize(s.state) === normalize(stateParam.value)
 
- normalize(s.abbreviation)
- ===
- normalize(seg)
+)
 
- )
 
- ) || ''
+const schools = state?.schools || []
+
+
+return segments.value.find(seg =>
+
+schools.some(s =>
+
+normalize(s.abbreviation)
+===
+normalize(seg)
+
+)
+
+) || ''
 
 
 })
@@ -452,6 +468,11 @@ const schoolParam = computed(()=>{
 
 
 const { data: resultsData, pending, error, refresh} = await useAsyncData('properties',async()=>{
+      console.log('csjndskfnjk',{ 
+    selectedSchool:selectedSchool.value,
+    schoolParam:schoolParam.value,
+    url:route.fullPath
+     })
  const res = await useApiFetch('/property/all',{
     method:'GET',
     params:{
@@ -461,7 +482,7 @@ const { data: resultsData, pending, error, refresh} = await useAsyncData('proper
       category: finalCategory.value || undefined,
       city: cityParam.value || undefined,
       state: stateParam.value || undefined,
-      school: selectedSchool.value || undefined
+      school: schoolParam.value || selectedSchool.value || undefined
     }
  })
 
@@ -533,30 +554,32 @@ const results = computed(()=>{
    ROUTE SYNC
 ================================= */
 
-watch(()=>route.fullPath, ()=>{
+watch(()=>route.fullPath,()=>{
 
- selectedState.value = stateParam.value || ''
+selectedState.value =stateParam.value || ''
 
- selectedCity.value = cityParam.value || ''
 
- selectedSchool.value = schoolParam.value || ''
+selectedCity.value = cityParam.value || ''
 
- selectedFilter.value = {
-    type: typeParam.value || '',
-    category: finalCategory.value || '',
-    city: cityParam.value || '',
-    state: stateParam.value || '',
-    purpose: purposeParam.value || '',
-    school: schoolParam.value || ''
- }
 
- refresh()
+selectedSchool.value = schoolParam.value || ''
+
+selectedFilter.value = {
+type:typeParam.value || '',
+category:finalCategory.value || '',
+city:cityParam.value || '',
+state:stateParam.value || '',
+purpose:purposeParam.value || '',
+school:schoolParam.value || ''
+}
+
+
+refresh()
 
 },
 {
- immediate:true
-}
-)
+immediate:true
+})
 
 
 
@@ -603,36 +626,34 @@ watch(selectedState,()=>{
  selectedSchool.value=''
 })
 
-watch(selectedSchool, (value)=>{
+watch(selectedSchool, ()=>{
 
- if(typeParam.value !== 'hostel'){
+
+ if(!selectedSchool.value)
     return
- }
 
 
- const path = [
 
-   stateParam.value,
+const path = [
 
-   typeParam.value,
+ stateParam.value,
 
-   finalCategory.value,
+ // hide city for hostel
+ typeParam.value,
 
-   value
+ finalCategory.value,
 
- ]
- .filter(Boolean)
- .join('/')
+ selectedSchool.value
 
 
- const newPath = `/search/${path}`
+]
+.filter(Boolean)
+.join('/')
 
 
- if(route.fullPath !== newPath){
 
-    router.push(newPath)
+router.push(`/search/${path}`)
 
- }
 
 })
 
@@ -1921,10 +1942,11 @@ const categories=[
 
           <!-- SCHOOL -->
           <select
-              v-if="typeParam === 'hostel'"
-              v-model="selectedSchool"
-              class="px-4 h-11 border rounded"
-            >
+          v-if="normalize(typeParam) === 'hostel'"
+          v-model="selectedSchool"
+          @change="selectSchool"
+          class="px-4 h-11 border rounded"
+          >
 
             <option value="">
               All Schools
@@ -1932,10 +1954,12 @@ const categories=[
 
 
             <option
-              v-for="school in schoolOptions"
-              :key="school.abbreviation"
-              :value="school.abbreviation"
-            >
+             
+                v-for="school in schoolOptions"
+                :key="school.abbreviation"
+                :value="school.abbreviation"
+              >
+            
 
             {{school.name}} ({{school.abbreviation}})
 
@@ -1945,8 +1969,9 @@ const categories=[
 
         </div>
 
-      </section>
-
+       </section>
+      fsvndjncdo{{   selectedSchool.value  }}
+      fjisdfnsdifs{{schoolParam.value }}
     
       <!-- CARDS -->
       <section  class="">
