@@ -390,8 +390,8 @@ const startVerification = async () => {
   console.log('Steps:', stepsList)
   console.log('startVerification1');
    // debug
-  await loadModel()
-  console.log('startVerification2');
+  // await loadModel()
+  // console.log('startVerification2');
   await startCamera()
   console.log('startVerification3');
   loading.value = false
