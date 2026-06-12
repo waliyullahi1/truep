@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from "vue"
+import { useRoute } from "vue-router"
 
 const route = useRoute()
 const { $toast } = useNuxtApp()
 
-const propertyId = route.query?.id || ''
+const propertyId = route.query?.id || ""
 
 const props = defineProps({
   purpose: {
     type: String,
-    default: 'Sale'
+    default: "Sale"
   }
 })
 
@@ -18,50 +18,42 @@ const props = defineProps({
 STATE
 ====================== */
 const MAX_IMAGES = 10
+
 const previews = ref([null, null, null, null, null])
 const survey = ref(Array(3).fill(null))
 const titleDocs = ref(Array(3).fill(null))
 
-// ✅ FIX: independent loaders
 const loadingMap = ref({})
 const removingMap = ref({})
 
 /* ======================
-CLOUDINARY OPTIMIZER
+UTIL
 ====================== */
 function optimizeCloudinary(url, width = 600) {
-  if (!url || !url.includes('res.cloudinary.com')) return url
-
+  if (!url || !url.includes("res.cloudinary.com")) return url
   return url.replace(
-    '/upload/',
+    "/upload/",
     `/upload/f_auto,q_auto,w_${width},c_fill/`
   )
 }
 
-/* ======================
-HELPER
-====================== */
 function getState(type) {
-  if (type === 'image') return previews
-  if (type === 'survey') return survey
-  if (type === 'titleDocs') return titleDocs
+  if (type === "image") return previews
+  if (type === "survey") return survey
+  if (type === "titleDocs") return titleDocs
 }
 
 /* ======================
-REFILL STATE
+REFILL DATA
 ====================== */
 function refillState(data) {
-  const imgs = (data.images || []).map(f => ({
-    _id: f._id,
-    url: optimizeCloudinary(f.url),
-    original: f.url
+  previews.value = (data.images || []).map(i => ({
+    _id: i._id,
+    url: optimizeCloudinary(i.url),
+    original: i.url
   }))
 
-  previews.value = imgs
-
-  while (previews.value.length < Math.max(imgs.length, 3)) {
-    previews.value.push(null)
-  }
+  while (previews.value.length < 5) previews.value.push(null)
 
   survey.value = Array.from({ length: 3 }, (_, i) => {
     const item = data.survey?.[i]
@@ -79,44 +71,29 @@ function refillState(data) {
 }
 
 /* ======================
-UPLOAD (KEY FIX 🚀)
+UPLOAD SINGLE FILE (SERVER SAFE)
 ====================== */
-async function handleUpload(event, index, type) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  if (!propertyId) {
-    $toast.error("Save property first")
-    return
-  }
-
-  const state = getState(type)
+async function uploadSingleFile(file, index, type) {
   const key = `${type}-${index}`
-
-  // ✅ independent loading
   loadingMap.value[key] = true
-
-  // TEMP preview (isolated)
-  const tempUrl = URL.createObjectURL(file)
-  state.value[index] = {
-    url: tempUrl,
-    temp: true
-  }
 
   try {
     const formData = new FormData()
     formData.append("image", file)
 
-    const res = await useApiFetch(`/property/upload-image/${propertyId}/${type}`, {
-      method: "POST",
-      body: formData
-    })
+    const res = await useApiFetch(
+      `/property/upload-image/${propertyId}/${type}`,
+      {
+        method: "POST",
+        body: formData
+      }
+    )
 
     const response = res.data?.value || res.data
-
-    // ✅ get latest uploaded item ONLY
     const list = response?.data?.[type] || response?.data?.images || []
     const latest = list[list.length - 1]
+
+    const state = getState(type)
 
     if (latest) {
       state.value[index] = {
@@ -126,24 +103,73 @@ async function handleUpload(event, index, type) {
       }
     }
 
-    $toast.success("Uploaded")
-
   } catch (err) {
-    console.error(err)
-    $toast.error("Upload failed")
+    console.log(err)
+
+    const state = getState(type)
     state.value[index] = null
+
+    $toast.error("Upload failed")
   }
 
   loadingMap.value[key] = false
-  event.target.value = ''
 }
 
 /* ======================
-REMOVE (KEY FIX 🚀)
+MAIN UPLOAD HANDLER (TIKTOK STYLE)
+====================== */
+async function handleUpload(event, index, type) {
+  const files = Array.from(event.target.files || [])
+
+  if (!files.length) return
+
+  if (!propertyId) {
+    $toast.error("Save property first")
+    return
+  }
+
+  const state = getState(type)
+
+  const uploadTasks = []
+
+  for (const file of files) {
+
+    // find empty slot per section
+    let slot = state.value.findIndex(x => !x)
+
+    if (slot === -1) {
+      state.value.push(null)
+      slot = state.value.length - 1
+    }
+
+    // instant preview (TikTok feel)
+    state.value[slot] = {
+      url: URL.createObjectURL(file),
+      temp: true
+    }
+
+    // upload queue (single file per request)
+    uploadTasks.push(uploadSingleFile(file, slot, type))
+  }
+
+  try {
+    await Promise.all(uploadTasks)
+    $toast.success("Upload completed")
+  } catch (err) {
+    console.log(err)
+    $toast.error("Some uploads failed")
+  }
+
+  event.target.value = ""
+}
+
+/* ======================
+REMOVE FILE (ALL TYPES)
 ====================== */
 async function removeImage(index, type) {
   const state = getState(type)
   const img = state.value[index]
+
   if (!img?._id) return
 
   const key = `${type}-${index}`
@@ -152,16 +178,17 @@ async function removeImage(index, type) {
   try {
     await useApiFetch(`/property/image/${propertyId}`, {
       method: "DELETE",
-      body: { id: img._id, type }
+      body: {
+        id: img._id,
+        type
+      }
     })
 
-    // ✅ only clear that index (no reload!)
     state.value[index] = null
-
     $toast.success("Removed")
 
   } catch (err) {
-    console.error(err)
+    console.log(err)
     $toast.error("Remove failed")
   }
 
@@ -169,18 +196,7 @@ async function removeImage(index, type) {
 }
 
 /* ======================
-ADD IMAGE BOX
-====================== */
-function addImageBox() {
-  if (previews.value.length >= MAX_IMAGES) {
-    $toast.error("Maximum 10 images allowed")
-    return
-  }
-  previews.value.push(null)
-}
-
-/* ======================
-LOAD MEDIA
+LOAD DATA
 ====================== */
 const loadMedia = async () => {
   if (!propertyId) return
@@ -194,16 +210,14 @@ const loadMedia = async () => {
     }
 
   } catch (err) {
-    console.error(err)
+    console.log(err)
   }
 }
 
 /* ======================
 INIT
 ====================== */
-onMounted(() => {
-  loadMedia()
-})
+onMounted(loadMedia)
 </script>
 <template>
 <div class="min-h-screen bg-gray-50 py-8">
@@ -222,10 +236,11 @@ onMounted(() => {
         </p>
       </div>
 
-      <!-- PROPERTY IMAGES -->
+      <!-- ================= PROPERTY IMAGES ================= -->
       <div class="bg-white rounded-xl border border-gray-200 p-2 sm:p-6">
 
-        <div class="flex sm:flex-row flex-col  items-start justify-between mb-6">
+        <div class="flex sm:flex-row flex-col items-start justify-between mb-6">
+
           <div>
             <h2 class="text-xl font-semibold">
               Property Photos
@@ -235,19 +250,16 @@ onMounted(() => {
               Upload up to 10 high-quality photos of your property.
             </p>
           </div>
-          
-          <div class=" flex md:w-fit w-full justify-end">
-            <div
-            class="px-3 py-1 place-content-end flex justify-end bg-blue-50 text-blue-700 rounded-full text-xs font-medium"
-          >
-            {{ previews.filter(x => x).length }}/10 Uploaded
+
+          <div class="flex md:w-fit w-full justify-end">
+            <div class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+              {{ previews.filter(x => x).length }}/10 Uploaded
+            </div>
           </div>
-          </div>
+
         </div>
 
-        <div
-          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-5 gap-2"
-        >
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-5 gap-2">
 
           <div
             v-for="(img,index) in previews"
@@ -281,6 +293,7 @@ onMounted(() => {
             <input
               type="file"
               accept="image/*"
+              multiple
               class="hidden"
               :id="'upload-image-'+index"
               @change="handleUpload($event,index,'image')"
@@ -290,9 +303,7 @@ onMounted(() => {
               v-if="loadingMap[`image-${index}`] || removingMap[`image-${index}`]"
               class="absolute inset-0 bg-black/50 flex items-center justify-center"
             >
-              <div
-                class="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"
-              />
+              <div class="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"/>
             </div>
 
             <button
@@ -305,77 +316,38 @@ onMounted(() => {
 
           </div>
 
-          <!-- ADD NEW -->
+          <!-- ADD BOX -->
           <div
             v-if="previews.length < MAX_IMAGES"
-            @click="addImageBox"
+            @click="openImagePicker"
             class="aspect-square rounded-2xl border-2 border-dashed border-gray-300 cursor-pointer flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition"
           >
-            <div class="text-4xl font-light">
-              +
-            </div>
-
-            <div class="text-sm text-gray-500">
-              Add Photo
-            </div>
+            <div class="text-4xl font-light">+</div>
+            <div class="text-sm text-gray-500">Add Photo</div>
           </div>
 
         </div>
 
       </div>
 
-      <!-- VIDEO
-      <div class="bg-white rounded-2xl border border-gray-200 md:p-6 p-0">
-
-        <h2 class="text-xl font-semibold">
-          Property Video
-        </h2>
-
-        <p class="text-gray-500 text-sm mt-1 mb-4">
-          Paste a YouTube, TikTok, Instagram Reel or Facebook video link.
-        </p>
-
-        <input
-          v-model="videoUrl"
-          type="url"
-          placeholder="https://youtube.com/watch?v=..."
-          class="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
-        />
-
-        <div
-          
-          class="mt-6"
-        >
-          <iframe
-              src="https://www.tiktok.com/embed/v2/7647207032826694934"
-              class="w-full aspect-video"
-            ></iframe>
-        </div>
-
-      </div> -->
-
-      <!-- SURVEY -->
+      <!-- ================= SURVEY ================= -->
       <div
         v-if="purpose === 'sale'"
         class="bg-white rounded-2xl border border-gray-200 p-2 md:p-6"
       >
 
-        <h2 class="text-xl font-semibold">
-          Survey Plan
-        </h2>
+        <h2 class="text-xl font-semibold">Survey Plan</h2>
 
         <p class="text-gray-500 text-sm mt-1 mb-5">
           Upload official survey plan documents.
         </p>
 
-        <div
-          class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-5"
-        >
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-5">
 
           <div
             v-for="(img,index) in survey"
             :key="'survey-'+index"
-            class="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden"
+            class="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden bg-gray-50 hover:border-primary transition"
           >
 
             <img
@@ -388,9 +360,14 @@ onMounted(() => {
               v-else
               class="absolute inset-0 flex flex-col items-center justify-center"
             >
+              <img
+                src="/image/icon/picture.svg"
+                class="w-10 opacity-50"
+              >
+
               <label
                 :for="'upload-survey-'+index"
-                class="cursor-pointer text-primary font-medium"
+                class="text-sm text-primary mt-3 cursor-pointer font-medium"
               >
                 Upload Survey
               </label>
@@ -399,34 +376,45 @@ onMounted(() => {
             <input
               type="file"
               accept="image/*"
+              multiple
               class="hidden"
               :id="'upload-survey-'+index"
               @change="handleUpload($event,index,'survey')"
             />
 
+            <div
+              v-if="loadingMap[`survey-${index}`] || removingMap[`survey-${index}`]"
+              class="absolute inset-0 bg-black/50 flex items-center justify-center"
+            >
+              <div class="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"/>
+            </div>
+
+            <button
+              v-if="img"
+              @click="removeImage(index,'survey')"
+              class="absolute top-2 right-2 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center"
+            >
+              ✕
+            </button>
+
           </div>
 
         </div>
-
       </div>
 
-      <!-- TITLE DOCS -->
+      <!-- ================= TITLE DOCS ================= -->
       <div
         v-if="purpose === 'sale'"
         class="bg-white rounded-2xl border border-gray-200 p-2 sm:p-6"
       >
 
-        <h2 class="text-xl font-semibold">
-          Title Documents
-        </h2>
+        <h2 class="text-xl font-semibold">Title Documents</h2>
 
         <p class="text-gray-500 text-sm mt-1 mb-5">
           C of O, Gazette, Deed of Assignment, Governor Consent, etc.
         </p>
 
-        <div
-          class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-5"
-        >
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-5">
 
           <div
             v-for="(img,index) in titleDocs"
@@ -455,15 +443,30 @@ onMounted(() => {
             <input
               type="file"
               accept="image/*"
+              multiple
               class="hidden"
               :id="'upload-title-'+index"
               @change="handleUpload($event,index,'titleDocs')"
             />
 
+            <div
+              v-if="loadingMap[`titleDocs-${index}`] || removingMap[`titleDocs-${index}`]"
+              class="absolute inset-0 bg-black/50 flex items-center justify-center"
+            >
+              <div class="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"/>
+            </div>
+
+            <button
+              v-if="img"
+              @click="removeImage(index,'titleDocs')"
+              class="absolute top-2 right-2 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center"
+            >
+              ✕
+            </button>
+
           </div>
 
         </div>
-
       </div>
 
     </div>
