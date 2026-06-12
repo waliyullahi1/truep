@@ -1,29 +1,9 @@
 <script setup>
 
-import { 
-  ref, 
-  computed, 
-  watch, 
-  watchEffect, 
-  onMounted, 
-  onUnmounted, 
-  nextTick 
-} from 'vue'
-
-import { 
-  useRoute, 
-  useRouter 
-} from 'vue-router'
-
-import { 
-  Swiper, 
-  SwiperSlide 
-} from 'swiper/vue'
-
-import { 
-  Pagination, 
-  Navigation 
-} from 'swiper/modules'
+import {  ref,  computed,   watch,   watchEffect,   onMounted,   onUnmounted,   nextTick } from 'vue'
+import {  useRoute,  useRouter } from 'vue-router'
+import {  Swiper,  SwiperSlide } from 'swiper/vue'
+import { Pagination, Navigation } from 'swiper/modules'
 
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -51,23 +31,13 @@ const router = useRouter()
 
 const search = ref('')
 const location = ref('')
-
 const category = ref('All')
-
 const visibleCount = ref(9)
-
 const isMap = ref(false)
-
-
 const isFixed = ref(false)
 const isShrink = ref(false)
-
-
 const searchRef = ref(null)
 const searchTop = ref(0)
-
-
-
 const selectedState = ref('')
 const selectedCity = ref('')
 
@@ -84,22 +54,11 @@ const selectedSchool = ref('')
 
 
 const page = ref(1)
-
 const perPage = 10
-
-
 const showFilter = ref(false)
-
-
 const sortType = ref('suggested')
-
-
 const filters = ref({})
-
-
-
 const selectedFilter = ref({
-
   type:'',
   category:'',
   city:'',
@@ -119,7 +78,6 @@ const selectedFilter = ref({
 
 
 const normalize = (str='') => {
-
   return decodeURIComponent(str)
     .toString()
     .toLowerCase()
@@ -127,29 +85,18 @@ const normalize = (str='') => {
 
 }
 
-
-
-
-
-
 /* =================================
    ROUTE SEGMENTS
 ================================= */
 
 
 const segments = computed(()=>{
-
-
   const slug = route.params.slug
-
-
   return Array.isArray(slug)
     ? slug
     : slug
       ? [slug]
       : []
-
-
 })
 
 
@@ -163,8 +110,6 @@ const segments = computed(()=>{
 
 
 const stateParam = computed(()=>{
-
-
  return segments.value.find(seg =>
 
     loadstates.some(
@@ -459,6 +404,43 @@ const stateOptions = computed(()=>
 
 
 
+const selectSchool = (school)=>{
+ selectedSchool.value = school.abbreviation
+ const path = [
+   stateParam.value,
+
+   typeParam.value,
+
+   finalCategory.value,
+
+   school.abbreviation
+
+ ]
+ .filter(Boolean)
+ .join('/')
+
+
+ router.push(`/search/${path}`)
+
+}
+
+const schoolParam = computed(()=>{
+
+
+ return segments.value.find(seg =>
+
+ schoolOptions.value.some(s =>
+
+ normalize(s.abbreviation)
+ ===
+ normalize(seg)
+
+ )
+
+ ) || ''
+
+
+})
 
 
 
@@ -469,78 +451,26 @@ const stateOptions = computed(()=>
 ================================= */
 
 
-const {
-  data: resultsData,
-  pending,
-  error,
-  refresh
-
-} = await useAsyncData(
-
-'properties',
-
-async()=>{
-
-
+const { data: resultsData, pending, error, refresh} = await useAsyncData('properties',async()=>{
  const res = await useApiFetch('/property/all',{
-
     method:'GET',
-
     params:{
-
-
-      purpose:
-      purposeParam.value || undefined,
-
-
-      search:
-      search.value || undefined,
-
-
-      type:
-      typeParam.value || undefined,
-
-
-      category:
-      finalCategory.value || undefined,
-
-
-      city:
-      cityParam.value || undefined,
-
-
-      state:
-      stateParam.value || undefined,
-
-
-      /*
-        HOSTEL SCHOOL FILTER
-
-        Example:
-        OAU
-        UNILAG
-
-      */
-
-      school:
-      selectedSchool.value || undefined
-
-
+      purpose: purposeParam.value || undefined,
+      search: search.value || undefined,
+      type: typeParam.value || undefined,
+      category: finalCategory.value || undefined,
+      city: cityParam.value || undefined,
+      state: stateParam.value || undefined,
+      school: selectedSchool.value || undefined
     }
-
-
  })
 
 
 
 
  if(!res?.success){
-
-
     throw createError({
-
        statusCode:500,
-
        statusMessage:
        res?.message ||
        'Failed to fetch properties'
@@ -549,13 +479,7 @@ async()=>{
 
 
  }
-
-
-
-
  return res?.data?.data || res?.data || []
-
-
 
 },
 
@@ -570,11 +494,6 @@ async()=>{
 }
 
 )
-
-
-
-
-
 
 
 const refreshData = async(stopLoading)=>{
@@ -614,73 +533,30 @@ const results = computed(()=>{
    ROUTE SYNC
 ================================= */
 
+watch(()=>route.fullPath, ()=>{
 
-watch(
+ selectedState.value = stateParam.value || ''
 
-()=>route.fullPath,
+ selectedCity.value = cityParam.value || ''
 
-()=>{
-
-
- selectedState.value =
- stateParam.value || ''
-
-
-
- selectedCity.value =
- cityParam.value || ''
-
-
+ selectedSchool.value = schoolParam.value || ''
 
  selectedFilter.value = {
-
-
-    type:
-    typeParam.value || '',
-
-
-
-    category:
-    finalCategory.value || '',
-
-
-
-    city:
-    cityParam.value || '',
-
-
-
-    state:
-    stateParam.value || '',
-
-
-
-    purpose:
-    purposeParam.value || '',
-
-
-
-    school:
-    selectedSchool.value || ''
-
+    type: typeParam.value || '',
+    category: finalCategory.value || '',
+    city: cityParam.value || '',
+    state: stateParam.value || '',
+    purpose: purposeParam.value || '',
+    school: schoolParam.value || ''
  }
-
-
 
  refresh()
 
-
-
 },
-
-
 {
  immediate:true
 }
-
-
 )
-
 
 
 
@@ -693,58 +569,19 @@ watch(
 ================================= */
 
 
-watch(
-
-[
- selectedState,
- selectedCity
-
-],
-
-()=>{
-
-
- const path = [
-
-
+watch([ selectedState,selectedCity],()=>{
+const path = [
     selectedState.value,
-
-
     selectedCity.value,
-
-
     typeParam.value,
-
-
     finalCategory.value,
-
-
     purposeParam.value
-
-
- ]
-
- .filter(Boolean)
-
- .join('/')
-
-
-
- const newPath =
- `/search/${path}`
-
-
-
+ ].filter(Boolean).join('/')
+const newPath =`/search/${path}`
 
  if(route.fullPath !== newPath){
-
-
     router.push(newPath)
-
-
  }
-
-
 }
 
 )
@@ -762,16 +599,42 @@ watch(
 
 
 watch(selectedState,()=>{
-
-
  selectedCity.value=''
-
-
  selectedSchool.value=''
-
-
 })
 
+watch(selectedSchool, (value)=>{
+
+ if(typeParam.value !== 'hostel'){
+    return
+ }
+
+
+ const path = [
+
+   stateParam.value,
+
+   typeParam.value,
+
+   finalCategory.value,
+
+   value
+
+ ]
+ .filter(Boolean)
+ .join('/')
+
+
+ const newPath = `/search/${path}`
+
+
+ if(route.fullPath !== newPath){
+
+    router.push(newPath)
+
+ }
+
+})
 
 
 
@@ -2049,7 +1912,7 @@ const categories=[
           </select>
 
           <!-- CITY -->
-          <select v-model="selectedCity" class="px-4 h-11 border rounded">
+          <select  v-if="typeParam !== 'hostel'" v-model="selectedCity" class="px-4 h-11 border rounded">
             <option value="">All Cities</option>
             <option v-for="c in cityOptions" :key="c" :value="c">
               {{ c }}
@@ -2058,28 +1921,27 @@ const categories=[
 
           <!-- SCHOOL -->
           <select
-          v-if="typeParam === 'hostel'"
-          v-model="selectedSchool"
-          class="px-4 h-11 border rounded"
-          >
+              v-if="typeParam === 'hostel'"
+              v-model="selectedSchool"
+              class="px-4 h-11 border rounded"
+            >
 
-          <option value="">
-          All Schools
-          </option>
-
-
-          <option
-          v-for="school in schoolOptions"
-          :key="school.name"
-          :value="school.name"
-          >
-
-          {{ school.name }}
-
-          </option>
+            <option value="">
+              All Schools
+            </option>
 
 
-          </select>
+            <option
+              v-for="school in schoolOptions"
+              :key="school.abbreviation"
+              :value="school.abbreviation"
+            >
+
+            {{school.name}} ({{school.abbreviation}})
+
+            </option>
+
+            </select>
 
         </div>
 
