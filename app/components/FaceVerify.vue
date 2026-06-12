@@ -32,6 +32,7 @@
       ref="video"
       autoplay
       playsinline
+       webkit-playsinline
       muted
         
       class="absolute w-full h-full object-cover mirror"
@@ -155,14 +156,36 @@ const getFaceVectorFromVideo = async () => {
 }
 /* ================= CAMERA ================= */
 const startCamera = async () => {
+
   stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'user', width: 480, height: 480 },
-    audio: false
+
+    video:{
+      facingMode:{
+        ideal:"user"
+      }
+    },
+
+    audio:false
+
   })
+
+
   video.value.srcObject = stream
-  await new Promise(r => (video.value.onloadedmetadata = r))
-  canvas.value.width = video.value.videoWidth
-canvas.value.height = video.value.videoHeight
+
+  await new Promise(resolve=>{
+    video.value.onloadedmetadata = resolve
+  })
+
+
+  await video.value.play()
+
+
+  canvas.value.width =
+      video.value.videoWidth
+
+  canvas.value.height =
+      video.value.videoHeight
+
 }
 
 /* ================= LOAD MODEL (ONCE) ================= */
@@ -190,12 +213,26 @@ const loadModel = async () => {
 /* ================= CAPTURE ================= */
 const captureCleanImage = () => {
   const c = document.createElement('canvas')
+
   c.width = video.value.videoWidth
   c.height = video.value.videoHeight
-  c.getContext('2d').drawImage(video.value, 0, 0)
-  return c.toDataURL('image/png')
-}
 
+  const ctx = c.getContext('2d')
+
+  // iPhone needs explicit drawing
+  ctx.drawImage(
+    video.value,
+    0,
+    0,
+    c.width,
+    c.height
+  )
+
+  return c.toDataURL(
+    'image/jpeg',
+    0.8
+  )
+}
 const isMouthOpen = (face) => {
   const topLip = face[13]
   const bottomLip = face[14]
@@ -230,7 +267,7 @@ const isBlinking = (face) => {
 }
 
 /* ================= DETECTION LOOP ================= */
-const detect = () => {
+const detect = async () => {
   if (!video.value || video.value.readyState !== 4) {
     animationId = requestAnimationFrame(detect)
     return
@@ -299,16 +336,16 @@ if (current === 'mouth') {
     step++
     updateInstruction()
 
-    setTimeout(() => {
+    setTimeout( async () => {
       if (step >= stepsList.length) {
         stopCamera()
         const finalImage = captureCleanImage()
-    
+        const vector = await getFaceVectorFromVideo()
         statusMessage.value = '✅ Verification Complete!'
         finished.value = true
         started.value = false
 
-        emit('completed', { finalImage })
+        emit('completed', { finalImage, vector })
       }
     }, 400)
   }

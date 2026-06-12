@@ -518,7 +518,7 @@ const handleFaceResult = async (data) => {
   try {
    const response =  await useApiFetch('/kyc/verify', { method: 'POST', body: fd })
     
-  if (!res.success) {
+  if (!response.success) {
      verifyLabel.value = 'try again'
       open.value = false
        onVerify.value = true
