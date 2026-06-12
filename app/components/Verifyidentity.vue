@@ -1,6 +1,6 @@
 <template>
   <div>
-
+fasdansdkf,ansdjfba,
   <!-- {{ isVerify }}
 {{ isBusinessVerify }}
 {{ isFaceVerify }} -->
@@ -500,7 +500,8 @@ const handleFaceResult = async (data) => {
   onVerify.value = false
   form.value.faceImage = data.finalImage
   form.value.faceVector = data.vector
-    
+    console.log(data.vector, "acssdsdddsdssdta.vector");
+      console.log(form.value.faceVector, "form.value.faceVector");
     
   const fd = new FormData()
   if (data.vector) {
