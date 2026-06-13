@@ -356,8 +356,9 @@ if (current === 'mouth') {
 
     setTimeout(() => {
       if (step >= stepsList.length) {
-        stopCamera()
         const finalImage = captureCleanImage()
+        stopCamera()
+        
     
         statusMessage.value = '✅ Verification Complete!'
         finished.value = true
