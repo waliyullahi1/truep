@@ -1,546 +1,1194 @@
 <template>
-  <div class="relative z-[150] h-16 w-full">
-
-    <!-- NAVBAR -->
-    <nav class="border-b bg-white transition-all duration-300">
-
-      <div
-        
-        class="flex items-center justify-between py-2"
-      >
-
-        <!-- LEFT -->
-        <div class="flex items-center gap-10">
-
-          <!-- LOGO -->
-          <NavigationLogo @logoClicked="handleLogoClick" /> 
-
-          <!-- DESKTOP LINKS -->
-          <div class="hidden items-center gap-3 text-sm font-medium text-gray-600 md:flex">
-
-            <NuxtLink to="/search">
-              <p class="cursor-pointer hover:text-primary">
-                Properties
-              </p>
-            </NuxtLink>
-
-            <NuxtLink to="/agent">
-              <p class="cursor-pointer hover:text-primary">
-                Agents
-              </p>
-            </NuxtLink>
-
-            <NuxtLink to="/about-us">
-              <p class="cursor-pointer  whitespace-nowrap hover:text-primary">
-                About Us
-              </p>
-            </NuxtLink>
-
-            <NuxtLink to="/contact-us">
-              <p class="cursor-pointer whitespace-nowrap hover:text-primary">
-                Contact Us
-              </p>
-            </NuxtLink>
-
-            <NuxtLink to="/privacy-policy">
-              <p class="cursor-pointer whitespace-nowrap hover:text-primary">
-                Privacy Policy
-              </p>
-            </NuxtLink>
-
-          </div>
-
-        </div>
-
-        <!-- RIGHT -->
-        <div class=" items-center gap-6 flex">
-
-          <!-- ICONS -->
-          <div class="md:flex hidden  items-center gap-5">
-
-            <img
-              src="/image/icon/notification.svg"
-              class="w-5"
-              alt="notification"
-            />
-
-            <img
-              src="/image/icon/messages.svg"
-              class="w-5"
-              alt="messages"
-            />
-
-            <img
-              src="/image/icon/question.svg"
-              class="w-5"
-              alt="help"
-            />
-
-          </div>
-
-          <!-- AVATAR -->
-          <button
-            @click="toggleMoreMenu"
-            class="flex md:mr-0 mr-6 items-end"
-          >
-
-            <div class="h-10 w-10 overflow-hidden rounded-full border">
-              <img
-                :src="preview || defaultAvatar"
-                class="h-full w-full object-cover"
-                alt="avatar"
-              />
-            </div>
-
-            <div class="relative right-3 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
-
-          </button>
-
-        </div>
-
-        <!-- MOBILE TOGGLE -->
-         
-        <!-- <NavigationToggle
-          :isOpen="menuRevealed"
-          @revealMenu="toggleMenu"
-        /> -->
-
-      </div>
-       <div class=" flex justify-end w-full  absolute  top-5 right-2">
-          <NavigationToggle
-          :isOpen="menuRevealed"
-          @revealMenu="toggleMenu"
-        />
-       </div> 
-    </nav>
-
-    <!-- MOBILE MENU -->
-    <Transition name="slide">
-
-      <div
-        v-if="menuRevealed"
-        class="fixed inset-y-0 left-0 z-[200] h-screen w-[50%] max-w-[320px] overflow-y-auto bg-white px-2 py-8 shadow-2xl md:hidden"
-      >
-
-        <!-- USER -->
-        <div class="mb-10 flex items-center">
-
-          <button
-            @click="toggleMoreMenu"
-            class="flex items-end"
-          >
-
-            <div class="h-10 w-10 overflow-hidden rounded-full border">
-              <img
-                :src="preview || defaultAvatar"
-                class="h-full w-full object-cover"
-                alt="avatar"
-              />
-            </div>
-
-            <div class="relative right-3 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
-
-          </button>
-
-          <div class="leading-tight">
-
-            <p class="text-sm font-semibold">
-              {{ auth.user?.firstName }}
-            </p>
-
-            <p class="text-sm font-medium">
-              {{ auth.user?.roles }}
-            </p>
-
-          </div>
-
-        </div>
-
-        <!-- MOBILE LINKS -->
-        <div class="flex  flex-col text-md sm:text-sm gap-4 font-medium text-slate-700">
-           <NuxtLink
-            v-if="auth.user?.roles === 'user'" class="menu-link"
-            to="/user/profile/edit"
-          >
-            <p class="cursor-pointer hover:text-primary">
-              Upgrade Account
-            </p>
-          </NuxtLink>
-
-          <NuxtLink
-            v-if="auth.user?.roles !== 'user'" class="menu-link"
-            to="/user/dashboard"
-          >
-            <p class="cursor-pointer hover:text-primary">
-              Dashboard
-            </p>
-          </NuxtLink>
-          <NuxtLink to="/user/list/new" class="menu-link">
-            <p class=" cursor-pointer hover:text-primary ">
-              Post Property
-            </p>
-          </NuxtLink>
-
-          <NuxtLink
-            v-for="link in navLinks"
-            :key="link.to"
-            :to="link.to" class="menu-link"
-          >
-            <p class="cursor-pointer hover:text-primary">
-              {{ link.name }}
-            </p>
-          </NuxtLink>
-          
-          
-        </div>
-
-      </div>
-
-    </Transition>
-
-    <!-- USER DROPDOWN -->
-    <div
-      v-if="moreMenu"
-      class="fixed inset-0 z-[300]"
-    >
-
-      <!-- BACKDROP -->
-      <div
-        class="absolute inset-0 bg-black/20"
-        @click="closeMenus"
-      />
-
-      <!-- MENU -->
-      <div
-        class="absolute right-4 top-16 w-64 rounded-xl bg-white shadow-2xl"
-      >
-
-        <!-- HEADER -->
-        <div class="flex items-end gap-2 border-b p-4">
-
-          <div class="h-10 w-10 overflow-hidden rounded-full border">
-            <img
-              :src="preview || defaultAvatar"
-              class="h-full w-full object-cover"
-              alt="avatar"
-            />
-          </div>
-
-          <div>
-
-            <p class="text-xs font-medium">
-              {{ auth.user?.firstName }}
-            </p>
-
-            <p class="text-xs font-medium">
-              {{ hiddenEmail }}
-            </p>
-
-          </div>
-
-        </div>
-
-        <!-- MENU ITEMS -->
-        <div class="space-y-3 border-b px-3 py-4">
-
-          <NuxtLink
-            v-if="auth.user?.roles === 'user'"
-            to="/user/profile/edit"
-          >
-            <p class="menu-link">
-              Upgrade Account
-            </p>
-          </NuxtLink>
-
-          <NuxtLink
-            v-if="auth.user?.roles !== 'user'"
-            to="/user/dashboard"
-          >
-            <p class="menu-link">
-              Dashboard
-            </p>
-          </NuxtLink>
-
-          <NuxtLink to="/user/list/new">
-            <p class="menu-link">
-              Post Property
-            </p>
-          </NuxtLink>
-
-          <NuxtLink to="/user/profile/edit">
-            <p class="menu-link">
-              Profile
-            </p>
-          </NuxtLink>
-
-          <NuxtLink to="/user/settings">
-            <p class="menu-link">
-              Settings
-            </p>
-          </NuxtLink>
-
-        </div>
-
-        <!-- LOGOUT -->
-        <div class="px-3 py-4">
-
-          <button @click="handleLogout">
-            <p class="menu-link">
-              Logout
-            </p>
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
+
+<div class="relative z-[150] w-full">
+
+
+<!-- =========================
+     NAVBAR
+========================= -->
+
+<nav
+class="
+border-b
+bg-white
+transition-all
+duration-300
+"
+>
+
+
+<div
+class="
+flex
+items-center
+justify-between
+py-3
+"
+>
+
+
+<!-- LEFT -->
+
+<div
+class="
+flex
+items-center
+gap-8
+"
+>
+
+
+<NavigationLogo
+@logoClicked="handleLogoClick"
+/>
+
+
+
+
+
+<!-- DESKTOP LINKS -->
+
+<div
+class="
+hidden
+items-center
+gap-5
+text-sm
+font-medium
+text-gray-600
+md:flex
+"
+>
+
+
+<NuxtLink
+v-for="link in links"
+:key="link.to"
+:to="link.to"
+class="
+transition
+hover:text-primary
+"
+:class="{
+'text-primary font-semibold':
+route.path === link.to
+}"
+>
+
+{{link.name}}
+
+</NuxtLink>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- RIGHT -->
+
+<div
+class="
+flex
+items-center
+gap-5
+"
+>
+
+
+
+<!-- ICONS -->
+
+<div
+class="
+hidden
+items-center
+gap-5
+md:flex
+"
+>
+
+
+<img
+src="/image/icon/notification.svg"
+class="w-5"
+alt="notification"
+/>
+
+
+<img
+src="/image/icon/messages.svg"
+class="w-5"
+alt="messages"
+/>
+
+
+<img
+src="/image/icon/question.svg"
+class="w-5"
+alt="help"
+/>
+
+
+</div>
+
+
+
+
+
+
+<!-- PROFILE -->
+
+<button
+@click="toggleProfile"
+class="
+relative
+flex
+items-center
+"
+>
+
+
+<img
+:src="avatar"
+class="
+h-10
+w-10
+rounded-full
+border
+object-cover
+"
+/>
+
+
+
+<span
+class="
+absolute
+bottom-0
+right-0
+h-3
+w-3
+rounded-full
+border-2
+border-white
+bg-green-500
+"
+/>
+
+
+</button>
+
+
+
+
+
+
+
+<!-- MOBILE BUTTON -->
+
+<div
+class="md:hidden"
+>
+
+
+<NavigationToggle
+:isOpen="menuOpen"
+@revealMenu="toggleMenu"
+/>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+</nav>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+ MOBILE MENU
+========================= -->
+
+
+<Transition name="fade">
+
+
+<div
+v-if="menuOpen"
+class="
+fixed
+inset-0
+z-[200]
+md:hidden
+"
+>
+
+
+<!-- OVERLAY -->
+
+
+<div
+class="
+absolute
+inset-0
+bg-black/40
+backdrop-blur-sm
+"
+@click="closeMenus"
+/>
+
+
+
+
+
+
+<!-- DRAWER -->
+
+
+<div
+class="
+absolute
+left-0
+top-0
+h-screen
+w-[85%]
+max-w-[360px]
+overflow-y-auto
+bg-white
+shadow-2xl
+"
+>
+
+
+
+
+<!-- HEADER -->
+
+<div
+class="
+flex
+items-center
+justify-between
+border-b
+px-6
+py-5
+"
+>
+
+
+<NavigationLogo
+@logoClicked="handleLogoClick"
+/>
+
+
+
+<button
+@click="closeMenus"
+class="
+flex
+h-10
+w-10
+items-center
+justify-center
+rounded-full
+border
+"
+>
+
+
+<Icon
+name="heroicons:x-mark"
+class="h-6 w-6"
+/>
+
+
+</button>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- USER -->
+
+
+<div
+class="px-6 py-5"
+>
+
+
+<div
+class="
+flex
+items-center
+gap-3
+rounded-2xl
+bg-gray-100
+p-3
+"
+>
+
+
+<img
+:src="avatar"
+class="
+h-12
+w-12
+rounded-full
+object-cover
+"
+/>
+
+
+
+<div>
+
+<p class="font-semibold">
+
+{{username}}
+
+</p>
+
+
+<p
+class="
+text-sm
+text-gray-500
+"
+>
+
+{{role}}
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- LINKS -->
+
+
+<div
+class="
+space-y-1
+px-4
+pb-10
+"
+>
+
+
+<NuxtLink
+to="/"
+class="mobile-item"
+>
+
+
+<Icon
+name="heroicons:home"
+class="menu-icon"
+/>
+
+
+Home
+
+
+</NuxtLink>
+
+
+
+
+
+<NuxtLink
+v-for="link in links"
+:key="link.to"
+:to="link.to"
+class="mobile-item"
+>
+
+
+<Icon
+:name="link.icon"
+class="menu-icon"
+/>
+
+
+{{link.name}}
+
+
+</NuxtLink>
+
+
+
+
+
+
+<NuxtLink
+to="/user/list/new"
+class="mobile-item"
+>
+
+
+<Icon
+name="heroicons:plus-circle"
+class="menu-icon"
+/>
+
+
+Post Property
+
+
+</NuxtLink>
+
+
+
+
+
+
+
+<NuxtLink
+v-if="role !== 'user'"
+to="/user/dashboard"
+class="mobile-item"
+>
+
+
+<Icon
+name="heroicons:squares-2x2"
+class="menu-icon"
+/>
+
+
+Dashboard
+
+
+</NuxtLink>
+
+
+
+
+
+
+<NuxtLink
+to="/user/settings"
+class="mobile-item"
+>
+
+
+<Icon
+name="heroicons:cog-6-tooth"
+class="menu-icon"
+/>
+
+
+Settings
+
+
+</NuxtLink>
+
+
+
+
+
+
+
+<button
+@click="handleLogout"
+class="
+mobile-item
+w-full
+text-left
+"
+>
+
+
+<Icon
+name="heroicons:arrow-right-on-rectangle"
+class="menu-icon"
+/>
+
+
+Logout
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+</Transition>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+ PROFILE DROPDOWN
+========================= -->
+
+
+<Transition name="fade">
+
+
+<div
+v-if="profileOpen"
+class="
+fixed
+inset-0
+z-[300]
+"
+>
+
+
+<div
+class="
+absolute
+inset-0
+bg-black/20
+"
+@click="closeMenus"
+/>
+
+
+
+
+<div
+class="
+absolute
+right-4
+top-16
+w-64
+rounded-2xl
+bg-white
+shadow-xl
+"
+>
+
+
+
+
+<div
+class="
+flex
+items-center
+gap-3
+border-b
+p-4
+"
+>
+
+
+<img
+:src="avatar"
+class="
+h-10
+w-10
+rounded-full
+object-cover
+"
+/>
+
+
+<div>
+
+<p class="text-sm font-semibold">
+
+{{username}}
+
+</p>
+
+
+<p class="text-xs text-gray-500">
+
+{{hiddenEmail}}
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="space-y-2 p-3">
+
+
+<NuxtLink
+v-if="role==='user'"
+to="/user/profile/edit"
+class="menu-link"
+>
+
+Upgrade Account
+
+</NuxtLink>
+
+
+
+<NuxtLink
+v-if="role!=='user'"
+to="/user/dashboard"
+class="menu-link"
+>
+
+Dashboard
+
+</NuxtLink>
+
+
+
+<NuxtLink
+to="/user/list/new"
+class="menu-link"
+>
+
+Post Property
+
+</NuxtLink>
+
+
+
+<NuxtLink
+to="/user/profile/edit"
+class="menu-link"
+>
+
+Profile
+
+</NuxtLink>
+
+
+
+<NuxtLink
+to="/user/settings"
+class="menu-link"
+>
+
+Settings
+
+</NuxtLink>
+
+
+
+</div>
+
+
+
+
+
+
+<div
+class="
+border-t
+p-3
+"
+>
+
+
+<button
+@click="handleLogout"
+class="
+menu-link
+w-full
+text-left
+"
+>
+
+Logout
+
+</button>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+</Transition>
+
+
+
+</div>
+
+
 </template>
 
 <script setup>
 import {
   ref,
   computed,
-  watch,
-  onMounted,
-  onUnmounted
-} from 'vue'
+  watch
+} from "vue"
 
-import { useRouter, useRoute } from 'vue-router'
-import { useRuntimeConfig } from '#app'
+import {
+  useRouter,
+  useRoute
+} from "vue-router"
+
+import { useRuntimeConfig } from "#app"
+
+
+/* =========================
+   COMPOSABLES
+========================= */
 
 const router = useRouter()
 const route = useRoute()
+
 const config = useRuntimeConfig()
 const auth = useAuth()
 
-const { $toast } = useNuxtApp()
+const {
+  $toast
+} = useNuxtApp()
 
-/*
-|--------------------------------------------------------------------------
-| CONSTANTS
-|--------------------------------------------------------------------------
-*/
 
-const defaultAvatar = '/image/icon/avatar.svg'
 
-const navLinks = [
+/* =========================
+   CONSTANTS
+========================= */
+
+const defaultAvatar =
+  "/image/icon/avatar.svg"
+
+
+
+const links = [
   {
-    name: 'Properties',
-    to: '/search'
+    name:"Properties",
+    to:"/search",
+    icon:"heroicons:building-office-2"
   },
   {
-    name: 'Agents',
-    to: '/agent'
+    name:"Agents",
+    to:"/agent",
+    icon:"heroicons:user-group"
   },
   {
-    name: 'About Us',
-    to: '/about-us'
+    name:"About Us",
+    to:"/about-us",
+    icon:"heroicons:information-circle"
   },
   {
-    name: 'Contact Us',
-    to: '/contact-us'
+    name:"Contact Us",
+    to:"/contact-us",
+    icon:"heroicons:phone"
   },
   {
-    name: 'Privacy Policy',
-    to: '/privacy-policy'
+    name:"Privacy Policy",
+    to:"/privacy-policy",
+    icon:"heroicons:shield-check"
   }
 ]
 
-/*
-|--------------------------------------------------------------------------
-| STATE
-|--------------------------------------------------------------------------
-*/
 
-const preview = ref('')
-const menuRevealed = ref(false)
-const moreMenu = ref(false)
-const isScrolled = ref(false)
 
-/*
-|--------------------------------------------------------------------------
-| COMPUTED
-|--------------------------------------------------------------------------
-*/
+/* =========================
+   STATE
+========================= */
 
-const hiddenEmail = computed(() => {
+const preview = ref("")
 
-  const email = auth.value?.user?.email
+const menuOpen = ref(false)
 
-  if (!email) return 'none'
+const profileOpen = ref(false)
 
-  const [name, domain] = email.split('@')
 
-  const visible = name.slice(0, 4)
 
-  const hidden = '*'.repeat(
-    Math.max(name.length - 4, 5)
-  )
+/* =========================
+   COMPUTED
+========================= */
 
-  return `${visible}${hidden}@${domain}`
+
+const user = computed(()=>{
+
+  return auth.value?.user || {}
 
 })
 
-/*
-|--------------------------------------------------------------------------
-| METHODS
-|--------------------------------------------------------------------------
-*/
 
-const toggleMenu = () => {
+const avatar = computed(()=>{
 
-  menuRevealed.value = !menuRevealed.value
+  return preview.value ||
+    user.value.avatar ||
+    defaultAvatar
 
-  // close dropdown when mobile menu closes
-  if (!menuRevealed.value) {
-    moreMenu.value = false
+})
+
+
+const username = computed(()=>{
+
+  return user.value.firstName || "User"
+
+})
+
+
+const role = computed(()=>{
+
+  return user.value.roles || "User"
+
+})
+
+
+
+const hiddenEmail = computed(()=>{
+
+  const email = user.value.email
+
+  if(!email)
+    return ""
+
+  const [
+    name,
+    domain
+  ] = email.split("@")
+
+  return (
+    name.slice(0,4)
+    +
+    "*".repeat(5)
+    +
+    "@"
+    +
+    domain
+  )
+
+})
+
+
+
+/* =========================
+   MENU METHODS
+========================= */
+
+
+const toggleMenu = ()=>{
+
+  menuOpen.value =
+    !menuOpen.value
+
+  if(menuOpen.value){
+    profileOpen.value=false
   }
 
 }
 
-const toggleMoreMenu = () => {
-  moreMenu.value = !moreMenu.value
-}
 
-const closeMenus = () => {
-  menuRevealed.value = false
-  moreMenu.value = false
-}
 
-const handleLogoClick = () => {
-  router.push('/')
-}
+const toggleProfile = ()=>{
 
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 20
-}
+  profileOpen.value =
+    !profileOpen.value
 
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
-
-const handleLogout = async () => {
-
-  try {
-
-    const response = await fetch(
-      `${config.public.api_url}/auth/logout`,
-      {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      return $toast.error(
-        data.message || 'Logout failed'
-      )
-    }
-
-    auth.value.user = null
-    auth.value.authenticated = false
-    auth.value.checked = false
-    auth.value.serverError = false
-
-    $toast.success(
-      data.message || 'Logout successful'
-    )
-    console.log(auth.value);
-    
-    closeMenus()
-
-    // router.push('/')
-
-  } catch (error) {
-
-    $toast.error(
-      error.message || 'Something went wrong'
-    )
-
+  if(profileOpen.value){
+    menuOpen.value=false
   }
 
 }
 
-/*
-|--------------------------------------------------------------------------
-| FETCH AVATAR
-|--------------------------------------------------------------------------
-*/
 
-const fetchAvatar = async () => {
 
-  try {
+const closeMenus = ()=>{
 
-    const res = await fetch(
-      `${config.public.api_url}/profile/avatar`,
-      {
-        credentials: 'include'
-      }
-    )
+  menuOpen.value=false
 
-    const data = await res.json()
-
-    if (data.success && data.avatar) {
-      preview.value = data.avatar
-    }
-
-  } catch (error) {
-    console.error(error)
-  }
+  profileOpen.value=false
 
 }
 
-/*
-|--------------------------------------------------------------------------
-| WATCH ROUTE
-|--------------------------------------------------------------------------
-*/
 
-watch(
-  () => route.fullPath,
-  () => {
-    closeMenus()
-  }
+
+const handleLogoClick = ()=>{
+
+  router.push("/")
+
+}
+
+
+
+
+/* =========================
+ LOGOUT
+========================= */
+
+
+const handleLogout = async()=>{
+
+
+try{
+
+
+const response =
+await fetch(
+`${config.public.api_url}/auth/logout`,
+{
+method:"POST",
+credentials:"include"
+}
 )
 
-/*
-|--------------------------------------------------------------------------
-| LIFECYCLE
-|--------------------------------------------------------------------------
-*/
 
-onMounted(() => {
 
-  window.addEventListener(
-    'scroll',
-    handleScroll
-  )
+const data =
+await response.json()
 
-  fetchAvatar()
 
-})
 
-onUnmounted(() => {
+if(!response.ok){
 
-  window.removeEventListener(
-    'scroll',
-    handleScroll
-  )
+return $toast.error(
+data.message || "Logout failed"
+)
 
-})
-</script>
-<style scoped>
-.menu-link {
-  @apply cursor-pointer rounded-lg px-2 py-2 text-sm font-medium transition duration-300 hover:bg-gray-100 hover:text-secondary;
 }
+
+
+
+auth.value.user=null
+auth.value.authenticated=false
+auth.value.checked=false
+
+
+
+closeMenus()
+
+
+
+$toast.success(
+data.message || "Logout successful"
+)
+
+
+
+}catch(error){
+
+
+$toast.error(
+error.message || "Something went wrong"
+)
+
+
+}
+
+
+
+}
+
+
+
+/* =========================
+ FETCH AVATAR
+========================= */
+
+
+const fetchAvatar = async()=>{
+
+
+try{
+
+
+const res =
+await fetch(
+`${config.public.api_url}/profile/avatar`,
+{
+credentials:"include"
+}
+)
+
+
+
+const data =
+await res.json()
+
+
+
+if(data.success){
+
+preview.value =
+data.avatar
+
+}
+
+
+
+}catch(error){
+
+console.error(error)
+
+}
+
+
+}
+
+
+
+/* =========================
+ WATCHERS
+========================= */
+
+
+watch(
+()=>route.fullPath,
+()=>{
+closeMenus()
+}
+)
+
+
+watch(
+menuOpen,
+(value)=>{
+
+if(process.client){
+
+document.body.style.overflow =
+value ? "hidden" : ""
+
+}
+
+}
+
+)
+
+
+
+/* =========================
+ LIFECYCLE
+========================= */
+
+
+onMounted(()=>{
+
+fetchAvatar()
+
+})
+
+
+onUnmounted(()=>{
+
+if(process.client){
+
+document.body.style.overflow=""
+
+}
+
+})
+
+</script>
+
+
+
+
+<style scoped>
+
+
+.mobile-item{
+
+@apply flex items-center gap-4 rounded-xl px-4 py-3 text-gray-700 transition hover:bg-gray-100;
+
+}
+
+
+.menu-icon{
+
+@apply h-5 w-5 text-gray-500;
+
+}
+
+
+
+.menu-link{
+
+@apply block rounded-lg px-3 py-2 text-sm transition hover:bg-gray-100;
+
+}
+
+
+
+
+.fade-enter-active,
+.fade-leave-active{
+
+transition:opacity .3s ease;
+
+}
+
+
+.fade-enter-from,
+.fade-leave-to{
+
+opacity:0;
+
+}
+
+
+
+
+
 </style>

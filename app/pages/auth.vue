@@ -270,10 +270,11 @@ watch(
 </script>
 <template>
   <div class="min-h-screen  bg-[url('/images/hero.jpg')] bg-no-repeat  bg-cover fr bg-gray-50 ">
+  
     <div v-if="resetpassword" >
      <Forgetpage @close="handleforgetPage" />
     </div>
-    
+   
     <div class=" w-full min-h-screen    pb-6 l   bg-black/80 ">
         
     
