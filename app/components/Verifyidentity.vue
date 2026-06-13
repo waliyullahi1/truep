@@ -1,6 +1,6 @@
 <template>
   <div>
-new code x
+new code  mmmm
   <!-- {{ isVerify }}
 {{ isBusinessVerify }}
 {{ isFaceVerify }} -->
@@ -203,10 +203,12 @@ new code x
         <!-- ================= FACE ================= -->
         <div v-if="step === 'face'" class="flex justify-center">
          <div v-show="onVerify" class=" ">
+          <ClientOnly>
             <FaceVerify
                 ref="faceRef"
                 @completed="handleFaceResult"
               />
+          </ClientOnly>
           </div> 
           <div v-show="!onVerify"  class="h-48 flex flex-col  justify-center items-center  w-full ">
               <div class=" mr-6"><img src="@/assets/images/icons/loading.svg" class=" w-10"/></div>

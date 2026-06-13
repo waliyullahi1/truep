@@ -211,10 +211,18 @@ const loadModel = async () => {
     modelLoaded = true
 
   } catch (error) {
+    console.log(' it reach error side');
+    console.log(modelError)
+    console.log(JSON.stringify(modelError))
+    console.log(modelError?.message)
+    console.log(modelError?.stack)
+
     console.error(
       'LOAD MODEL FAILED:',
       error
     )
+    console.log(' it reach error side');
+    
   }
 }
 
