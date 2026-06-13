@@ -167,72 +167,29 @@ canvas.value.height = video.value.videoHeight
 
 /* ================= LOAD MODEL (ONCE) ================= */
 const loadModel = async () => {
+  if (modelLoaded) return
+  console.log('load 1');
+  
+  const vision = await FilesetResolver.forVisionTasks(
+    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
+  )
+  console.log('load 2');
+  faceLandmarker = await FaceLandmarker.createFromOptions(
+  vision,
+  {
+    baseOptions: {
+      modelAssetPath: "/models/face_landmarker.task"
+    },
 
-  if (modelLoaded) {
-    console.log("MODEL ALREADY LOADED")
-    return
+    runningMode: "VIDEO",
+    numFaces: 1,
+
+    outputFaceBlendshapes: true,
+    outputFacialTransformationMatrixes: true
   }
-
-  try {
-
-    console.log("START LOADING MEDIAPIPE")
-
-
-    const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
-    )
-
-
-    console.log("WASM LOADED")
-      faceLandmarker = await FaceLandmarker.createFromOptions(
-        vision,
-        {
-          baseOptions: {
-            modelAssetPath: "/models/face_landmarker.task"
-          },
-
-          runningMode: "VIDEO",
-          numFaces: 1,
-
-          outputFaceBlendshapes: true,
-          outputFacialTransformationMatrixes: true
-        }
-      )
-
-    // faceLandmarker = await FaceLandmarker.createFromOptions(
-    //   vision,
-    //   {
-    //     baseOptions:{
-    //       modelAssetPath:
-    //       "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
-    //     },
-
-    //     runningMode:"VIDEO",
-
-    //     numFaces:1,
-
-    //     outputFaceBlendshapes:true,
-
-    //     outputFacialTransformationMatrixes:true
-    //   }
-    // )
-
-
-    console.log("MODEL CREATED")
-
-
-    modelLoaded = true
-
-
-  } catch(error){
-
-    console.error(
-      "MEDIAPIPE LOAD ERROR",
-      error
-    )
-
-  }
-
+)
+console.log('load 3');
+  modelLoaded = true
 }
 
 /* ================= CAPTURE ================= */
