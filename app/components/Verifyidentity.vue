@@ -1,6 +1,6 @@
 <template>
   <div>
-new code ssca
+new code x
   <!-- {{ isVerify }}
 {{ isBusinessVerify }}
 {{ isFaceVerify }} -->

@@ -168,28 +168,54 @@ canvas.value.height = video.value.videoHeight
 /* ================= LOAD MODEL (ONCE) ================= */
 const loadModel = async () => {
   if (modelLoaded) return
-  console.log('load 1');
-  
-  const vision = await FilesetResolver.forVisionTasks(
-    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
-  )
-  console.log('load 2');
-  faceLandmarker = await FaceLandmarker.createFromOptions(
-  vision,
-  {
-    baseOptions: {
-      modelAssetPath: "/models/face_landmarker.task"
-    },
 
-    runningMode: "VIDEO",
-    numFaces: 1,
+  try {
+    console.log('Loading WASM...')
 
-    outputFaceBlendshapes: true,
-    outputFacialTransformationMatrixes: true
+    const vision =
+      await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
+      )
+
+    console.log('WASM Loaded')
+
+    try {
+      console.log('Loading Face Model...')
+
+      faceLandmarker =
+        await FaceLandmarker.createFromOptions(
+          vision,
+          {
+            baseOptions: {
+              modelAssetPath:
+                '/models/face_landmarker.task'
+            },
+
+            runningMode: 'VIDEO',
+            numFaces: 1,
+            outputFaceBlendshapes: true,
+            outputFacialTransformationMatrixes: true
+          }
+        )
+
+      console.log('Face Model Loaded')
+
+    } catch (modelError) {
+      console.error(
+        'MODEL FILE ERROR:',
+        modelError
+      )
+      throw modelError
+    }
+
+    modelLoaded = true
+
+  } catch (error) {
+    console.error(
+      'LOAD MODEL FAILED:',
+      error
+    )
   }
-)
-console.log('load 3');
-  modelLoaded = true
 }
 
 /* ================= CAPTURE ================= */
