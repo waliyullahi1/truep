@@ -167,49 +167,72 @@ canvas.value.height = video.value.videoHeight
 
 /* ================= LOAD MODEL (ONCE) ================= */
 const loadModel = async () => {
-  if (modelLoaded) return
+
+  if (modelLoaded) {
+    console.log("MODEL ALREADY LOADED")
+    return
+  }
 
   try {
-    console.log("Loading WASM")
+
+    console.log("START LOADING MEDIAPIPE")
+
 
     const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
     )
 
-    console.log("WASM loaded")
 
+    console.log("WASM LOADED")
+      faceLandmarker = await FaceLandmarker.createFromOptions(
+        vision,
+        {
+          baseOptions: {
+            modelAssetPath: "/models/face_landmarker.task"
+          },
 
-    faceLandmarker = await FaceLandmarker.createFromOptions(
-      vision,
-      {
-        baseOptions: {
-          modelAssetPath:
-            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float32/1/face_landmarker.task"
-        },
+          runningMode: "VIDEO",
+          numFaces: 1,
 
-        runningMode: "VIDEO",
+          outputFaceBlendshapes: true,
+          outputFacialTransformationMatrixes: true
+        }
+      )
 
-        numFaces: 1,
+    // faceLandmarker = await FaceLandmarker.createFromOptions(
+    //   vision,
+    //   {
+    //     baseOptions:{
+    //       modelAssetPath:
+    //       "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+    //     },
 
-        outputFaceBlendshapes: true,
+    //     runningMode:"VIDEO",
 
-        outputFacialTransformationMatrixes: true
-      }
-    )
+    //     numFaces:1,
+
+    //     outputFaceBlendshapes:true,
+
+    //     outputFacialTransformationMatrixes:true
+    //   }
+    // )
 
 
     console.log("MODEL CREATED")
 
+
     modelLoaded = true
 
-  } catch (error) {
+
+  } catch(error){
 
     console.error(
-      "FACE MODEL ERROR:",
+      "MEDIAPIPE LOAD ERROR",
       error
     )
 
   }
+
 }
 
 /* ================= CAPTURE ================= */
