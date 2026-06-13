@@ -40,7 +40,7 @@ const navLinks = [
   },
   {
     name: "Payments",
-    to: "/user/payments",
+    to: "/user/orders",
     icon: "heroicons:credit-card",
     badge: "New",
     hideOnMd:false,
@@ -291,7 +291,7 @@ onUnmounted(()=>{
 
     <!-- DESKTOP LINKS -->
 
-    <div class=" items-center gap-2 md:flex" >
+    <div class=" hidden items-center gap-2 md:flex" >
       <template v-for="link in navLinks"  :key="link.to" >
         <NuxtLink  v-if="!link.hideOnMd"   :to="link.to"   class="desktop-link hidden"
           :class="[ 'desktop-link', route.path === link.to ? 'active-link' : '', link.hideOnMd ? 'hidden' : 'hidden ']">
