@@ -76,13 +76,20 @@ const retryCapture = ref(false)
 const currentmessage = ref('Initializing Face Capture')
 
 
-onMounted(()=>{
-  if(process.client){
-    import('eruda').then((erude)=>{
-      eruda.default.init()
-      console.log('Eruda  Console is ready ')
-    }).catch(err => console.error('Eruda failed to load', err))
-  }
+onMounted(async () => { // Check if we are safely in the browser context
+ if (process.client) { 
+  try { 
+     //Dynamically import eruda only on the phone browser 
+     const erudaModule = awaitimport('eruda') 
+     const eruda = erudaModule.default || erudaModule 
+     // Initialize eruda cleanly
+     eruda.init() 
+     console.log('Eruda console is running perfectly!')
+     } catch (err) {
+       console.error('Eruda failed to initialize:', err)
+     
+      }
+     }
 })
 let stream = null
 let animationId = null
