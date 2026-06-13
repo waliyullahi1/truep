@@ -75,6 +75,15 @@ const loading = ref(true)
 const retryCapture = ref(false)
 const currentmessage = ref('Initializing Face Capture')
 
+
+onMounted(()=>{
+  if(process.client){
+    import('eruda').then((erude)=>{
+      eruda.default.init()
+      console.log('Eruda  Console is ready ')
+    }).catch(err => console.error('Eruda failed to load', err))
+  }
+})
 let stream = null
 let animationId = null
 let faceLandmarker = null
