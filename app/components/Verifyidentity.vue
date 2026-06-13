@@ -504,7 +504,7 @@ const handleFaceResult = async (data) => {
   form.value.faceVector = data.vector
     console.log(data.vector, "acssdsdddsdssdta.vector");
       console.log(form.value.faceVector, "form.value.faceVector");
-    
+     console.log(data.finalImage, "data.finalImage");
   const fd = new FormData()
   if (data.vector) {
       fd.append('faceVector', JSON.stringify(data.vector))
