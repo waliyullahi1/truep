@@ -427,6 +427,9 @@
               </div>
          
               <BookInspection  :propertyId="form.id"/>
+                <!-- <UiButtonsPrimary >
+                 <NuxtLink to="/user/propertypayment/237924347263796">Deposit</NuxtLink>
+                </UiButtonsPrimary> -->
               <PropertyInquiry :title="form.title" :price="formattedPrice" :propertyId="property?._id"/>
               
               <SafetyTips/>

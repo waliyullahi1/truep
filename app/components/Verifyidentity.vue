@@ -1,6 +1,6 @@
 <template>
   <div>
-new code  pp
+
   <!-- {{ isVerify }}
 {{ isBusinessVerify }}
 {{ isFaceVerify }} -->

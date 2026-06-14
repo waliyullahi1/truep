@@ -75,6 +75,7 @@ UPLOAD SINGLE FILE (SERVER SAFE)
 ====================== */
 async function uploadSingleFile(file, index, type) {
   const key = `${type}-${index}`
+
   loadingMap.value[key] = true
 
   try {
@@ -90,7 +91,12 @@ async function uploadSingleFile(file, index, type) {
     )
 
     const response = res.data?.value || res.data
-    const list = response?.data?.[type] || response?.data?.images || []
+
+    const list =
+      response?.data?.[type] ||
+      response?.data?.images ||
+      []
+
     const latest = list[list.length - 1]
 
     const state = getState(type)
@@ -101,18 +107,22 @@ async function uploadSingleFile(file, index, type) {
         url: optimizeCloudinary(latest.url),
         original: latest.url
       }
+
+      $toast.success(`${file.name} uploaded`)
     }
 
   } catch (err) {
     console.log(err)
 
     const state = getState(type)
+
+    // remove failed preview
     state.value[index] = null
 
-    $toast.error("Upload failed")
+    $toast.error(`${file.name} failed to upload`)
+  } finally {
+    loadingMap.value[key] = false
   }
-
-  loadingMap.value[key] = false
 }
 
 /* ======================
@@ -130,35 +140,30 @@ async function handleUpload(event, index, type) {
 
   const state = getState(type)
 
-  const uploadTasks = []
+  files.forEach(file => {
 
-  for (const file of files) {
-
-    // find empty slot per section
-    let slot = state.value.findIndex(x => !x)
+    let slot = state.value.findIndex(
+      item => item === null
+    )
 
     if (slot === -1) {
       state.value.push(null)
       slot = state.value.length - 1
     }
 
-    // instant preview (TikTok feel)
+    // instant preview
     state.value[slot] = {
       url: URL.createObjectURL(file),
       temp: true
     }
 
-    // upload queue (single file per request)
-    uploadTasks.push(uploadSingleFile(file, slot, type))
-  }
-
-  try {
-    await Promise.all(uploadTasks)
-    $toast.success("Upload completed")
-  } catch (err) {
-    console.log(err)
-    $toast.error("Some uploads failed")
-  }
+    // upload independently
+    uploadSingleFile(
+      file,
+      slot,
+      type
+    )
+  })
 
   event.target.value = ""
 }
