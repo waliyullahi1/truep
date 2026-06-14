@@ -2,84 +2,188 @@
   <div class="bg-[#FEFEFE]">
 
     <!-- HERO -->
-    <header class="h-[60vh] hero-section flex items-center">
-      <Container class="text-white text-center">
-        
-        <h1 class="text-2xl sm:text-4xl font-semibold">
-          How can we help you today?
-        </h1>
+<header class="relative overflow-hidden py-24 hero-section">
 
-        <!-- Search -->
-        <div class="mt-6 w-full sm:w-[60%] mx-auto bg-white rounded-lg shadow-lg p-2 flex gap-2">
-          <input
-            v-model="search"
-            placeholder="Search land, houses, agents..."
-            class="flex-1 px-3 py-2 outline-none text-gray-700"
-          />
-          <button
-            @click="router.push('/search')"
-            class="bg-primary text-white px-6 py-2 rounded-lg"
-          >
-            Search
-          </button>
-        </div>
+  <div class="absolute inset-0 bg-black/50"></div>
 
-      </Container>
-    </header>
+  <Container class="relative z-10 text-center text-white">
+
+    <div
+      class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full mb-6"
+    >
+      <Icon
+        name="heroicons:lifebuoy"
+        class="w-5 h-5"
+      />
+      <span>Support Center</span>
+    </div>
+
+    <h1
+      class="text-4xl md:text-6xl font-bold leading-tight"
+    >
+      How can we help you today?
+    </h1>
+
+    <p
+      class="max-w-2xl mx-auto mt-4 text-lg text-white/90"
+    >
+      Find answers, contact support, or chat with our team.
+    </p>
+
+    <div
+      class="mt-8 bg-white rounded-2xl shadow-2xl p-2 max-w-3xl mx-auto flex"
+    >
+      <input
+        v-model="search"
+        placeholder="Search for help..."
+        class="flex-1 px-4 py-3 text-gray-700 outline-none"
+      >
+
+      <button
+        class="bg-primary text-white px-8 rounded-xl"
+      >
+        Search
+      </button>
+    </div>
+
+  </Container>
+
+</header>
 
     <!-- CATEGORY -->
-    <section class="py-10">
-      <Container>
-        <div class="flex flex-wrap gap-3 justify-center">
-          <button
-            v-for="(item, i) in categories"
-            :key="i"
-            class="px-5 py-2 border border-primary rounded-lg hover:bg-primary hover:text-white transition"
-          >
-            {{ item }}
-          </button>
-        </div>
-      </Container>
-    </section>
+    <section class="py-16">
+  <Container>
+
+    <div
+      class="grid md:grid-cols-4 gap-5"
+    >
+
+      <div
+        v-for="item in categories"
+        :key="item.title"
+        class="
+          bg-white
+          rounded-2xl
+          p-6
+          border
+          hover:border-primary
+          hover:shadow-xl
+          transition
+          cursor-pointer
+        "
+      >
+        <Icon
+          :name="item.icon"
+          class="w-10 h-10 text-primary"
+        />
+
+        <h3
+          class="font-semibold mt-4"
+        >
+          {{ item.title }}
+        </h3>
+
+        <p
+          class="text-sm text-gray-500 mt-2"
+        >
+          {{ item.description }}
+        </p>
+
+      </div>
+
+    </div>
+
+  </Container>
+</section>
 
     <!-- CONTACT OPTIONS -->
     <section class="bg-slate-100 py-16">
       <Container>
         
-        <div class="text-center mb-10">
-          <UiTypographyH1>Contact Support</UiTypographyH1>
-          <UiTypographyP>Choose how you want to reach us</UiTypographyP>
-        </div>
-
         <div class="grid md:grid-cols-3 gap-6">
 
-          <!-- PHONE -->
-          <div class="bg-white p-6 rounded-xl shadow text-center space-y-3">
-            <div class="text-3xl">📞</div>
-            <h3 class="font-semibold text-lg">Call Us</h3>
-            <p class="text-sm text-gray-600">Speak directly with support</p>
-            <p class="font-medium">+234 800 000 0000</p>
-          </div>
+  <!-- Call -->
+  <div class="bg-white rounded-2xl p-8 shadow-sm border">
 
-          <!-- EMAIL -->
-          <div class="bg-white p-6 rounded-xl shadow text-center space-y-3">
-            <div class="text-3xl">📧</div>
-            <h3 class="font-semibold text-lg">Email</h3>
-            <p class="text-sm text-gray-600">We reply within 24 hours</p>
-            <a href="mailto:support@abanise.com" class="text-primary underline">
-              support@abanise.com
-            </a>
-          </div>
+    <div
+      class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center"
+    >
+      <Icon
+        name="heroicons:phone"
+        class="w-7 h-7 text-primary"
+      />
+    </div>
 
-          <!-- ADDRESS -->
-          <div class="bg-white p-6 rounded-xl shadow text-center space-y-3">
-            <div class="text-3xl">📍</div>
-            <h3 class="font-semibold text-lg">Office</h3>
-            <p class="text-sm text-gray-600">Visit our office</p>
-            <p>Lagos, Nigeria</p>
-          </div>
+    <h3 class="font-semibold text-xl mt-5">
+      Call Us
+    </h3>
 
-        </div>
+    <p class="text-gray-500 mt-2">
+      Speak directly with support.
+    </p>
+
+    <p class="mt-4 font-medium">
+      +234 800 000 0000
+    </p>
+
+  </div>
+
+  <!-- Email -->
+  <div class="bg-white rounded-2xl p-8 shadow-sm border">
+
+    <div
+      class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center"
+    >
+      <Icon
+        name="heroicons:envelope"
+        class="w-7 h-7 text-primary"
+      />
+    </div>
+
+    <h3 class="font-semibold text-xl mt-5">
+      Email Us
+    </h3>
+
+    <p class="text-gray-500 mt-2">
+      Response within 24 hours.
+    </p>
+
+    <a
+      href="mailto:support@abanise.com"
+      class="mt-4 block text-primary"
+    >
+      support@abanise.com
+    </a>
+
+  </div>
+
+  <!-- Office -->
+  <div class="bg-white rounded-2xl p-8 shadow-sm border">
+
+    <div
+      class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center"
+    >
+      <Icon
+        name="heroicons:map-pin"
+        class="w-7 h-7 text-primary"
+      />
+    </div>
+
+    <h3 class="font-semibold text-xl mt-5">
+      Visit Office
+    </h3>
+
+    <p class="text-gray-500 mt-2">
+      Meet our team in person.
+    </p>
+
+    <p class="mt-4">
+      Lagos, Nigeria
+    </p>
+
+  </div>
+
+</div>
 
       </Container>
     </section>
@@ -149,12 +253,30 @@ const router = useRouter()
 const search = ref('')
 const openChat = ref(false)
 
+
 const categories = [
-  'For Tenants',
-  'For Landlords',
-  'For Agents',
-  'Business Inquiries'
+  {
+    title: 'For Tenants',
+    description: 'Find help with rentals and bookings.',
+    icon: 'heroicons:home'
+  },
+  {
+    title: 'For Landlords',
+    description: 'Manage listings and tenants.',
+    icon: 'heroicons:building-office'
+  },
+  {
+    title: 'For Agents',
+    description: 'Support for property agents.',
+    icon: 'heroicons:user-group'
+  },
+  {
+    title: 'Business',
+    description: 'Partnership and enterprise support.',
+    icon: 'heroicons:briefcase'
+  }
 ]
+
 </script>
 
 <style>
