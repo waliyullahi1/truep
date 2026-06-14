@@ -210,7 +210,7 @@ watch(
 
           <!-- Login -->
           <UiButtonsPrimary class="w-full font-medium" >
-            <NuxtLink to="/auth/login" @click="closeMenu"  >
+            <NuxtLink to="/auth?type=login-page" @click="closeMenu"  >
               Login
             </NuxtLink>
           </UiButtonsPrimary>

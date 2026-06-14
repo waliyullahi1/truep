@@ -1,18 +1,18 @@
 <template>
   <div class="flex md:hidden" >
-    <div @click="$emit('revealMenu')" class="w-5">
+    <div @click="$emit('revealMenu')" class="w-8">
       <div
         :class="isOpen 
-          ? 'transition transform rotate-45 w-6 bg-primary' 
-          : 'transition w-6 bg-primary'"
+          ? 'transition transform rotate-45 w-8 bg-primary' 
+          : 'transition w-8 bg-primary'"
         class="block cursor-pointer"
         style="height: 3px;"
       ></div>
 
       <div
         :class="isOpen 
-          ? 'transition transform -rotate-45 w-6 -mt-0.5 bg-primary' 
-          : 'transition w-6 mt-1.5 bg-primary'"
+          ? 'transition transform -rotate-45 w-8 -mt-0.5 bg-primary' 
+          : 'transition w-8 mt-1.5 bg-primary'"
         class="block cursor-pointer"
         style="height: 3px;"
       ></div>

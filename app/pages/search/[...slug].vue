@@ -54,7 +54,7 @@ const selectedSchool = ref('')
 
 
 const page = ref(1)
-const perPage = 10
+const perPage = 30
 const showFilter = ref(false)
 const sortType = ref('suggested')
 const filters = ref({})
