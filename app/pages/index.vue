@@ -252,7 +252,7 @@
 
           <div class="  flex gap-4 justify-end w-full ">
           <UiButtonsPrimary   @click="router.push('/auth?type=register-page')" class="  text-left"> Create Free Account</UiButtonsPrimary>
-          <UiButtonsPrimary   @click="router.push('/auth?type=register-page')" class="  text-left">  Login </UiButtonsPrimary>
+          <UiButtonsPrimary   @click="router.push('/auth?type=login-page')" class="  text-left">  Login </UiButtonsPrimary>
           </div>
           </div>
           
