@@ -40,7 +40,7 @@ sitemap: {
         loc: `/property/${property.slug}`
       })
     )
-    const  profileRoutes = (response.data || []).map(
+    const  profileRoutes = (agentResponse.data || []).map(
       (profile: any) => ({
         loc:`/profile/${profile.userId}`
       })
