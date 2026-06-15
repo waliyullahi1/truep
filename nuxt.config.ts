@@ -1,24 +1,54 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
-  devtools: { enabled: true },
+  devtools: {
+    enabled: true
+  },
 
   modules: [
     '@nuxtjs/tailwindcss',
     'vue3-carousel-nuxt',
     '@pinia/nuxt',
     '@nuxt/icon',
-    
-  
+    '@nuxtjs/sitemap',
   ],
+
+  site: {
+    url: 'https://abanise.com'
+  },
+
+  sitemap: {
+    urls: async () => {
+      const properties = await fetch(
+        'https://www.api.abanise.com/property/all'
+      ).then(res => res.json())
+
+      const staticRoutes = [
+        '/about-us',
+        '/contact-us',
+        '/privacy-policy',
+        '/resetpassword',
+        '/auth?type=register-page',
+        '/auth?type=login-page',
+        '/terms-and-conditions'
+      ]
+
+      const propertyRoutes = properties.map((property: any) => ({
+        loc: `/property/${property.slug}`
+      }))
+
+      return [
+        ...staticRoutes,
+        ...propertyRoutes
+      ]
+    }
+  },
 
   pages: true,
 
   css: [
     '~/assets/css/main.css',
-    '@vueup/vue-quill/dist/vue-quill.snow.css',
-    
-   
+    '@vueup/vue-quill/dist/vue-quill.snow.css'
   ],
 
   app: {
@@ -35,24 +65,40 @@ export default defineNuxtConfig({
       },
 
       meta: [
-        { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Abanise Enterprises - Buy and Sell Properties in Nigeria' }
+        {
+          charset: 'utf-8'
+        },
+        {
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1'
+        },
+        {
+          name: 'description',
+          content:
+            'Abanise Enterprises - Buy and Sell Properties in Nigeria'
+        }
       ],
 
       link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-
         {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap'
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com'
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: ''
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+          href:
+            'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap'
         },
-
+        {
+          rel: 'stylesheet',
+          href:
+            'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+        },
         {
           rel: 'icon',
           type: 'image/png',
@@ -65,13 +111,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     mapboxSecret: process.env.MAPBOX_SECRET || '',
     api_url: process.env.BASE_URL || 'http://localhost:5000',
-     geminiApiKey: process.env.GEMINI_API_KEY,
+    geminiApiKey: process.env.GEMINI_API_KEY,
 
     public: {
       projectName: 'true people buy property and sell it',
       mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || '',
-        api_url: process.env.BASE_URL || 'http://localhost:5000',
-
+      api_url: process.env.BASE_URL || 'http://localhost:5000'
     }
   }
 })
