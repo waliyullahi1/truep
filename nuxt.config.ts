@@ -19,31 +19,48 @@ export default defineNuxtConfig({
 
 sitemap: {
   urls: async () => {
-    const response = await fetch(
+
+    const propertyResponse = await fetch(
       'https://www.api.abanise.com/property/sitemap'
     ).then(res => res.json())
 
-    const staticRoutes = [
-      '/about-us',
-      '/contact-us',
-      '/privacy-policy',
-      '/resetpassword',
-      '/auth?type=register-page',
-      '/auth?type=login-page',
-      '/terms-and-conditions'
-    ]
+    const agentResponse = await fetch(
+      'https://www.api.abanise.com/agent/sitemap'
+    ).then(res => res.json())
 
-    const propertyRoutes = (response.data || []).map(
+    const propertyRoutes = propertyResponse.data.map(
       (property: any) => ({
-        loc: `/property/${property.slug}`
+        loc: `/property/${property.slug}`,
+        lastmod: property.updatedAt
+      })
+    )
+
+    const agentRoutes = agentResponse.data.map(
+      (agent: any) => ({
+        loc: `/agent/${agent.slug}`,
+        lastmod: agent.updatedAt
       })
     )
 
     return [
-      ...staticRoutes.map(route => ({
-        loc: route
-      })),
-      ...propertyRoutes
+      {
+        loc: '/'
+      },
+      {
+        loc: '/about-us'
+      },
+      {
+        loc: '/contact-us'
+      },
+      {
+        loc: '/privacy-policy'
+      },
+      {
+        loc: '/terms-and-conditions'
+      },
+
+      ...propertyRoutes,
+      ...agentRoutes
     ]
   }
 },
