@@ -18,6 +18,16 @@ export default defineNuxtConfig({
   },
 
 sitemap: {
+    discoverImages: false,
+
+  exclude: [
+    '/auth',
+    '/resetpassword',
+
+    '/admin/**',
+
+    '/user/**'
+  ],
   urls: async () => {
     const response = await fetch(
       'https://www.api.abanise.com/property/sitemap'
