@@ -29,7 +29,7 @@ const { data, pending, error, refresh } = await useAsyncData(
       throw err
     }
   },
-  { lazy: true, server: true }
+  {  server: true }
 )
 
 /* keep agent reactive like before */
@@ -98,19 +98,26 @@ const shareProfile = async () => {
    SEO / SOCIAL SHARE
 ============================= */
 
-const siteUrl = 'https://yourdomain.com'
+const siteUrl = 'https://abanise.com'
 
 const profileUrl = computed(() => {
   return `${siteUrl}${route.fullPath}`
 })
 
+
 const profileImage = computed(() => {
-  return (
-    data.value?.avatar ||
-    `${siteUrl}/image/no-image.png`
+  const img = data.value?.avatar
+
+  if (!img) {
+    return 'https://abanise.com/default-agent.jpg'
+  }
+
+  return img.replace(
+    '/upload/',
+    '/upload/w_1200,h_630,c_fill,q_auto,f_auto/'
   )
 })
-
+console.log(profileImage.value,'gdsdsdfasdfas');
 const profileTitle = computed(() => {
   if (!data.value) return 'Agent Profile'
 
@@ -121,11 +128,10 @@ const profileDescription = computed(() => {
   const about =
     data.value?.about?.replace(/<[^>]*>/g, '') || ''
 
-  if (about) {
-    return about.slice(0, 160)
-  }
-
-  return `View ${data.value?.name || 'this agent'} profile, properties, reviews and contact information.`
+  return (
+    about.slice(0, 120) ||
+    `View ${data.value?.name || 'this agent'} profile, listings and contact details.`
+  )
 })
 
 /* =============================
