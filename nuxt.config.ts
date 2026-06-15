@@ -21,7 +21,7 @@ sitemap: {
     discoverImages: false,
 
   exclude: [
-    '/auth',
+    '/howiswork',
     '/resetpassword',
 
     '/admin/**',
