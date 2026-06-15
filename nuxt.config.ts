@@ -37,7 +37,7 @@ sitemap: {
 
     const agentRoutes = agentResponse.data.map(
       (agent: any) => ({
-        loc: `/agent/${agent.slug}`,
+        loc: `/profile/${agent.userId}`,
         lastmod: agent.updatedAt
       })
     )
