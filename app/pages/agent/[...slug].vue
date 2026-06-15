@@ -54,7 +54,7 @@ useSeoMeta({
   ogTitle: () => seoTitle.value,
   ogDescription: () => seoDescription.value,
   ogType: 'website',
-  ogUrl: () => `https://yourdomain.com/agents`,
+  ogUrl: () => `https://abanise.com/agent`,
 
   twitterCard: 'summary_large_image',
   twitterTitle: () => seoTitle.value,
@@ -65,7 +65,7 @@ useHead({
   link: [
     {
       rel: 'canonical',
-      href: `https://yourdomain.com/agents`
+      href: `https://abanise.com/agent`
     }
   ]
 })
