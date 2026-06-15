@@ -795,33 +795,33 @@ watchEffect(() => {
 
 useSeoMeta({
   title: () => {
-    if (!form.value.title) return 'Property Listing'
-    return `${form.value.title} for ${capitalizeFirstLetter(form.value.purpose)} in ${form.value.location.city}, ${form.value.location.state}`
+    if (! property.value.title) return 'Property Listing'
+    return `${ property.value.title} for ${capitalizeFirstLetter( property.value.purpose)} in ${ property.value.location.city}, ${ property.value.location.state}`
   },
 
   description: () =>
-    form.value.description?.replace(/<[^>]*>/g, '').slice(0, 160) ||
+     property.value.description?.replace(/<[^>]*>/g, '').slice(0, 160) ||
     'View property details, images, price, and contact agent.',
 
-  ogTitle: () => form.value.title,
+  ogTitle: () =>  property.value.title,
   ogDescription: () =>
-    form.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
-  ogImage: () => form.value.media.images?.[0],
+    property.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
+  ogImage: () =>  property.value.media.images?.[0],
   ogType: 'product',
-  ogUrl: () => `https://yourdomain.com${route.fullPath}`,
+  ogUrl: () => `https://abanise.com/${route.fullPath}`,
 
   twitterCard: 'summary_large_image',
-  twitterTitle: () => form.value.title,
+  twitterTitle: () =>  property.value.title,
   twitterDescription: () =>
-    form.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
-  twitterImage: () => form.value.media.images?.[0],
+    property.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
+  twitterImage: () =>  property.value.media.images?.[0],
 })
 
 useHead({
   link: [
     {
       rel: 'canonical',
-      href: `https://yourdomain.com${route.fullPath}`
+      href: `https://abanise.com${route.fullPath}`
     }
   ]
 })

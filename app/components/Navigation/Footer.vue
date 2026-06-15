@@ -24,7 +24,7 @@ const buyerLinks = [
   },
   {
     name: 'FAQ',
-    to: '/faq'
+    to: '/'
   }
 ]
 

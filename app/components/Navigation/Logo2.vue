@@ -17,7 +17,7 @@ const config = useRuntimeConfig()
 const projectName = config.public.projectName
 defineProps({
  big:{
-  type:String,
+  type:Boolean,
   default: false
   
  }

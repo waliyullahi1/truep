@@ -98,7 +98,7 @@ const shareProfile = async () => {
    SEO / SOCIAL SHARE
 ============================= */
 
-const siteUrl = 'https://truep-lpag.vercel.app/' // replace with your domain
+const siteUrl = 'https://yourdomain.com'
 
 const profileUrl = computed(() => {
   return `${siteUrl}${route.fullPath}`
@@ -106,25 +106,33 @@ const profileUrl = computed(() => {
 
 const profileImage = computed(() => {
   return (
-    agent.value?.avatar ||
+    data.value?.avatar ||
     `${siteUrl}/image/no-image.png`
   )
 })
 
 const profileTitle = computed(() => {
-  return agent.value?.name
-    ? `${agent.value.name} | Verified Real Estate Agent`
-    : 'Agent Profile'
+  if (!data.value) return 'Agent Profile'
+
+  return `${data.value.name || 'Agent'} | Verified Real Estate Agent`
 })
 
 const profileDescription = computed(() => {
-  return (
-    agent.value?.about ||
-    `View ${agent.value?.name || 'this agent'} profile, properties, reviews and contact information.`
-  )
+  const about =
+    data.value?.about?.replace(/<[^>]*>/g, '') || ''
+
+  if (about) {
+    return about.slice(0, 160)
+  }
+
+  return `View ${data.value?.name || 'this agent'} profile, properties, reviews and contact information.`
 })
 
-useServerSeoMeta({
+/* =============================
+   OPEN GRAPH / WHATSAPP
+============================= */
+
+useSeoMeta({
   title: () => profileTitle.value,
 
   description: () => profileDescription.value,
@@ -135,13 +143,15 @@ useServerSeoMeta({
 
   ogImage: () => profileImage.value,
 
+  ogImageSecureUrl: () => profileImage.value,
+
   ogImageWidth: '1200',
 
   ogImageHeight: '630',
 
-  ogUrl: () => profileUrl.value,
-
   ogType: 'profile',
+
+  ogUrl: () => profileUrl.value,
 
   twitterCard: 'summary_large_image',
 
@@ -153,30 +163,10 @@ useServerSeoMeta({
 })
 
 useHead(() => ({
-  title: profileTitle.value,
-
-  meta: [
-    {
-      name: 'description',
-      content: profileDescription.value
-    }
-  ],
-
   link: [
     {
       rel: 'canonical',
       href: profileUrl.value
-    },
-
-    {
-      rel: 'icon',
-      type: 'image/png',
-      href: profileImage.value
-    },
-
-    {
-      rel: 'apple-touch-icon',
-      href: profileImage.value
     }
   ]
 }))

@@ -460,24 +460,7 @@
      </Container>
      
     </section>
-      <section class=" hidden  bg-slate-50 ">
-     <Container>
-      <div>
-        <UiTypographyH3>
-         
-          <span class="text-4xl leading-snug  font-medium">
-              Customers are saying
-              </span>
-        </UiTypographyH3>
-        <UiTypographyP class=" w-1/2 mt-2">
-          Hear from tenants, landlords, and agents who've made renting, listing, and managing property easier with our platform.
-        </UiTypographyP>
-
-        <Review></Review>
-      </div>
-     </Container>
-
-    </section>   
+      
  
 
 
