@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 sitemap: {
   urls: async () => {
     const response = await fetch(
-      'https://www.api.abanise.com/property/all'
+      'https://www.api.abanise.com/property/sitemap'
     ).then(res => res.json())
 
     const staticRoutes = [
