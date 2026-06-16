@@ -800,7 +800,7 @@ const propertyImage = computed(() => {
 
   return img.replace(
     '/upload/',
-    '/upload/w_1200,h_630,c_fill,g_auto,q_auto,f_auto/'
+    '/upload/w_1200,h_630,c_fill,g_auto,q_auto,f_jpg/'
   )
 
 })
