@@ -456,7 +456,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MapPin,House, Toilet,  MapPinned, Share2, MessageSquareText, Home, Bed, Bath, Heart } from 'lucide-vue-next' 
-import Auth from '../auth.vue'
+
 definePageMeta({
   layout: 'auth',
 })
@@ -805,7 +805,22 @@ const propertyImage = computed(() => {
 
 })
 
-console.log( propertyImage.value,'ddddddddddddddddddddddd');
+const favicon = computed(() => {
+
+  const img = property.value?.user?.avatar
+
+  if (!img) {
+    return '/images/abanise.png'
+  }
+
+  return img.replace(
+    '/upload/',
+    '/upload/w_64,h_64,c_fill,g_face,q_auto,f_auto/'
+  )
+
+})
+
+
 
 useSeoMeta({
 
@@ -872,6 +887,11 @@ useHead({
     {
       rel: 'canonical',
       href: `https://abanise.com${route.fullPath}`
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      href: favicon.value
     }
   ]
 })
