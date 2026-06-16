@@ -510,14 +510,15 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: 'main'
+}) 
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
-definePageMeta({
-  layout: 'main'
-}) 
+const search = ref('')
 
 const config = useRuntimeConfig()
 

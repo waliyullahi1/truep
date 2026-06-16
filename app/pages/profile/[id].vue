@@ -167,12 +167,30 @@ useSeoMeta({
 
   twitterImage: () => profileImage.value
 })
+const favicon = computed(() => {
 
+  const img = data.value?.avatar
+
+  if (!img) {
+    return '/images/abanise.png'
+  }
+
+  return img.replace(
+    '/upload/',
+    '/upload/w_64,h_64,c_fill,g_face,q_auto,f_auto/'
+  )
+
+})
 useHead(() => ({
   link: [
     {
       rel: 'canonical',
       href: profileUrl.value
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      href: favicon.value
     }
   ]
 }))

@@ -121,11 +121,7 @@ sitemap: {
           href:
             'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
         },
-        {
-          rel: 'icon',
-          type: 'image/png',
-          href: '/images/abanise.png'
-        }
+       
       ]
     }
   },

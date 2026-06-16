@@ -435,7 +435,7 @@
               <SafetyTips/>
               <div>
                
-                <UiTypography  class="font-medium">Discover more</UiTypography>
+                <UiTypographH3  class="font-medium">Discover more</UiTypographH3>
                 <DiscoverMore />
               </div>
 
@@ -790,33 +790,83 @@ watchEffect(() => {
   mergeForm(property.value)
 })
 
+const propertyImage = computed(() => {
 
+  const img = property.value?.media?.files?.[0]?.url
 
+  if (!img) {
+    return 'https://abanise.com/default-agent.jpg'
+  }
 
-useSeoMeta({
-  title: () => {
-    if (! property.value.title) return 'Property Listing'
-    return `${ property.value.title} for ${capitalizeFirstLetter( property.value.purpose)} in ${ property.value.location.city}, ${ property.value.location.state}`
-  },
+  return img.replace(
+    '/upload/',
+    '/upload/w_1200,h_630,c_fill,g_auto,q_auto,f_auto/'
+  )
 
-  description: () =>
-     property.value.description?.replace(/<[^>]*>/g, '').slice(0, 160) ||
-    'View property details, images, price, and contact agent.',
-
-  ogTitle: () =>  property.value.title,
-  ogDescription: () =>
-    property.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
-  ogImage: () =>  property.value.media.images?.[0],
-  ogType: 'product',
-  ogUrl: () => `https://abanise.com/${route.fullPath}`,
-
-  twitterCard: 'summary_large_image',
-  twitterTitle: () =>  property.value.title,
-  twitterDescription: () =>
-    property.value.description?.replace(/<[^>]*>/g, '').slice(0, 160),
-  twitterImage: () =>  property.value.media.images?.[0],
 })
 
+console.log( propertyImage.value,'ddddddddddddddddddddddd');
+
+useSeoMeta({
+
+  title: () => {
+
+    if (!property.value?.title) {
+      return 'Property Listing'
+    }
+
+    return `${property.value.title} for ${capitalizeFirstLetter(property.value.purpose)} in ${property.value.location.city}, ${property.value.location.state}`
+
+  },
+
+
+  description: () =>
+    property.value?.description
+      ?.replace(/<[^>]*>/g, '')
+      .slice(0, 160)
+    ||
+    'View property details, images, price, and contact agent.',
+
+
+
+  // Facebook / WhatsApp / Discord
+  ogTitle: () => property.value?.title || 'Property Listing',
+
+  ogDescription: () =>
+    property.value?.description
+      ?.replace(/<[^>]*>/g, '')
+      .slice(0,125)
+    ||
+    'View property details, images, price, and contact agent.',
+
+
+  ogImage: () => propertyImage.value,
+
+  ogType: 'website',
+
+  ogSiteName: 'Abanise',
+
+  ogUrl: () =>
+    `https://abanise.com${route.fullPath}`,
+
+
+
+  // X / Twitter
+  twitterCard: 'summary_large_image',
+
+  twitterTitle: () => property.value?.title || 'Property Listing',
+
+  twitterDescription: () =>
+    property.value?.description
+      ?.replace(/<[^>]*>/g, '')
+      .slice(0,125)
+    ||
+    'View property details, images, price, and contact agent.',
+
+
+  twitterImage: () => propertyImage.value
+
+})
 useHead({
   link: [
     {
