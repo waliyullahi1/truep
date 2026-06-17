@@ -1,7 +1,27 @@
 <template>
 <div>
   <div class="min-h-screen py-10 px-0 md:px-4">
+   <div ref="cardRef" class=" og-export left-[-9999px] fixed ">
+      <component
+               :is="randomCard"
+              :image="form?.media?.files?.[0]?.url"
+               :price="`${form?.pricing?.price}/${form?.pricing?.paymentType}`"
+                website="abanise.com"
+              :title="title"
+               :descrip="description"
+                :bottomTitle="`form?.`"
+          :features="form?.features?.label"
+      />
     
+      <div v-if="ogPreview" class="mt-4">
+  <img
+    :src="ogPreview"
+    alt="OG Preview"
+    class="w-full max-w-2xl rounded-lg border"
+  >
+</div>
+   
+    </div>   
    <div v-if="error">
   <NetworkError
   :error="error"
@@ -426,7 +446,7 @@
                   d="M4 12a8 8 0 018-8v8H4z"></path>
               </svg>
 
-              {{ loadingAigenerate ? 'Generating...' : 'Generate AI Description' }}
+             <span class=" sm:text-sm text-xs"> {{ loadingAigenerate ? 'Generating...' : 'Generate AI Description' }}</span>
             </button>
 
           </div>
@@ -475,11 +495,14 @@
 import { Form } from 'lucide-vue-next'
 import { ref, computed, watch, nextTick,  onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import * as htmlToImage from "html-to-image"
 const ownershipType = ref('')
 const agentName = ref('')
 const router = useRouter()
 const route = useRoute()
+const cardRef = ref(null)
 const hasError = computed(() => !!error.value)
+const ogPreview = ref(null)
 const { $toast } = useNuxtApp()
  definePageMeta({
    layout: 'auth',
@@ -497,6 +520,227 @@ const storeprevioustitle = ref('')
 const submitloading = ref(false)
 const originalForm = ref(null)
  const propertyId = route.query?.id
+const selectedCard = ref(null)
+const randomCard = ref(null)
+import OgPropertyCardOne from "~/components/OgPropertyCard/One.vue"
+import OgPropertyCardTwo from "~/components/OgPropertyCard/Two.vue"
+import OgPropertyCardThree from "~/components/OgPropertyCard/Three.vue"
+import OgPropertyCardFour from "~/components/OgPropertyCard/Four.vue"
+import OgPropertyCardFive from "~/components/OgPropertyCard/Five.vue"
+
+
+const cards = [
+  OgPropertyCardOne,
+  OgPropertyCardTwo,
+  OgPropertyCardThree,
+  OgPropertyCardFour,
+  OgPropertyCardFive
+]
+/* ================= CARDS OG postal DATA ================= */
+const sleep = (ms) =>
+  new Promise(resolve => setTimeout(resolve, ms))
+
+const generateOGImage = async () => {
+
+  await nextTick()
+
+  const node = cardRef.value
+
+  if (!node) return null
+
+
+  await sleep(500)
+
+
+  try {
+
+    const dataUrl = await htmlToImage.toPng(node, {
+
+      width: 1200,
+
+      height: 630,
+
+      canvasWidth: 1200,
+
+      canvasHeight: 630,
+
+
+      pixelRatio: 1,
+
+
+      cacheBust: true,
+
+
+      backgroundColor: "#ffffff",
+
+
+      skipFonts: false,
+
+
+      style: {
+
+        width: "1200px",
+
+        height: "630px",
+
+        transform: "none",
+
+        fontFamily:
+          "Arial, Helvetica, sans-serif"
+
+      }
+
+    })
+
+
+    return dataUrl
+
+
+  } catch(err){
+
+    console.error(
+      "OG IMAGE ERROR:",
+      err
+    )
+
+    return null
+
+  }
+
+}
+const uploadOGImage = async (base64)=>{
+
+
+  const canvas = document.createElement("canvas")
+
+  const ctx = canvas.getContext("2d")
+
+
+  const img = new Image()
+
+
+  img.src = base64
+
+
+
+  await new Promise(resolve=>{
+
+    img.onload = resolve
+
+  })
+
+
+
+  // exact OG size
+
+  canvas.width = 1200
+
+  canvas.height = 630
+
+
+
+  // draw exactly
+
+  ctx.drawImage(
+
+    img,
+
+    0,
+
+    0,
+
+    1200,
+
+    630
+
+  )
+
+
+
+  const blob = await new Promise(resolve=>
+
+
+    canvas.toBlob(
+
+      resolve,
+
+      "image/jpeg",
+
+      0.9
+
+    )
+
+  )
+
+
+
+
+  const file = new File(
+
+    [blob],
+
+    "og-image.jpg",
+
+    {
+
+      type:"image/jpeg"
+
+    }
+
+  )
+
+
+
+
+  ogPreview.value =
+    URL.createObjectURL(file)
+
+
+
+
+
+  const formData = new FormData()
+
+
+  formData.append(
+    "file",
+    file
+  )
+
+
+
+  formData.append(
+    "propertyId",
+    form.value.id
+  )
+
+
+    console.log( randomCard.value.__name);
+    
+  formData.append("previews_template", randomCard.value.__name )
+
+
+
+
+  const res = await useApiFetch(
+
+    "/property/upload-og",
+
+    {
+
+      method:"POST",
+
+      body:formData
+
+    }
+
+  )
+
+
+
+  console.log(res)
+
+}
 
 /* ================= FORM DATA ================= */
 const form = ref({
@@ -506,6 +750,7 @@ const form = ref({
   category: '',
   type: '',
   slug: '',
+  ogimage: null, 
   purpose: '',
 pricing: {
   price: null,               // Total price
@@ -560,6 +805,8 @@ ownership: {
   features: [],
 
 })
+
+
 /* ================= PURPOSE OPTIONS ================= */
 const purposeOptions = [
   { label: 'Sell Land', value: { purpose: 'sale', type: 'land' } },
@@ -682,6 +929,8 @@ function onCategoryChange(e) {
 }
 
 
+
+
 /* ================= SECTION COMPLETION ================= */
 function isCompleted(section) {
   if (section === 'location') {
@@ -705,7 +954,7 @@ function EditTittle(){
 function mergeForm(property) {
   if (!property) return
  
-  
+  form.value.ogimage = property.ogimage ?? form.value.ogimage
   form.value.title = property.title ?? form.value.title
   form.value.slug = property.slug ?? form.value.slug
   form.value.description = property.description ?? form.value.description
@@ -1099,8 +1348,11 @@ const submit =  async() => {
          return
       }
   
-   submitloading.value = true
 
+     
+   
+   submitloading.value = true
+   
    
     try {
     const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })
@@ -1113,16 +1365,33 @@ const submit =  async() => {
          return
       }
 
+       const property = res.data?.data || res.data
 
+       mergeForm(property)
+
+    /* =========================
+       2. WAIT FOR DOM UPDATE
+    ========================== */
+    await nextTick()
+   await new Promise(r => setTimeout(r, 500)) // IMPORTANT
+
+     const base64Image = await generateOGImage()
+     
+      
+     const saveOg =   await uploadOGImage(base64Image)
+    
+    
+    // })
        router.push({
        path: `/property/${form.value.slug}`,
         query: {
          preview: true,
          },
        })
-     submitloading.value = true
+     submitloading.value = false
   } catch (err) {
     console.error(err)
+     submitloading.value = false
   }
  
   
@@ -1144,6 +1413,8 @@ const { data, pending, error, refresh } = await useAsyncData(
       }
        const safe = res?.data?.data || res?.data || null
        mergeForm(safe)
+       console.log(safe);
+       
       // return res.data?.data || null
     } catch (err) {
       throw err
@@ -1161,9 +1432,40 @@ watch(
   },
   { immediate: true }
 )
+
+ onMounted(() => {
+randomCard.value = (() => {
+  const savedTemplate = form.value?.ogimage?.previews_template
+
+  // If template already exists
+  if (savedTemplate) {
+    const existingCard = cards.find(
+      card => card.name === savedTemplate
+    )
+
+    if (existingCard) {
+      return existingCard
+    }
+  }
+
+  // Otherwise choose random
+  return cards[Math.floor(Math.random() * cards.length)]
+})()
+})
 </script>
 
 <style scoped>
+.og-export,
+.og-export * {
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif !important;
+
+}
+
+
 .input{
   @apply w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black;
 }

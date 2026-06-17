@@ -154,7 +154,7 @@
     </div>
 
   <Container v-else>
-   {{ form }}
+
       <!-- ✅ STEP PROGRESS -->
     <div class="mb-12  max-w-4xl mx-auto ">
       <div class="flex  items-center justify-between text-sm font-medium">
@@ -175,7 +175,7 @@
     <button v-if="step > 1"  @click="back" class="btn-secondary">Back</button>
       <!-- ================= STEP 1 ================= -->
       <div v-if="step === 1" class="md:max-w-4xl w-full list-disc mx-auto space-y-4">
-        <div class="bg-white p-5 rounded shadow space-y-6">
+        <div class="bg-white sm:p-5 p-1 rounded  space-y-6">
           <div class="text-center space-y-2 mb-8">
             <h1 class="text-2xl font-bold">Basic Property Information</h1>
             <p class="text-gray-500 text-sm max-w-xl mx-auto">
@@ -185,7 +185,7 @@
           </div>
 
           <!-- PURPOSE & TYPE -->
-          <div class="bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-8 shadow-sm">
+          <div class="bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-4 md:p-8 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h2 class="section-title">Purpose</h2>
@@ -210,7 +210,7 @@
           </div>
 
           <!-- LOCATION / FEATURES / OTHERS -->
-          <div class="mt-10 border rounded p-4">
+          <div class="mt-10 border rounded p-1 sm:p-4">
 
             <!-- TABS -->
             <div class="flex bg-gray-50 rounded overflow-hidden">
@@ -285,7 +285,7 @@
                     <ListLandMap v-model="form" />
                   </div>
 
-                  <div v-if="propertyType === 'house'">
+                  <div v-if="propertyType === 'house' || propertyType === 'hostel' ">
                     <ListHouseLocationPicker v-model="form" />
                   </div>
 
@@ -296,15 +296,17 @@
                   <ListStateLGASelector v-model="form.location" />
                 </div>
 
-                <div  v-if=" form.category.toLowerCase() === 'hostel'" >
-
+                <div  v-if="propertyType === 'hostel'">
+                   <ListHostelForm  :state="form.location.state"   v-model="form.hostelDetails" /> 
                 </div>
+                   
+                 
 
               </div>
               </div>
 
               <!-- FEATURES -->
-              <div v-if="activeSection === 'features'">
+              <div id="features-section" v-if="activeSection === 'features'">
                 <ListFeature
                   :type="propertyType"
                   v-model:house="form.houseDetails"
@@ -313,7 +315,7 @@
               </div>
 
               <!-- OTHERS -->
-              <div v-if="activeSection === 'others'">
+              <div id="others-section" v-if="activeSection === 'others'">
                 <!-- Header -->
                 
 
@@ -325,8 +327,8 @@
                     <ListLandother v-model="form" />
                   </div>
 
-                  <div v-if="propertyType === 'house'">
-                    <ListHouseother v-model="form" :purpose="form.purpose" />
+                  <div v-if="propertyType === 'house' || propertyType === 'hostel'">
+                    <ListHouseother v-model="form" :purpose="form.purpose" :type="form.type" />
                   </div>
                   <div class="mb-6 mt-5 text">
                     <h2 class="text-lg font-semibold">Select Payment Type <span>(Optional)</span></h2>
@@ -352,7 +354,7 @@
         </div>
 
         <!-- ================= TITLE CARD ================= -->
-        <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
+        <div class="bg-white border rounded-xl sm:p-6 p-2 shadow-sm space-y-4">
 
           <!-- TITLE HEADER -->
           <div class="flex justify-between items-start">
@@ -392,10 +394,10 @@
         </div>
 
         <!-- ================= DESCRIPTION CARD ================= -->
-        <div class="bg-white border rounded-xl p-6 shadow-sm space-y-4">
+        <div class="bg-white border rounded-xl sm:p-6 p-0 shadow-sm space-y-4">
 
           <!-- DESCRIPTION HEADER -->
-          <div class="flex justify-between items-start">
+          <div class="sm:flex  block justify-between items-start">
 
             <div>
               <h2 class="text-lg font-semibold">Description</h2>
@@ -408,7 +410,7 @@
             <button
               @click="generateAI"
               :disabled="loadingAigenerate"
-              class="flex items-center gap-2 bg-gradient-to-r from-black to-gray-800 text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition disabled:opacity-50"
+              class="flex sm:text-xl text-xs items-center gap-2 bg-gradient-to-r from-black to-gray-800 text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition disabled:opacity-50"
             >
               <!-- ICON -->
               <svg v-if="!loadingAigenerate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,7 +472,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { Form } from 'lucide-vue-next'
+import { ref, computed, watch, nextTick,  onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 const ownershipType = ref('')
 const agentName = ref('')
@@ -478,11 +481,11 @@ const router = useRouter()
 const route = useRoute()
 const hasError = computed(() => !!error.value)
 const { $toast } = useNuxtApp()
-// definePageMeta({
-//   layout: 'auth',
-//   access: 'seller',
-//    isPrivateRoute : true
-// })
+ definePageMeta({
+   layout: 'auth',
+   access: 'seller',
+    isPrivateRoute : true
+   })
  const verified = ref(false)
 /* ================= STEP CONTROL ================= */
 const step = ref(Number(route.query.step) || 1)
@@ -541,27 +544,28 @@ ownership: {
     lga: "",
     city: "",
     address: "",
-    source: "gps",
+    source: "manual",
     geometry: { type: "Polygon", coordinates: [] }
   },
-  paymentType: 'outright',
+
   landDetails: { unit: "plot", size: null, quantity: 1, totalSqm: null,  },
   houseDetails: {},
-  schoolDetails:{
-    name:'',
-    abbreviation:'',
-    
-  },
+   hostelDetails: {
+   school: null,
+    gender: 'Mixed',
+    name: ''
+ },
   media: { images: [], video: null },
   documents: { surveyPlan: null, titleDocument: null },
   features: [],
-  contact: { name: "", phone: "", whatsapp: "" }
+
 })
 /* ================= PURPOSE OPTIONS ================= */
 const purposeOptions = [
   { label: 'Sell Land', value: { purpose: 'sale', type: 'land' } },
   { label: 'Sell House', value: { purpose: 'sale', type: 'house' } },
-  { label: 'Rent House', value: { purpose: 'rent', type: 'house' } }
+  { label: 'Rent House', value: { purpose: 'rent', type: 'house' } },
+  { label: 'Rent Hostel', value: { purpose: 'rent', type: 'hostel' } },
 ]
 
 const formSelection = ref(null)
@@ -609,8 +613,7 @@ const houseType = [
   { key: 'commercial_property', label: 'Commercial Property' },
   { key: 'plaza', label: 'Plaza' },
   { key: 'hotel', label: 'Hotel' },
-  { key: 'guest_house', label: 'Guest House' },
-  { key: 'hostel', label: 'Hostel' }
+
 ]
 
 const landType = [
@@ -623,9 +626,31 @@ const landType = [
   { key: 'other_land', label: 'Other Land' }
 ]
 
+const hostelCategory = [
+
+  {key: 'selfcon', label: 'Self Contain'},
+  { key: 'single_room',  label: 'Single Room' },
+  {  key: 'one_room',  label: 'One Room'},
+  {  key: 'one_room_parlour', label: 'One Room & Parlour' },
+  { key: 'two_bedroom', label: '2 Bedroom Flat' },
+  { key: 'three_bedroom',  label: '3 Bedroom Flat' },
+  { key: 'shared_room', label: 'Shared Room' },
+  { key: 'bunk_space',  label: 'Bunk Space' },
+  {key: 'private_hostel', label: 'Private Hostel'},
+  { key: 'school_hostel', label: 'School Hostel'},
+  { key: 'apartment_hostel', label: 'Hostel Apartment'},
+  { key: 'luxury_hostel', label: 'Luxury Hostel'},
+  { key: 'boys_quarters',  label: 'Boys Quarters (BQ)'},
+  { key: 'mini_flat', label: 'Mini Flat'},
+  { key: 'studio_apartment', label: 'Studio Apartment'},
+  
+  { key: 'other', label: 'Other' }
+]
+
 const options = computed(() => {
   if (propertyType.value === 'land') return landType
   if (propertyType.value === 'house') return houseType
+   if (propertyType.value === 'hostel') return hostelCategory
   return []
 })
 
@@ -693,6 +718,7 @@ function mergeForm(property) {
   form.value.location.geometry = { ...(property.location?.geometry || form.value.location.geometry) }
   form.value.landDetails = { ...form.value.landDetails, ...(property.landDetails || {}) }
   form.value.houseDetails = property.houseDetails ?? form.value.houseDetails
+  form.value.hostelDetails = property.hostelDetails ?? form.value.hostelDetails
   form.value.media = { ...form.value.media, ...(property.media || {}) }
   form.value.documents = { ...form.value.documents, ...(property.documents || {}) }
   form.value.contact = { ...form.value.contact, ...(property.contact || {}) }
@@ -721,13 +747,13 @@ const generateAI = async () => {
       body: { form: payload }
     })
 
-    console.log(res.data)
+    
 
     // ✅ DO NOT overwrite blindly
     const newDescription = res.data
        form.value.description = newDescription
 
-       console.log(form.value.description);
+   
        
     // // If old description exists, append OR replace intelligently
     // if (form.value.description && form.value.description.trim()) {
@@ -742,109 +768,313 @@ const generateAI = async () => {
     loadingAigenerate.value = false
   }
 }
-function generateTitle(data){
-  const category = data.category?.replace(/_/g, ' ')|| ''
-    if(data.type === 'land'){
-    return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
-    }
+function generateTitle(data) {
 
-    if(data.category === 'office_space'){
-    return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
-    }
+  const city =
+    data?.location?.city || ''
 
-const bedroom = form.value.houseDetails?.bedroom 
-    return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
+  const state =
+    data?.location?.state || ''
 
+  const category =
+    data?.category
+      ?.replace(/_/g, ' ')
+      ?.toUpperCase() || ''
+
+  /* ---------- LAND ---------- */
+
+  if (data?.type === 'land') {
+
+    return `${data?.landDetails?.quantity || 1}
+${data?.landDetails?.unit || 'PLOT'}
+OF LAND FOR SALE AT
+${city}
+${state}`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase()
+  }
+
+  /* ---------- HOSTEL ---------- */
+
+  if (data?.type === 'hostel') {
+
+    const school =
+      data?.hostelDetails?.school?.abbreviation
+      ||
+      data?.hostelDetails?.school?.name
+      ||
+      ''
+
+    const gender =
+      data?.hostelDetails?.gender
+      || 'Mixed'
+
+    const hostelName =
+      data?.hostelDetails?.name
+      || ''
+
+    return `
+${hostelName ? hostelName + ' - ' : ''}
+${gender}
+HOSTEL FOR RENT
+${school ? 'NEAR ' + school : ''}
+${state}
+`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase()
+  }
+
+  /* ---------- OFFICE ---------- */
+
+  if (
+    data?.category ===
+    'office_space'
+  ) {
+
+    return `
+${data?.landDetails?.size || 0}
+SQM OFFICE SPACE
+IN
+${city}
+${state}
+`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase()
+  }
+
+  /* ---------- HOUSE ---------- */
+
+  const bedroom =
+    data?.houseDetails?.bedroom || 0
+
+  return `
+${bedroom}
+BEDROOM
+${category}
+AT
+${city}
+${state}
+FOR
+${data?.purpose || ''}
+`
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase()
 }
+
+// function generateTitle(data){
+//   const category = data.category?.replace(/_/g, ' ')|| ''
+//     if(data.type === 'land'){
+//     return `${data.landDetails.quantity} ${data.landDetails.unit} OF LAND FOR SALE AT ${data.location.city} ${data.location.state}`.toUpperCase()
+//     }
+
+//     if(data.category === 'office_space'){
+//     return `${data.landDetails.size} SQM OFFICE SPACE IN ${data.location.city} ${data.location.state}`.toUpperCase()
+//     }
+
+// const bedroom = form.value.houseDetails?.bedroom 
+//     return `${bedroom || 0} BEDROOM ${category} AT ${data.location.city} ${data.location.state} For ${data.purpose}`.toUpperCase()
+
+// }
 
 
 /* ================= NAVIGATION ================= */
 const next = async () => {
+  // Prevent double click
   if (submitloading.value) return
 
-  /* ---------------- STEP VALIDATION ---------------- */
-  if (step.value === 1) {
-    if (!form.value.purpose) {
-      return $toast.error("Please select purpose.")
-    }
-
-    if (!form.value.category) {
-      return $toast.error("Please select category.")
-    }
-
-    if (!form.value.location?.state || !form.value.location?.city) {
-      return $toast.error("Please select location or enter it manually.")
-    }
-
-    const featureCount = form.value.features?.filter(Boolean).length || 0
-
-    if (form.value.type === 'House' && featureCount < 2) {
-      return $toast.error("Please select at least bedroom and one more house feature.")
-    }
-
-    if (form.value.type === 'Land' && featureCount < 3) {
-      return $toast.error("Please select at least 3 land features.")
-    }
-
-    if (!form.value.pricing?.price) {
-      return $toast.error("Please add a price to your property.")
-    }
-  }
-
- 
-
-  /* ---------------- SAVE ---------------- */
   submitloading.value = true
 
   try {
-    // Auto-generate title if changed
-    const generatedTitle = generateTitle(form.value)
-    if (generatedTitle !== form.value.title) {
-      form.value.title = generatedTitle
-    }
+    /* ================= STEP 1 VALIDATION ================= */
+    if (step.value === 1) {
 
-    const response = await useApiFetch(`/property/${form.value.id || 'undefine'}`, {
-      method: 'POST',
-      body: { details: form.value }
-    })
-    if (!response.success) {
-          $toast.error("An Error occur")
-           submitloading.value = false
-          return
-
-    }
-  
-     
-     if (step.value === 3) {
-
-          const imageCount = response.data.data.media.files?.filter(f => f.type === 'image').length || 0
-          if (imageCount < 3) {
-            return $toast.error("Please upload at least 3 images.")
-          }
+      if (!form.value.purpose) {
+        $toast.error("Please select purpose.")
+        return
       }
-    const property = response.data?.data || response.data
+
+      if (!form.value.category) {
+        $toast.error("Please select category.")
+        return
+      }
+
+      if (
+        !form.value.location?.state ||
+        !form.value.location?.city
+      ) {
+        activeSection.value = "location"
+
+        await nextTick()
+
+        $toast.error(
+          "Please select location or enter manually."
+        )
+
+        return
+      }
+
+      const featureCount =
+        form.value.features?.filter(Boolean).length || 0
+
+      if (featureCount < 1) {
+
+        activeSection.value = "features"
+
+        await nextTick()
+
+        document
+          .getElementById("features-section")
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          })
+
+        $toast.error(
+          "Please select at least one feature."
+        )
+
+        return
+      }
+
+      if (
+        form.value.type === "house" &&
+        featureCount < 2
+      ) {
+        activeSection.value = "features"
+
+        $toast.error(
+          "Please select bedroom and one more feature."
+        )
+
+        return
+      }
+
+      if (
+        form.value.type === "land" &&
+        featureCount < 3
+      ) {
+        activeSection.value = "features"
+
+        $toast.error(
+          "Please select at least 3 land features."
+        )
+
+        return
+      }
+
+      if (!form.value.pricing?.price) {
+
+        activeSection.value = "others"
+
+        await nextTick()
+
+        document
+          .getElementById("others-section")
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          })
+
+        $toast.error(
+          "Please add property price."
+        )
+
+        return
+      }
+    }
+
+    /* ================= AUTO TITLE ================= */
+
+    if (!form.value.title) {
+      try {
+      form.value.title =  generateTitle(form.value)
+       } catch (e) {
+       console.log(e)
+    } 
+    }
+
+    /* ================= SAVE ================= */
+
+    const response = await useApiFetch(
+      `/property/${form.value.id || "undefine"}`,
+      {
+        method: "POST",
+        body: {
+          details: form.value
+        }
+      }
+    )
+
+    if (!response?.success) {
+      throw new Error(
+        response?.message ||
+        "Save failed"
+      )
+    }
+
+    const property =
+      response.data?.data ||
+      response.data
+
+    /* ================= STEP 3 MEDIA ================= */
+
+    if (step.value === 3) {
+
+      const imageCount =
+        property?.media?.files
+          ?.filter(
+            f => f.type === "image"
+          )
+          .length || 0
+
+      if (imageCount < 3) {
+
+        $toast.error(
+          "Upload at least 3 images."
+        )
+
+        return
+      }
+    }
+
     mergeForm(property)
 
-    if (property?._id) {
-      router.replace({
+    /* ================= MOVE STEP ================= */
+
+    if (step.value < 4) {
+
+      step.value++
+
+      await router.replace({
         query: {
           ...route.query,
           id: property._id,
-          step: step.value + 1
+          step: step.value
         }
       })
     }
 
-    $toast.success("Saved successfully")
-
-    // Move to next step ONLY after successful save
-    if (step.value < 5) step.value++
+    $toast.success(
+      "Saved successfully"
+    )
 
   } catch (err) {
+
     console.error(err)
-    $toast.error(err?.message || "Something went wrong")
+
+    $toast.error(
+      err?.message ||
+      "Something went wrong"
+    )
+
   } finally {
+
     submitloading.value = false
+
   }
 }
 
@@ -870,7 +1100,7 @@ const submit =  async() => {
       }
   
    submitloading.value = true
-   console.log( form.value);
+
    
     try {
     const res = await useApiFetch(`/property/${form.value.id || null}`, { method: 'GET' })
@@ -922,87 +1152,15 @@ const { data, pending, error, refresh } = await useAsyncData(
   { lazy: true, server: true }
 )
 
-// watch(data, (newData) => {
-//   if (newData) {
-//     console.log('fffff', newData);
-    
-//     mergeForm(newData)
-//   }
-// })
-// const { data, pending, error } = await useAsyncData(
-//   `property-${route.params.id}`,
-//   async () => {
-//     try {
-//        const propertyId = route.query?.id
-//       if (!propertyId) return null
-
-//       const res = await useApiFetch(`/property/${propertyId}`)
-//           console.log(res,'res');
-          
-//             if (!res.success) {
-//               console.log(res.success, 'res.success');
-              
-//               throw createError({
-//                 statusCode: res.status || 500,
-//                 statusMessage: res.message || 'Failed to load properties'
-//               })
-//             }
-//       // ✅ Extract ONLY plain JSON
-//       const safe = res?.data?.data || res?.data || null
-//             mergeForm(safe)
-//       // ✅ Prevent "non-POJO" error
-//       return JSON.parse(JSON.stringify(safe))
-//     } catch (err) {
-//       console.error('Fetch failed:', err)
-//       return null
-//     }
-//   },
-//    {
-//     lazy: true,
-//     server: true
-//   }
-// )
-// const loadData = async () => {
-//   try {
-//     const response = await useApiFetch(`/property/${propertyId}`, {
-//       method: 'GET'
-//     })
-
-//     // If your API returns wrapped response
-//     const property = response?.data?.data || response?.data || null
-
-//     if (!property) {
-//       console.warn('No property found')
-//       return
-//     }
-
-//     console.log(property)
-//     mergeForm(property)
-
-//   } catch (err) {
-//     console.error('LoadData Error:', err)
-
-//     // ✅ show ONE clear message
-//     $toast.error('Server unavailable. Try again.')
-//   }
-// }
-
-// await loadData()
-
-//  mergeForm(data.value.data)
-// onMounted(async () => {
-//   const propertyId = route.query?.id
-  
-//   if (!propertyId) return
-//   try {
-//     const response = await useApiFetch(`/property/${propertyId}`, { method: 'GET' })
-//     const property = response.data?.data || response.data
-//     mergeForm(property)
-//   } catch (err) {
-//     console.error(err)
-//     $toast.error(err?.message || "Failed to load property")
-//   }
-// })
+watch(
+  () => form.value.purpose,
+  (purpose) => {
+    if (purpose === "rent") {
+      form.value.pricing.paymentType = "rent"
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

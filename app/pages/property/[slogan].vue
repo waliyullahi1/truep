@@ -792,11 +792,22 @@ watchEffect(() => {
 
 const propertyImage = computed(() => {
 
+  // 1. Check custom OG image first
+  const ogImg = property.value?.ogimage?.image?.url
+
+  if (ogImg) {
+    return ogImg
+  }
+
+
+  // 2. If no OG image, use first property image
   const img = property.value?.media?.files?.[0]?.url
+
 
   if (!img) {
     return 'https://abanise.com/default-agent.jpg'
   }
+
 
   return img.replace(
     '/upload/',
