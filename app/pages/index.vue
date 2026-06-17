@@ -482,7 +482,7 @@
         Get instant property updates, new listings, investment opportunities,
         hostel vacancies, and exclusive deals directly on WhatsApp.
       </p>
-
+    
       <a
         href="https://chat.whatsapp.com/G2j3YKO35PKAHIM43DuBK6"
         target="_blank"
@@ -493,7 +493,7 @@
           class="text-2xl"
         />
         Join Community
-      </a>
+      </a>           <UiButtonsPrimary   @click="router.push('/ogImage/wadfdfasdssdvsd')" class="  text-left">Create a Search Agent </UiButtonsPrimary>
     </div>
   </Container>
 </section>
