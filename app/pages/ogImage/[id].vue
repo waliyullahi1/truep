@@ -1,7 +1,7 @@
 <template>
 
   <div v-if="data">
-
+    {{ data }}
     <div class="og-card">
 
       <component
@@ -20,7 +20,7 @@
         website="abanise.com"
 
         :title="data?.title || ''"
-
+        :location = "`${data?.location.state}, ${data?.location.city}, ${data?.location.address}`"
         :descrip="data?.description || ''"
 
         :bottomTitle="data?.title || ''"
