@@ -127,8 +127,8 @@ const props = defineProps({
 
     <div class="brand">
 
-      <div class="logo">
-        <img v-if="user?.avatar" :src="user?.avatar" alt="" srcset="">
+      <div class="logo overflow-hidden">
+        <div  v-if="user?.avatar" class=" w-full h-full  bg-white" ><img  :src="user?.avatar" alt="" srcset=""></div>
         <span v-else >{{ user?.firstName[0] }}</span> 
       </div>
 

@@ -153,10 +153,9 @@ defineProps({
     <div class="brand">
 
 
-      <div class="logo">
-
-        A
-
+      <div class="logo overflow-hidden">
+        <div  v-if="user?.avatar" class=" w-full h-full  bg-white" ><img  :src="user?.avatar" alt="" srcset=""></div>
+        <span v-else >{{ user?.firstName[0] }}</span> 
       </div>
 
 
@@ -564,38 +563,25 @@ margin-top:45px;
 
 
 
+
 .logo{
 
+  width:68px;
+  height:68px;
 
-width:60px;
+  border-radius:50%;
 
+  background:#16a34a;
 
-height:60px;
+  color:white;
 
+  display:flex;
 
-border-radius:18px;
+  justify-content:center;
+  align-items:center;
 
-
-background:#7c3aed;
-
-
-color:white;
-
-
-display:flex;
-
-
-align-items:center;
-
-
-justify-content:center;
-
-
-font-size:35px;
-
-
-font-weight:900;
-
+  font-size:34px;
+  font-weight:900;
 
 }
 

@@ -7,12 +7,12 @@
       <component
         v-if="randomCard"
         :is="randomCard"
-
+        :propertyType="data?.category"
         :image="
           data?.media?.files?.[0]?.url ||
           '/images/property.jpg'
         "
-
+       :user="data?.userId"
         :price="
           `${data?.pricing?.price || ''}/${data?.pricing?.paymentType || ''}`
         "
@@ -20,7 +20,7 @@
         website="abanise.com"
 
         :title="data?.title || ''"
-       
+
         :descrip="data?.description || ''"
 
         :bottomTitle="data?.title || ''"
@@ -87,20 +87,18 @@ const { data, pending, error } = await useAsyncData(
       return null
     }
 
-   
-    
+
     const res = await useApiFetch(
       `/property/og/${propertyId}`
     )
 
- 
+
     if (!res.success) {
       throw new Error(
         res.message || "Failed"
       )
     }
 
-      console.log(res.data?.data);
 
     return res.data?.data || null
 
@@ -108,7 +106,7 @@ const { data, pending, error } = await useAsyncData(
 
   {
     server:true,
-    lazy:false
+
   }
 
 )
@@ -119,59 +117,13 @@ const { data, pending, error } = await useAsyncData(
 // SELECT TEMPLATE
 // ============================
 
-const setTemplate = ()=>{
-
-
-  const savedTemplate =
-    data.value?.ogimage?.previews_template
-
-
-
-  if(savedTemplate){
-
-
-    const existingCard =
-      cards.find(
-        card => card.name === savedTemplate
-      )
-
-
-    if(existingCard){
-
-      randomCard.value = existingCard
-      return
-
-    }
-
-  }
-
-
-
-  randomCard.value =
-    cards[
-      Math.floor(
-        Math.random() * cards.length
-      )
-    ]
-
-}
-
 
 
 // wait until data is available
-watch(
-  data,
-  (value)=>{
+onMounted(async()=>{
+  randomCard.value =  cards[ Math.floor(  Math.random() * cards.length)]
+})
 
-    if(value){
-      setTemplate()
-    }
-
-  },
-  {
-    immediate:true
-  }
-)
 
 
 </script>
