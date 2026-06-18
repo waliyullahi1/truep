@@ -298,6 +298,19 @@ const who_is_this_for = ref([
     description: 'Discover your next home, anywhere in the world. With Rentola, you gain access to a truly global selection, spanning 36 countries and featuring over 1 million properties. We make finding your next home simple, no matter where you are.'
   }
 ])
+
+useSeoMeta({
+title: ' Real Estate company in Nigeria',
+description: 'Abanise Real Estate is a trusted property marketplace where buyers, sellers, landlords, agents, and tenants connect. Discover verified houses, apartments, lands, and commercial properties across Nigeria or list your property for sale or rent with ease.',
+ogTitle: 'Abanise Real Estate | Your Trusted Property Marketplace',
+ogDescription: 'Buy, sell, rent, or list houses, lands, apartments, and commercial properties across Nigeria. Connect with verified buyers, sellers, landlords, and real estate agents on Abanise Real Estate.',
+ogImage: 'https://www.abanise.com/image/ogimage.png',
+ogType: 'website',
+twitterCard: 'summary_large_image',
+twitterTitle: 'Real Estate company in Nigeria',
+twitterDescription: "Africa's leading real estate marketplace, connecting buyers with trusted sellers and professional real estate agents ",
+twitterImage: 'https://www.abanise.com/image/ogimage.png'
+})
 </script>
 
 <style>

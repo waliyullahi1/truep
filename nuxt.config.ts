@@ -80,7 +80,7 @@ sitemap: {
     },
 
     head: {
-      title: 'Abanise Enterprises - Buy and Sell Properties in Nigeria',
+      title: 'Real Estate Company in Nigeria',
 
       htmlAttrs: {
         lang: 'en'
