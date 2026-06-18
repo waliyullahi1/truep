@@ -1,7 +1,7 @@
 <template>
 
   <div v-if="data">
-    {{ data }}
+   
     <div class="og-card">
 
       <component
