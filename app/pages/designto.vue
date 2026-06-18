@@ -3,7 +3,7 @@
 <template>
   <div class="">
 
-    <OgPropertyCardOne
+    <!-- <OgPropertyCardOne
     
        
   image="/image/abuja.jpg"
@@ -16,14 +16,14 @@
       'Security',
       'Parking',
       'WiFi']"
-/>
+/> -->
 
     <OgPropertyCardTwo
   image="/image/abuja.jpg"
   website="abanise.com"
   title="Mixed hostel for rent near unilorin in, kwara"
   subtitle="Buy And Sell Properties"
-  bottomTitle="Luxury Homes Lagos | Abanise"
+  bottomTitle="Luanise"
 />
 
     <OgPropertyCardThree
@@ -74,6 +74,30 @@ price="₦250,000 / Session"
 'WiFi'
 ]"
 
+/>
+
+     <OgPropertyCardSix
+  image="/image/abuja.jpg"
+  website="abanise.com"
+  title="Mixed hostel for rent near unilorin in, kwara"
+  subtitle="Buy And Sell Properties"
+  bottomTitle="Luanise"
+/>
+
+
+     <OgPropertyCardSeven
+  image="/image/abuja.jpg"
+  website="abanise.com"
+  title="Mixed hostel for rent near unilorin in, kwara"
+  subtitle="Buy And Sell Properties"
+  bottomTitle="Luanise"
+/>
+     <OgPropertyCardEight
+  image="/image/abuja.jpg"
+  website="abanise.com"
+  title="Mixed hostel for rent near unilorin in, kwara"
+  subtitle="Buy And Sell Properties"
+  bottomTitle="Luanise"
 />
    
    

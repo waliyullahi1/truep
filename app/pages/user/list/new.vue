@@ -1089,13 +1089,17 @@ const back = () => { if (step.value > 1) {
   step.value--
    }}
 
-  const  generateOgImage  = async ()=>{
-    const res = await useApiFetch(  "/property/upload-og", {method:"POST", body:{
-      propertyId:    form.value.id
-    } }
-  )
+const generateOgImage = async () => {
 
-  }
+  useApiFetch("/property/upload-og", {
+    method: "POST",
+    body: {
+      propertyId: form.value.id
+    }
+  })
+
+  // continue immediately (no waiting)
+}
 const submit =  async() => { 
   submitloading.value = true
         if (!verified.value) {
@@ -1119,13 +1123,13 @@ const submit =  async() => {
          return
       }
 
-      const ress = await generateOgImage()
-      //  router.push({
-      //  path: `/property/${form.value.slug}`,
-      //   query: {
-      //    preview: true,
-      //    },
-      //  })
+       await generateOgImage()
+       router.push({
+       path: `/property/${form.value.slug}`,
+        query: {
+         preview: true,
+         },
+       })
      submitloading.value = true
   } catch (err) {
     console.error(err)

@@ -49,8 +49,8 @@ import OgPropertyCardTwo from "~/components/OgPropertyCard/Two.vue"
 import OgPropertyCardThree from "~/components/OgPropertyCard/Three.vue"
 import OgPropertyCardFour from "~/components/OgPropertyCard/Four.vue"
 import OgPropertyCardFive from "~/components/OgPropertyCard/Five.vue"
-
-
+import OgPropertyCardSix from "~/components/OgPropertyCard/Six.vue"
+import OgPropertyCardSeven from "~/components/OgPropertyCard/Seven.vue"
 
 const route = useRoute()
 
@@ -64,7 +64,9 @@ const cards = [
   OgPropertyCardTwo,
   OgPropertyCardThree,
   OgPropertyCardFour,
-  OgPropertyCardFive
+  OgPropertyCardFive,
+  OgPropertyCardSix,
+  OgPropertyCardSeven,
 ]
 
 

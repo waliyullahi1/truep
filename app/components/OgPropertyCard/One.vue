@@ -5,7 +5,15 @@ defineProps({
     type: String,
     default: "/images/property.jpg"
   },
-
+  type:{
+     type: String,
+    default: "house"
+  },
+  
+purpose:{
+ type: String,
+    default: "rent"
+},
   logo: {
     type: String,
     default: "/images/abanise.png"
@@ -69,10 +77,10 @@ defineProps({
 
 
     <!-- IMAGE -->
-
+    
     <div class="image-wrapper">
 
-
+       <p class=" font-bold text-[24px]"> {{ type }} for {{ purpose }}</p>
       <div class="image-card">
 
 
@@ -118,7 +126,7 @@ defineProps({
 
 
 
-
+     
       <h1 class="title">
 
         {{ title }}
@@ -141,7 +149,7 @@ defineProps({
 
       <p class="description">
 
-        {{ descrip.slice(0,180) }}
+        {{ descrip.slice(0,130) }}
 
       </p>
 
@@ -559,13 +567,13 @@ TEXT
  color:white;
 
 
- padding:12px 25px;
+ padding:6px 15px;
 
 
  border-radius:999px;
 
 
- font-size:28px;
+ font-size:18px;
 
 
  font-weight:900;
