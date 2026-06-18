@@ -2,34 +2,36 @@
 
   <div v-if="data">
 
-  
+    <div class="og-card">
 
-    <component
-      v-if="randomCard"
-      :is="randomCard"
+      <component
+        v-if="randomCard"
+        :is="randomCard"
 
-      :image="
-        data?.media?.files?.[0]?.url ||
-        '/images/property.jpg'
-      "
+        :image="
+          data?.media?.files?.[0]?.url ||
+          '/images/property.jpg'
+        "
 
-      :price="
-        `${data?.pricing?.price || ''}/${data?.pricing?.paymentType || ''}`
-      "
+        :price="
+          `${data?.pricing?.price || ''}/${data?.pricing?.paymentType || ''}`
+        "
 
-      website="abanise.com"
+        website="abanise.com"
 
-      :title="data?.title || ''"
+        :title="data?.title || ''"
 
-      :descrip="data?.description || ''"
+        :descrip="data?.description || ''"
 
-      :bottomTitle="data?.title || ''"
+        :bottomTitle="data?.title || ''"
 
-      :features="
-        data?.features?.map(f => f.label) || []
-      "
+        :features="
+          data?.features?.map(f => f.label) || []
+        "
 
-    />
+      />
+
+    </div>
 
   </div>
 
@@ -85,7 +87,7 @@ const { data, pending, error } = await useAsyncData(
 
 
     const res = await useApiFetch(
-      `/property/${propertyId}`
+      `/property/og/${propertyId}`
     )
 
 

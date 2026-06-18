@@ -1,7 +1,7 @@
 <template>
 <div>
   <div class="min-h-screen py-10 px-0 md:px-4">
-    
+    {{ pro }}
    <div v-if="error">
   <NetworkError
   :error="error"
@@ -1120,12 +1120,12 @@ const submit =  async() => {
       }
 
       const ress = await generateOgImage()
-       router.push({
-       path: `/property/${form.value.slug}`,
-        query: {
-         preview: true,
-         },
-       })
+      //  router.push({
+      //  path: `/property/${form.value.slug}`,
+      //   query: {
+      //    preview: true,
+      //    },
+      //  })
      submitloading.value = true
   } catch (err) {
     console.error(err)
@@ -1150,6 +1150,8 @@ const { data, pending, error, refresh } = await useAsyncData(
       }
        const safe = res?.data?.data || res?.data || null
        mergeForm(safe)
+       console.log(safe);
+       
       // return res.data?.data || null
     } catch (err) {
       throw err
