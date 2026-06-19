@@ -1,3 +1,4 @@
+
 <script setup>
 defineProps({
   avatar: {
@@ -8,6 +9,10 @@ defineProps({
   name: {
     type: String,
     default: "Waliu Waheed"
+  },
+  location:{
+     type: String,
+    default: "Osogbo, osun"
   },
 
   role: {
@@ -42,118 +47,224 @@ defineProps({
 </script>
 
 <template>
-  <div class="w-[800px] h-[1200px] ">
-    <div 
-    :style="{
-    backgroundImage: `url(${avatar || '/image/profile.webp'})`
-  }"
-
-    class=" h-full w-full bg-no-repeat  bg-contain bg-center  bg-white rounded-xl overflow-hidden shadow-xl flex flex-col"
-  >
-    <!-- Header -->
+  <div class="w-[800px] h-[1200px]">
     <div
-      class="h-[180px] bg-gradient-to-r from-blue-900 to-blue-900 flex items-center justify-center"
+      :style="{
+        backgroundImage: `url(${avatar || '/image/profile.webp'})`
+      }"
+      class="relative h-full w-full bg-cover bg-center bg-no-repeat rounded-[40px] overflow-hidden shadow-2xl flex flex-col"
     >
-      <div class="  w-full text-center text-white">
-        <h1 class="text-2xl font-medium ">
-         wwww.abanise.com
+      <!-- Dark Overlay -->
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/50"
+      />
+
+      <!-- Website -->
+      <div
+        class="absolute top-8 left-8 z-20 px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/10"
+      >
+        <div class="flex items-center gap-2 text-white">
+          <Icon
+            name="heroicons:globe-alt"
+            class="w-5 h-5"
+          />
+
+          <span class="text-lg font-medium">
+            {{ website }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div
+        class="absolute top-8 right-8 z-20 text-right text-white"
+      >
+        <h1 class="text-2xl font-bold">
+          ABANISE
         </h1>
 
-        <p class="text-xl mt-2 opacity-90">
+        <p class="text-lg opacity-80">
           Verified Property Marketplace
         </p>
       </div>
-    </div>
-   <div 
-  class="bg-cover bg-center bg-no-repeat w-full h-full"
 
->
-        <!-- Profile -->
-       
+      <!-- Bottom Apple Glass Panel -->
+      <div class="mt-auto glass-panel text-white px-10 py-8 relative z-10">
 
-        <!-- Skills -->
-        <div class="px-10 hidden mt-">
-        <h3 class="text-xl font-bold text-slate-700 mb-4">
-            Skills
-        </h3>
-
-        <div class="flex flex-wrap gap-3 justify-center">
-            <span
-            v-for="skill in skills.slice(0, 3)"
-            :key="skill"
-            class="px-5 py-3 rounded-full bg-blue-100 text-blue-700 font-semibold"
-            >
-            {{ skill }}
-            </span>
-        </div>
-        </div>
-   </div>
-    <!-- Contact -->
-    <div class="mt-auto   h-[500px] bg-gradient-to-b from-transparent via-blue-900 via-[30%] to-blue-950   text-white px-10 py-8">
-         <h2 class="text-5xl  font-semibold mt-6   text-white">
-          {{name}}
-        </h2>
-
-        <p class="text-4xl   mb-7    text-white font-medium">
-            {{ role }}
-        </p>
-
-         <div class="px-10 flex jur my-5  gap-5 items-center   mt-">
-            <h3 class="text-3xl font-medium  text-white ">
-                Skills
-            </h3>
-
-            <div class="flex f gap-3 justify-center">
-                <span
-                v-for="skill in skills"
-                :key="skill"
-                class="px-5 py-2 text-xl  bg-blue-100 text-blue-700 font-semibold"
-                >
-                {{ skill }}
-                </span>
-            </div>
-        </div>
-      <div class="spac flex justify-between  items-center  ">
-        
-        <div class="flex items-center gap-4">
-          <Icon
-            name="heroicons:phone"
-            class="w-7 h-7"
-          />
-
-          <span class="text-xl">
-            {{ phone }}
-          </span>
-        </div>
-
-        <div class="flex items-center gap-4">
-          <Icon
-            name="heroicons:envelope"
-            class="w-7 h-7"
-          />
-
-          <span class="text-xl">
-          {{ name.replace(/\s+/g, '').toLowerCase() }}@abanise.com
-          </span>
-        </div>
-
-      </div>
-
-      <!-- Bottom -->
-      <div
-        class="mt-3 border-t border-blue-700 pt-5 flex justify-between items-center"
-      >
-        <span class="text-lg">
-          Agent ID: AB-2026
-        </span>
-
-        <Icon
-          name="heroicons:qr-code"
-          class="w-16 h-16"
+        <!-- Glow -->
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/10 pointer-events-none"
         />
+
+        <!-- Name -->
+        <h2
+          class="text-6xl font-bold text-white relative z-10"
+        >
+          {{ name }}
+        </h2>
+        
+        <!-- Role -->
+        <p
+          class="text-3xl mt-3 text-white/80 relative z-10"
+        >
+          {{ role }}
+        </p>
+        <div class=" flex items-center jus text-2xl font-medium text-black">
+          <Icon  class="  font-bold text-4xl" name="heroicons:map-pin" /> {{ location }} state
+        </div>
+       
+        <!-- Skills + Verified -->
+        <div
+          class="flex flex-wrap gap-3 mt-8 items-center relative z-10"
+        >
+          <span
+            v-for="skill in skills"
+            :key="skill"
+            class="px-5 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 text-white text-lg"
+          >
+            {{ skill }}
+          </span>
+
+          <div
+            class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/20 backdrop-blur-xl"
+          >
+            <Icon
+              name="heroicons:check-badge"
+              class="w-6 h-6 text-emerald-400"
+            />
+
+            <span class="text-white">
+              Verified Agent
+            </span>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div
+          class="flex justify-between items-center mt-10 relative z-10"
+        >
+          <div class="flex items-center gap-4">
+            <Icon
+              name="heroicons:phone"
+              class="w-7 h-7"
+            />
+
+            <span class="text-xl">
+              {{ phone }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <Icon
+              name="heroicons:envelope"
+              class="w-7 h-7"
+            />
+
+            <span class="text-xl">
+              {{ name.replace(/\s+/g, '').toLowerCase() }}@abanise.com
+            </span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div
+          class="mt-6 pt-6 border-t border-white/10 flex justify-between items-center relative z-10"
+        >
+          <div>
+            <p class="text-white/60 text-lg">
+              Agent ID
+            </p>
+
+            <p class="text-2xl font-semibold">
+              AB-2026
+            </p>
+          </div>
+
+          <div
+            class="w-24 h-24 rounded-[28px] bg-white/10 backdrop-blur-xl border border-white/10 flex items-center justify-center"
+          >
+            <Icon
+              name="heroicons:qr-code"
+              class="w-14 h-14 text-white"
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
-  </div>
- 
 </template>
+
+<style scoped>
+.glass-panel{
+  min-height:420px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.18),
+      rgba(255,255,255,.05)
+    );
+
+  backdrop-filter:
+    blur(40px)
+    saturate(200%);
+
+  -webkit-backdrop-filter:
+    blur(40px)
+    saturate(200%);
+
+  border-top:
+    1px solid rgba(255,255,255,.25);
+
+  box-shadow:
+    0 -20px 60px rgba(0,0,0,.25);
+
+  overflow:hidden;
+
+  position:relative;
+}
+
+.glass-panel::before{
+  content:"";
+
+  position:absolute;
+
+  top:-120px;
+  right:-100px;
+
+  width:350px;
+  height:350px;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.25),
+      transparent 70%
+    );
+
+  filter:blur(20px);
+
+  pointer-events:none;
+}
+
+.glass-panel::after{
+  content:"";
+
+  position:absolute;
+
+  inset:0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.12),
+      transparent 40%
+    );
+
+  pointer-events:none;
+}
+</style>
+

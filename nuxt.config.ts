@@ -134,7 +134,7 @@ sitemap: {
     public: {
       projectName: 'true people buy property and sell it',
       mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || '',
-      api_url: process.env.BASE_URL || 'http://localhost:5000'
+      api_url: process.env._URL || 'http://localhost:5000'
     }
   }
 })

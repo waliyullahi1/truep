@@ -3,31 +3,26 @@
   <div v-if="data">
 
     <div class="og-card">
-
+    
       <component
         v-if="randomCard"
         :is="randomCard"
+      :location=" `${data.location.city || ''}, ${data.location.state || ''}`"
+        :avatar=" data.avatar || ''"
 
-        :image="
-          data?.media?.files?.[0]?.url ||
-          '/images/property.jpg'
-        "
-
-        :price="
-          `${data?.pricing?.price || ''}/${data?.pricing?.paymentType || ''}`
+        :name="
+          `${data?.firstName || ''} ${data?.lastName|| ''}`
         "
 
         website="abanise.com"
 
-        :title="data?.title || ''"
+        :role="data?.roles || ''"
        
-        :descrip="data?.description || ''"
+        :phone="data?.whatsapp_no || ''"
 
-        :bottomTitle="data?.title || ''"
+       
 
-        :features="
-          data?.features?.map(f => f.label) || []
-        "
+        :skills="data?.skills?.map(f => f.name).slice(0,3) || [] "
 
       />
 
@@ -44,13 +39,15 @@
 
 import { ref, watch } from "vue"
 
-import OgPropertyCardOne from "~/components/OgPropertyCard/One.vue"
-import OgPropertyCardTwo from "~/components/OgPropertyCard/Two.vue"
-import OgPropertyCardThree from "~/components/OgPropertyCard/Three.vue"
-import OgPropertyCardFour from "~/components/OgPropertyCard/Four.vue"
-import OgPropertyCardFive from "~/components/OgPropertyCard/Five.vue"
-import OgPropertyCardSix from "~/components/OgPropertyCard/Six.vue"
-import OgPropertyCardSeven from "~/components/OgPropertyCard/Seven.vue"
+import OgProfile1 from "~/components/OgProfile/1.vue"
+import OgProfile2 from "~/components/OgProfile/2.vue"
+import OgProfile3 from "~/components/OgProfile/3.vue"
+import OgProfile4 from "~/components/OgProfile/4.vue"
+import OgProfile5 from "~/components/OgProfile/5.vue"
+import OgProfile6 from "~/components/OgProfile/6.vue"
+import OgProfile7 from "~/components/OgProfile/7.vue"
+import OgProfile8 from "~/components/OgProfile/8.vue"
+import OgProfile9 from "~/components/OgProfile/9.vue"
 
 const route = useRoute()
 
@@ -60,13 +57,15 @@ const randomCard = ref(null)
 
 
 const cards = [
-  OgPropertyCardOne,
-  OgPropertyCardTwo,
-  OgPropertyCardThree,
-  OgPropertyCardFour,
-  OgPropertyCardFive,
-  OgPropertyCardSix,
-  OgPropertyCardSeven,
+  OgProfile1,
+
+  OgProfile3,
+  OgProfile4,
+  OgProfile5,
+  OgProfile6,
+  OgProfile7,
+   OgProfile8,
+   
 ]
 
 
@@ -76,13 +75,13 @@ const cards = [
 // ============================
 
 const { data, pending, error } = await useAsyncData(
-  `property-${route.query.id}`,
+  `user-${route.query.id}`,
   async () => {
 
-    const propertyId = route.params.id
+    const userid = route.params.id
 
-    if (!propertyId) {
-      console.log(propertyId);
+    if (!userid) {
+     
       
       return null
     }
@@ -90,7 +89,7 @@ const { data, pending, error } = await useAsyncData(
    
     
     const res = await useApiFetch(
-      `/property/og/${propertyId}`
+      `/profile/og/${userid}`
     )
 
  
@@ -113,65 +112,14 @@ const { data, pending, error } = await useAsyncData(
 
 )
 
-
-
 // ============================
 // SELECT TEMPLATE
 // ============================
-
-const setTemplate = ()=>{
-
-
-  const savedTemplate =
-    data.value?.ogimage?.previews_template
-
-
-
-  if(savedTemplate){
-
-
-    const existingCard =
-      cards.find(
-        card => card.name === savedTemplate
-      )
-
-
-    if(existingCard){
-
-      randomCard.value = existingCard
-      return
-
-    }
-
-  }
-
-
-
-  randomCard.value =
-    cards[
-      Math.floor(
-        Math.random() * cards.length
-      )
-    ]
-
-}
-
-
-
 // wait until data is available
-watch(
-  data,
-  (value)=>{
+onMounted(async()=>{
+  randomCard.value =  cards[ Math.floor(  Math.random() * cards.length)]
+})
 
-    if(value){
-      setTemplate()
-    }
-
-  },
-  {
-    immediate:true
-  }
-)
 
 
 </script>

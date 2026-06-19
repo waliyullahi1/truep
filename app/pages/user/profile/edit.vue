@@ -730,7 +730,15 @@ const loadVerification = async () => {
 /* =========================================================
    SAVE PROFILE
 ========================================================= */
+const generateOgImage = async () => {
 
+  useApiFetch("/profile/upload-og", {
+    method: "POST",
+    
+  })
+
+  // continue immediately (no waiting)
+}
 const saveProfile = async () => {
 
   try {
@@ -770,7 +778,7 @@ const saveProfile = async () => {
     const data = await res.json()
 
     console.log('SAVE:', data)
-
+     await generateOgImage()
     if (!data.success) {
 
       $toast.error(
@@ -785,7 +793,7 @@ const saveProfile = async () => {
     )
 
     activeSection.value = 2
-
+    
   } catch (error) {
 
     console.log(error)

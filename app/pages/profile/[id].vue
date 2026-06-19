@@ -106,7 +106,7 @@ const profileUrl = computed(() => {
 
 
 const profileImage = computed(() => {
-  const img = data.value?.avatar
+  const img = data?.ogImage  || data.value?.avatar
 
   if (!img) {
     return 'https://abanise.com/default-agent.jpg'

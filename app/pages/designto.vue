@@ -76,13 +76,13 @@ price="₦250,000 / Session"
 
 />
 
-     <OgPropertyCardSix
+     <!-- <OgPropertyCardSix
   image="/image/abuja.jpg"
   website="abanise.com"
   title="Mixed hostel for rent near unilorin in, kwara"
   subtitle="Buy And Sell Properties"
   bottomTitle="Luanise"
-/>
+/> -->
 
 
      <OgPropertyCardSeven
