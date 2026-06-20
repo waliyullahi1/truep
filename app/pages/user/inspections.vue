@@ -181,19 +181,37 @@
                 v-if="activeTab === 'in' && item.status === 'pending'"
                 class="flex justify-end gap-2"
               >
-                <button
+               <button
                   @click="updateStatus(item._id, 'approved')"
-                  class="px-3 py-2 bg-green-600 text-white rounded-lg"
+                  :disabled="actionLoading === `${item._id}-approved`"
+                  class="px-3 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Accept
+                  <span
+                    v-if="actionLoading === `${item._id}-approved`"
+                  >
+                    Accepting...
+                  </span>
+
+                  <span v-else>
+                    Accept
+                  </span>
                 </button>
 
                 <button
-                  @click="updateStatus(item._id, 'rejected')"
-                  class="px-3 py-2 bg-red-600 text-white rounded-lg"
-                >
-                  Reject
-                </button>
+                    @click="updateStatus(item._id, 'rejected')"
+                    :disabled="actionLoading === `${item._id}-rejected`"
+                    class="px-3 py-2 bg-red-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span
+                      v-if="actionLoading === `${item._id}-rejected`"
+                    >
+                      Rejecting...
+                    </span>
+
+                    <span v-else>
+                      Reject
+                    </span>
+                  </button>
               </div>
 
               <span v-else class="text-gray-400">—</span>
@@ -206,6 +224,8 @@
   </div>
 </template>
 <script setup>
+
+import { useRuntimeConfig } from '#app'
 definePageMeta({
   layout: 'auth',
   access: 'seller',
@@ -213,7 +233,9 @@ definePageMeta({
 })
 
 const activeTab = ref('in')
-
+const actionLoading = ref(null)
+const config = useRuntimeConfig()
+const { $toast } = useNuxtApp()
 /* =========================
    SSR FETCH (FIXED)
 ========================= */
@@ -268,8 +290,12 @@ const fullName = (user) => {
 /* =========================
    UPDATE STATUS
 ========================= */
+
+
 const updateStatus = async (id, status) => {
   try {
+    actionLoading.value = `${id}-${status}`
+
     const res = await useApiFetch(
       `/inspection/${id}/status`,
       {
@@ -286,12 +312,21 @@ const updateStatus = async (id, status) => {
           ? data.value.inInspections
           : data.value.outInspections
 
-      const item = target.find(i => i._id === id)
-      if (item) item.status = status
+      const item = target.find(
+        i => i._id === id
+      )
+
+      if (item) {
+        item.status = status
+      }
     }
 
   } catch (err) {
-    $toast.error('Failed to update')
+    $toast.error(
+      err?.message || 'Failed to update'
+    )
+  } finally {
+    actionLoading.value = null
   }
 }
 
