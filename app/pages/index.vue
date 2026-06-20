@@ -493,7 +493,7 @@
           class="text-2xl"
         />
         Join Community
-      </a>           <UiButtonsPrimary   @click="router.push('/ogImage/wadfdfasdssdvsd')" class="  text-left">Create a Search Agent </UiButtonsPrimary>
+      </a>          
     </div>
   </Container>
 </section>

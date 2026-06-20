@@ -435,7 +435,7 @@
               <SafetyTips/>
               <div>
                
-                <UiTypographH3  class="font-medium">Discover more</UiTypographH3>
+                <UiTypograpH3  class="font-medium">Discover more</UiTypograpH3>
                 <DiscoverMore />
               </div>
 

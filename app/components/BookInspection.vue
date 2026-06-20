@@ -28,11 +28,7 @@ const props = defineProps({
 const cancelPage = () => {
   emit('close')
 }
-const closeOtpModal = () => {
-  otpverify.value = false
-  showBookingModal = false
-   
-}
+
 
 const isBook = async () => {
   console.log('getting reDY');
@@ -102,8 +98,11 @@ const submitForm = async () => {
 
     // If useApiFetch already returns JSON:
     const data = response
+    console.log(data, 'ffffffff');
+    
        if (!response?.success) {
          if (response.status === 403) {
+         
          otpverify.value = true
          loading.value = false
           $toast.success(
@@ -131,6 +130,13 @@ const submitForm = async () => {
   } finally {
     loading.value = false
   }
+}
+const closeOtpModal = async () => {
+  otpverify.value = false
+
+
+    await submitForm()
+
 }
 </script>
 <template>
