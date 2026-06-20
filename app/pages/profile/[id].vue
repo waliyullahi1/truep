@@ -209,7 +209,7 @@ watch(() => route.params.id, () => refresh())
 <div class="">
   <Container>
     <NavigationBackArrow/>
-{{ agent }}
+
     <!-- ================= SKELETON ================= -->
     <div v-if="pending" class="animate-pulse">
       <div class="flex flex-col md:flex-row gap-6 items-start">

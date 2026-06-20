@@ -777,8 +777,8 @@ const saveProfile = async () => {
 
     const data = await res.json()
 
-    console.log('SAVE:', data)
-     await generateOgImage()
+    // console.log('SAVE:', data)
+   
     if (!data.success) {
 
       $toast.error(
@@ -791,6 +791,9 @@ const saveProfile = async () => {
     $toast.success(
       'Profile updated successfully'
     )
+     await generateOgImage()
+     await new Promise(resolve => setTimeout(resolve, 6000))
+    
 
     activeSection.value = 2
     
