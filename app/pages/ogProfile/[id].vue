@@ -99,7 +99,7 @@ const { data, pending, error } = await useAsyncData(
       )
     }
 
-      console.log(res.data?.data);
+      
 
     return res.data?.data || null
 

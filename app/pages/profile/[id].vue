@@ -104,12 +104,19 @@ const profileUrl = computed(() => {
   return `${siteUrl}${route.fullPath}`
 })
 
+console.log(data.value);
 
 const profileImage = computed(() => {
-  const img = data?.ogImage  || data.value?.avatar
-
-  if (!img) {
-    return 'https://abanise.com/default-agent.jpg'
+  const img =  data.value?.avatar
+const ogimage =  data?.value?.ogImage 
+  if (ogimage) { 
+    return ogimage.replace(
+    '/upload/',
+    '/upload/w_800,h_1200,c_fill,q_auto,f_auto/'
+  )
+  }
+  if(!img){
+    return '/image/ogimage.png'
   }
 
   return img.replace(
@@ -202,7 +209,7 @@ watch(() => route.params.id, () => refresh())
 <div class="">
   <Container>
     <NavigationBackArrow/>
-
+{{ agent }}
     <!-- ================= SKELETON ================= -->
     <div v-if="pending" class="animate-pulse">
       <div class="flex flex-col md:flex-row gap-6 items-start">

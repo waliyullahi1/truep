@@ -109,7 +109,7 @@ defineProps({
         >
           {{ role }}
         </p>
-        <div class=" flex items-center jus text-2xl font-medium text-black">
+        <div v-if="location.state" class=" flex items-center jus text-2xl font-medium text-black">
           <Icon  class="  font-bold text-4xl" name="heroicons:map-pin" /> {{ location }} state
         </div>
        

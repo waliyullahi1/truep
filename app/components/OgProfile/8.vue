@@ -303,7 +303,7 @@ Verified Agent
 </div>
 </div>
 
-<div class=" flex mt-5  items-center jus text-2xl font-medium text-white">
+<div v-if="location.state"  class=" flex mt-5  items-center jus text-2xl font-medium text-white">
           <Icon  class="  font-bold text-4xl" name="heroicons:map-pin" /> {{ location }} state
         </div>
 
