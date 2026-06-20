@@ -22,8 +22,11 @@ sitemap: {
 
   exclude: [
     '/howiswork',
+    '/designto',
+    'profiledesign',
     '/resetpassword',
-
+    '/ogImage/**',
+     '/ogProfile/**',
     '/admin/**',
 
     '/user/**'
