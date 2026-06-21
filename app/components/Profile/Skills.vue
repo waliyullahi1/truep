@@ -58,7 +58,7 @@
     </div>
 
     <!-- LIST -->
-    <div class="grid sm:grid-cols-3 grid-cols-2 gap-5 mt-6">
+    <div class="grid  grid-cols-1 sm:grid-cols-3  gap-5 mt-6">
 
       <div
         v-for="(skill, i) in modelValue"
