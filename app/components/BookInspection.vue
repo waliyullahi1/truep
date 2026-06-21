@@ -170,13 +170,21 @@ const closeOtpModal = async () => {
 
     
     
-   <div class=" flex gap-5">
+   <div class=" sm:flex-row flex-col  flex lg:flex-col  gap  gap-2">
 
-    <UiButtonsPrimary :disabled="asBook" @click="!asBook && (showBookingModal = true)">
+    <UiButtonsPrimary :disabled="asBook" @click="!asBook && (showBookingModal = true)" >
+      <div class=" flex  items-center gap-1">
+
+       <Icon  :name="asBook ? 'heroicons:check-circle' : 'heroicons:calendar-days'"  class="w-5 h-5" /> 
         {{ asBook ? 'Request Sent' : 'Book for Inspection' }}
-     </UiButtonsPrimary>
-          <UiButtonsPrimary @click="chatWithUs">
-      Chat about this property
+       </div>
+    </UiButtonsPrimary>
+      
+    <UiButtonsPrimary @click="chatWithUs">
+           <div class=" flex  items-center gap-1">
+            <Icon  name="heroicons:chat-bubble-left-right" class="w-5 h-5"/> 
+            Chat about this property
+            </div>
     </UiButtonsPrimary>
   </div>
   <div v-if="showBookingModal"  class="fixed top- inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4">

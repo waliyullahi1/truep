@@ -30,7 +30,7 @@ const categories = [
   {
     label: 'Student apartments',
     icon: 'graduate_cap.svg',
-    path: 'house/student'
+    path: '/hostel'
   },
   {
     label: 'All properties',

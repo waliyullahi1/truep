@@ -144,7 +144,12 @@
                           v-model="user.roles"
                           placeholder="Select profession"
                           :options="[
-                            'Software Engineer',
+                            'Property Agent',
+                            'Senior Property Agent',
+                            'Property Manager',
+                            'Broker',
+                            'Agency Manager',
+                            'Independent Agent',
                             'Surveyor',
                             'Mechanic',
                             'Architect',
