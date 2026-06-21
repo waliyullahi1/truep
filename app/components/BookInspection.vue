@@ -32,7 +32,15 @@ const cancelPage = () => {
   emit('close')
 }
 
-
+const handlePhoneInput = (value) => {
+  console.log(' waliu soliu  ', value);
+  phone.value =  phone.value.replace(/\D/g, '') 
+  console.log(phone.value);
+  
+  return String(value)
+    .replace(/\D/g, '') // remove non-digits
+    .slice(0, 11) // limit to 11 digits
+}
 
 const isBook = async () => {
 
@@ -160,14 +168,18 @@ const closeOtpModal = async () => {
   <div>
 
 
+    
+    
+   <div class=" flex gap-5">
+
     <UiButtonsPrimary :disabled="asBook" @click="!asBook && (showBookingModal = true)">
         {{ asBook ? 'Request Sent' : 'Book for Inspection' }}
      </UiButtonsPrimary>
           <UiButtonsPrimary @click="chatWithUs">
       Chat about this property
     </UiButtonsPrimary>
-  
-  <div v-if="showBookingModal"  class="fixed top- inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  </div>
+  <div v-if="showBookingModal"  class="fixed top- inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4">
   <div class="w-full max-w-md  mt-6  overflow-y-scroll  h-[85vh] bg-white rounded-2xl shadow-xl o" >
 
    
@@ -196,7 +208,7 @@ const closeOtpModal = async () => {
     <!-- Form -->
     <form
       @submit.prevent="submitForm"
-      class="p-5 space-y-4"
+      class="sm:p-5 p-2 space-y-4"
     >
      
       <!-- Guest fields -->
@@ -214,11 +226,14 @@ const closeOtpModal = async () => {
           v-model:inputValue="email"
         />
         
-        <FormInput v-if="!auth.user?.phone"
-          label="Phone Number"
-          :usePlaceholder="true"
-          v-model:inputValue="phone"
-        />
+            <FormInput
+      v-if="!auth.user?.phone"
+      label="Phone Number"
+      :usePlaceholder="true"
+      :phoneOnly="true"
+      :inputValue="phone"
+     
+    />
           
      
 

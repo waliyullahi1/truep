@@ -89,7 +89,10 @@ export default {
     required: Boolean,
     disabled: Boolean,
     autocomplete: String,
-
+    phoneOnly: {
+    type: Boolean,
+    default: false
+  },
     /* ⭐ THIS controls placeholder vs floating */
     usePlaceholder: Boolean
   },
@@ -133,6 +136,11 @@ export default {
     },
 
     handleInput(e) {
+       let value = e.target.value
+    if (this.phoneOnly) {
+    value = value.replace(/\D/g, '').slice(0, 11)
+    e.target.value = value
+  }
       this.$emit('update:inputValue', e.target.value)
     }
   }
