@@ -523,7 +523,7 @@ const { data, pending, error } = await useAsyncData(
 
 const property = computed(() => data.value?.property || null)
 const isOwner = computed(() => data.value?.isOwner || false)
-// const isOwner = computed(() => {
+// const isOwner =computed(() => {
 //   console.log(data, 'data was console' );
   
 //   return data.value?.isOwner || false
@@ -681,7 +681,7 @@ const back = () => {
 /* ================= MERGE BACKEND DATA ================= */
 const mergeForm = (data) => {
   if (!data) return
-  console.log(data);
+ 
   form.value.id = data._id || ''
   form.value.status = data.status || ''
   form.value.type = data.type || ''

@@ -1,6 +1,5 @@
 <script setup>
-import { log } from '@tensorflow/tfjs-core/dist/log'
-import { Verified } from 'lucide-vue-next'
+
 import { ref } from 'vue'
 
 const auth = useAuth()
@@ -22,6 +21,10 @@ const props = defineProps({
   propertyId: {
     type: String,
     required: true
+  },
+  property:{
+    type: String,
+    required: true
   }
 })
 
@@ -30,15 +33,16 @@ const cancelPage = () => {
 }
 
 
+
 const isBook = async () => {
-  console.log('getting reDY');
-    console.log(auth.value);
+
+    
     
   if(!auth.value.authenticated){
-    console.log('getting  IS NOT reDY'); 
+   
     return
   }
-  console.log('getting GO');
+
   try {
 
    const response = await useApiFetch(`/inspection/existing/${props.propertyId}`,{ method: 'GET' })
@@ -58,6 +62,19 @@ const isBook = async () => {
   } finally {
     loading.value = false
   }
+}
+
+ console.log(props.property);
+ 
+const chatWithUs = () => {
+  const propertyTitle = props.property?.title || ''
+  const propertyUrl = window.location.href
+
+  const message = `Hello Abanise Marketplace. I am interested in ${propertyTitle}, ${propertyUrl}`
+
+  const whatsappUrl = `https://wa.me/2348070956301?text=${encodeURIComponent(message)}`
+
+  window.open(whatsappUrl, '_blank')
 }
 
 isBook()
@@ -98,7 +115,7 @@ const submitForm = async () => {
 
     // If useApiFetch already returns JSON:
     const data = response
-    console.log(data, 'ffffffff');
+   
     
        if (!response?.success) {
          if (response.status === 403) {
@@ -144,8 +161,11 @@ const closeOtpModal = async () => {
 
 
     <UiButtonsPrimary :disabled="asBook" @click="!asBook && (showBookingModal = true)">
-        {{ asBook ? 'Request Sent' : 'Book Inspection' }}
+        {{ asBook ? 'Request Sent' : 'Book for Inspection' }}
      </UiButtonsPrimary>
+          <UiButtonsPrimary @click="chatWithUs">
+      Chat about this property
+    </UiButtonsPrimary>
   
   <div v-if="showBookingModal"  class="fixed top- inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="w-full max-w-md  mt-6  overflow-y-scroll  h-[85vh] bg-white rounded-2xl shadow-xl o" >
