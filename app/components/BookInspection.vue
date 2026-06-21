@@ -231,7 +231,7 @@ const closeOtpModal = async () => {
       label="Phone Number"
       :usePlaceholder="true"
       :phoneOnly="true"
-      :inputValue="phone"
+       v-model:inputValue="phone"
      
     />
           
