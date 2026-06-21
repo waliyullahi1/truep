@@ -163,7 +163,7 @@
                     </div>
 
                     <!-- STATE + LGA -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-2 md:grid-cols-2 gap-5">
 
                       <div>
                         <label
@@ -655,7 +655,6 @@ const loadProfile = async () => {
 
     const data = await res.json()
 
-    console.log('PROFILE:', data)
 
     if (!data.success) return
 
@@ -683,7 +682,7 @@ const loadProfile = async () => {
       .filter(Boolean)
       .join(' ')
 
-    console.log('USER:', user.value)
+    
 
   } catch (err) {
 

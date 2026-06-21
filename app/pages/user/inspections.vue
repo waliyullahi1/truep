@@ -246,7 +246,7 @@ const { data } = await useAsyncData(
       useApiFetch('/inspection/in'),
       useApiFetch('/inspection/out')
     ])
-    console.log(outRes.data.data, outRes, 'outRes' );
+
     
     return {
       inInspections: inRes.data.inspections || [],

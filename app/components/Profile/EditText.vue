@@ -5,7 +5,7 @@
     <div v-if="!editing" class="flex items-center gap-1">
 
       <h4
-        class="text-md font-medium"
+        class="sm:text-md text-sm font-medium"
         :class="!modelValue ? 'text-gray-400 italic' : ''"
       >
         {{ modelValue || placeholder }}
