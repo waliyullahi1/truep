@@ -1,13 +1,7 @@
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
    const route = useRoute()
-   if (route.path.startsWith('/ogProfile/')) {
-    return
-  }
-     if (route.path.startsWith('/ogImage/')) {
-    return
-  }
-     
+   
   const auth = useAuth()
 
   if (auth.value.checked) return
