@@ -7,9 +7,7 @@ export default defineNuxtPlugin(async () => {
      if (route.path.startsWith('/ogImage/')) {
     return
   }
-       if (route.path.startsWith('/')) {
-    return
-  }
+     
   const auth = useAuth()
 
   if (auth.value.checked) return
