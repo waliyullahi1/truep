@@ -120,7 +120,7 @@ const {
       res?.data ||
       []
 
-    console.log('SAFE:', safe)
+  
 
     return safe
   },
