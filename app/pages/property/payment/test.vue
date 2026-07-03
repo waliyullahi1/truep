@@ -1,0 +1,993 @@
+<template>
+  <div class="min-h-screen bg-slate-50">
+    <!-- ================= Header ================= -->
+  <!-- paidAmount -->
+<!-- convertFromKobo -->
+ <!-- ₦{{ formatMoney(convertFromKobo(remainingAfterPayment)) }} -->
+    <!-- ================= Loading ================= -->
+    <div
+      v-if="loading"
+      class="max-w-7xl mx-auto px-4 py-8 space-y-6 animate-pulse"
+    >
+      <div class="bg-white rounded-3xl p-6">
+        <div class="h-60 rounded-2xl bg-slate-200"></div>
+
+        <div class="mt-5 h-7 w-64 bg-slate-200 rounded"></div>
+        <div class="mt-3 h-4 w-48 bg-slate-200 rounded"></div>
+
+        <div class="grid grid-cols-3 gap-4 mt-8">
+          <div class="h-24 rounded-2xl bg-slate-200"></div>
+          <div class="h-24 rounded-2xl bg-slate-200"></div>
+          <div class="h-24 rounded-2xl bg-slate-200"></div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl h-96"></div>
+    </div>
+
+    <!-- ================= Content ================= -->
+
+    <div
+      v-else
+      class="max-w-6xl mx-auto px-2 py-8 grid lg:grid-cols-3 gap-8"
+    >
+      <!-- ========================================================= -->
+      <!-- LEFT -->
+      <!-- ========================================================= -->
+
+      <div class="lg:col-span-2 space-y-4">
+        <!-- ================= Property Card ================= -->
+    
+        <div
+          class="bg-white   rounded-md sm overflow-hidden border shadow-sm"
+        >
+          <img
+            :src="property ? getImage(property) : '/image/no-image.png'"
+            class=" h-44 w-full object-cover"
+          />
+
+          <div class="sm:p-7 p-2">
+
+           
+              <div class="f w-full">
+                <h2 class="text-lg flex justify-between w-full   font-bold">
+                  {{ property?.title }}  
+                
+                </h2>
+
+                <div
+                  class="mt-2 text-sm flex items-center gap-2 text-slate-500"
+                >
+                 
+                    <span class="flex items-center g">
+                    <Icon
+                    name="heroicons:map-pin"
+                    class="w-5 h-5"
+                  />
+                        {{ property?.location.address }},   {{ property?.location.city }}, {{ property?.location.state }} <br>
+                       
+                    </span>
+                     <span class="font-semibold">₦{{formatMoney(property.pricing.price)}}{{getPriceLabel(property)}} <br>
+                    <!-- {{property}} -->
+                </span>
+                </div>
+
+                       
+               
+                <div class="flex flex-wrap gap-2 mt-2">
+                <div v-for="feature in property.features" :key="feature" class="text-slate-500 flex items-center gap-2 gap-1 px-1 text-sm">
+                
+                     <div class=" text-black w-1 h-1 bg-black font-bold rounded-full  text-lg"></div>{{feature.label}}
+                </div>
+                </div>
+                
+              </div>
+
+             
+          
+             
+            <!-- ================= Stats ================= -->
+
+            <div v-if="currentProgress !== 0"
+              class="grid md:grid-cols-3 gap-5 mt-"
+            >
+              <div
+                class="rounded-2xl bg-slate-50 border p-5"
+              >
+                <p class="text-slate-500 text-sm">
+                  Total Price
+                </p>
+
+                <h3
+                  class="mt-2 font-bold fraunces text-2xl"
+                >
+                  ₦{{ formatMoney(calculatedTotalPrice) }}
+                </h3>
+              </div>
+
+              <div
+                class="rounded-2xl bg-green-50 border border-green-200 p-5"
+              >
+                <p class="text-green-600 text-sm">
+                  Paid
+                </p>
+
+                <h3
+                  class="mt-2 font-bold fraunces text-xl text-green-700"
+                >
+                  ₦{{ formatMoney(paidAmount) }}
+                </h3>
+              </div>
+
+              <div
+                class="rounded-2xl bg-red-50 border border-red-200 p-5"
+              >
+                <p class="text-red-600 text-sm">
+                  Remaining
+                </p>
+
+                <h3
+                  class="mt-2 font-bold fraunces text-2xl text-red-700"
+                >
+                  ₦{{ formatMoney(remainingAmount) }}
+                </h3>
+              </div>
+            </div>
+
+            <!-- ================= Progress ================= -->
+
+            <div v-if="currentProgress !== 0" class="mt-10">
+
+              <div
+                class="flex justify-between mb-3"
+              >
+                <span
+                  class="font-medium text-slate-700"
+                >
+                  Payment Progress
+                </span>
+
+                <span
+                  class="font-bold text-indigo-600"
+                >
+                  {{ currentProgress }}%
+                </span>
+              </div>
+
+              <div
+                class="h-4 rounded-full overflow-hidden bg-slate-200"
+              >
+                <div
+                  class="h-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-700"
+                  :style="{
+                    width: currentProgress + '%'
+                  }"
+                ></div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!---- Land Selles-->
+         <div v-if="property.type === 'land'">
+
+                <h2 class="font-bold text-lg fraunces">
+                    Buy Plots
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Select how many plots you want to purchase.
+                </p>
+
+                <!-- Available Plots Card -->
+                <div class="mt-5 rounded-xl border bg-indigo-50 border-indigo-100 p-4">
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase">
+                                Available Plots
+                            </p>
+
+                            <h3 class="text-3xl font-bold text-indigo-700">
+                                {{ property.landDetails.quantity }}
+                            </h3>
+                        </div>
+
+                        <div class="text-right">
+                            <p class="text-xs text-slate-500 uppercase">
+                                Plot Size
+                            </p>
+
+                            <h3 class="text-xl font-semibold">
+                                {{ property.landDetails.size }} sqm
+                            </h3>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Select Plot -->
+                <div class="mt-6">
+
+                    <label class="block mb-2 font-medium">
+                        Number of Plots to Buy
+                    </label>
+
+                    <input
+                        v-model.number="selectedPlots"
+                        type="number"
+                        min="1"
+                        :max="property.landDetails.quantity"
+                        class="w-full h-12 rounded-lg border px-4"
+                    />
+
+                    <input
+                        v-model.number="selectedPlots"
+                        type="range"
+                        min="1"
+                        :max="property.landDetails.quantity"
+                        class="mt-5 w-full accent-indigo-600"
+                    />
+
+                </div>
+
+                <!-- Summary -->
+                <div class="mt-6 rounded-xl bg-slate-100 p-5 space-y-3">
+
+                    <div class="flex justify-between">
+                        <span>Price Per Plot</span>
+                        <strong>₦{{ formatMoney(property.pricing.price) }}</strong>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Available Plots</span>
+                        <strong>{{ property.landDetails.quantity }}</strong>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Plots Selected</span>
+                        <strong>{{ selectedPlots }}</strong>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Total Land Size</span>
+                        <strong>
+                            {{ selectedPlots * property.landDetails.size }} sqm
+                        </strong>
+                    </div>
+
+                    <hr>
+
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Total Price</span>
+                        <span class="text-indigo-600">
+                            ₦{{ formatMoney(selectedPlots * property.pricing.price) }}
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        <!-- ================= Payment ================= -->
+
+        <div
+          class="bg-white rounded-md border shadow-sm p-4"
+        >
+          <h2
+            class="font-bold fraunces text-lg"
+          >
+            Choose Amount
+          </h2>
+
+          <p
+            class="text-slate-500 text-sm  mt-0.5"
+          >
+            Select a percentage or enter your own payment amount.
+          </p>
+
+          <!-- ================= Percentage ================= -->
+
+          <div class="grid grid-cols-5 mt-3 gap-3">
+
+            <button
+                v-for="percent in percentages"
+                :key="percent"
+                @click="selectPercentage(percent)"
+                :class="[
+                    'h-12 rounded-md border font-semibold transition',
+                    selectedPercentage === percent
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white hover:bg-indigo-50'
+                ]"
+            >
+
+                {{ percent }}%
+
+            </button>
+
+        </div>
+
+          <!-- OR -->
+
+          <div
+            class="flex items-center gap-3 my-5"
+          >
+            <div
+              class="flex-1 h-px bg-slate-200"
+            ></div>
+
+            <span
+              class="text-slate-500"
+            >
+              OR
+            </span>
+
+            <div
+              class="flex-1 h-px bg-slate-200"
+            ></div>
+          </div>
+
+         
+           
+
+           
+            
+           
+
+           
+
+          <label
+            class="block font-medium mb-2"
+          >
+            Custom Amount
+          </label>
+
+          <div
+            class="relative"
+          >
+            <span
+              class="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-xl"
+            >
+              ₦
+            </span>
+
+
+                        <input
+                v-model.number="amount"
+                type="number"
+                :min="0"
+                :max="currentRemainingAmount"
+                placeholder="0"
+                class="w-full pl-12 pr-5  h-14 rounded-md border text-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <!-- ================= Slider ================= -->
+
+          <div
+            class="mt-8"
+          >
+           <input
+                v-model.number="amount"
+                type="range"
+                :min="0"
+                :max="currentRemainingAmount"
+                step="1"
+                class="w-full accent-indigo-600 h-2"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- RIGHT -->
+      <!-- ========================================================= -->
+
+     <div>
+  <div class="sticky text-sm top-7 bg-white  - ibm-plex-mono border shadow-sm p-4">
+
+    <h2 class="text-xl  fraunces  ">
+      Payment Summary
+    </h2>
+
+    <p class="text-slate-500  test-sm pt-0.5  ">
+     Review before you continue.
+    </p>
+
+    <!-- Summary -->
+
+    <div class="mt-4 space-y-5">
+
+      <div class="flex justify-between">
+        <span class="text-slate-500">
+          Total Property Price
+        </span>
+
+        <span class="font-bold fraunces ibm-plex-mono">
+          &#8358;{{ formatMoney(calculatedTotalPrice) }}
+        </span>
+      </div>
+ 
+      <div class="flex justify-between">
+        <span class="text-slate-500">
+          Already Paid
+        </span>
+
+        <span class="font-bold fraunces text-green-600">
+           &#8358;{{ formatMoney(paidAmount) }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-slate-500">
+          Paying Now
+        </span>
+
+        <span class="font-bold text-indigo-600 text-lg">
+          ₦{{ formatMoney(amount) }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-slate-500">
+          Paid After Payment
+        </span>
+
+        <span class="font-bold text-green-600">
+          ₦{{ formatMoney(paidAfterPayment) }}
+        </span>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="text-slate-500">
+          Remaining Balance
+        </span>
+
+        <span class="font-bold text-red-600">
+          ₦{{ formatMoney(remainingAfterPayment) }}
+        </span>
+      </div>
+
+    </div>
+
+    <!-- Progress -->
+
+    <div class="mt-5">
+
+      <div class="flex justify-between mb-2">
+
+        <span class="font-semibold">
+          Payment Progress
+        </span>
+
+        <span class="font-bold text-indigo-600">
+          {{ progressAfterPayment }}%
+        </span>
+
+      </div>
+
+      <div
+        class="w-full h-4 bg-slate-200 rounded-full overflow-hidden"
+      >
+        <div
+          class="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 transition-all duration-700"
+          :style="{
+            width: progressAfterPayment + '%'
+          }"
+        />
+      </div>
+
+    </div>
+
+    <!-- Status Card -->
+
+    <div
+      class="mt-4 rounded-2xl flex bg-indigo-50 border border-indigo-100 p-2"
+    >
+
+      <p class="text-slate-500  text-sm">
+        After this payment
+      
+
+      <span class="mt-2 text-xl font-bold text-indigo-700">
+        {{ progressAfterPayment }}%
+      </span>
+
+      
+        of this property's total price will have been paid.
+      </p>
+
+    </div>
+
+    <!-- Validation -->
+
+    <div
+      v-if="amount > currentRemainingAmount"
+      class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
+    >
+      Amount cannot exceed the remaining balance.
+    </div>
+
+    <!-- <div
+      v-else-if="amount <= 0"
+      class="mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-700"
+    >
+      Enter a payment amount to continue.
+    </div> -->
+
+    <!-- Button -->
+
+    <button
+      @click="payNow"
+      :disabled="!canPay"
+      class="mt-8 w-full h-14  rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all"
+    >
+
+      Continue to Payment
+
+    </button>
+
+  </div>
+</div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+const route = useRoute()
+const config = useRuntimeConfig()
+const loading = ref(true)
+const plots = ref(1)
+
+ definePageMeta({
+   layout: 'auth',
+    isPrivateRoute : true
+   })
+/*
+|--------------------------------------------------------------------------
+| State
+|--------------------------------------------------------------------------
+*/
+
+const property = ref({})
+const order = ref(null)
+
+const totalAmount = ref(0)
+const paidAmount = ref(0)
+const remainingAmount = ref(0)
+
+const amount = ref(0)
+
+const percentages = [10, 25, 50, 75, 100]
+
+const selectedPercentage = ref(null)
+const selectedPlots = ref(1)
+
+const { pay } = usePaystack();
+const auth = useAuth()
+
+/*
+|--------------------------------------------------------------------------
+| Fetch Property
+|--------------------------------------------------------------------------
+*/
+
+const { data, pending } = await useAsyncData(
+  `property-${route.params.slogan}`,
+  async () => {
+    const response = await useApiFetch(`/property/${route.params.slogan}`)
+    return response.data
+  }
+)
+
+/*
+|--------------------------------------------------------------------------
+| Populate Property
+|--------------------------------------------------------------------------
+*/
+const getPriceLabel = (item) => {
+
+  const pricing = item?.pricing || {}
+
+  if (item?.type === 'house'   || item?.type === 'hostel' ) {
+
+    if (item?.purpose === 'sale') {
+
+      if (
+        pricing.paymentType ===
+        'installment'
+      ) {
+        return '/monthly payment'
+      }
+
+      return '/outright'
+    }
+
+    if (item?.purpose === 'rent') {
+
+      const unit =
+        pricing.rent?.duration?.unit
+
+      return unit
+        ? `/${unit}`
+        : ''
+    }
+  }
+
+  if (item?.type === 'land') {
+
+    if (
+      pricing.paymentType ===
+      'outright'
+    ) {
+
+      return item.landDetails?.unit
+        ? `/per ${item.landDetails.unit}`
+        : ''
+    }
+
+    if (
+      pricing.paymentType ===
+      'installment'
+    ) {
+
+      return `/per ${
+        item.landDetails?.unit ||
+        'plot'
+      } /monthly`
+    }
+  }
+
+  return ''
+}
+const currentRemainingAmount = computed(() => {
+  if (property.value?.type !== "land") {
+    return remainingAmount.value
+  }
+
+  return Math.max(
+    calculatedTotalPrice.value - paidAmount.value,
+    0
+  )
+})
+const getLocation = (item) => {
+
+  return `${
+    item?.location?.state || ''
+  }/${
+    item?.location?.city || ''
+  }`
+} 
+const getImage = (item) => {
+
+  return (
+    item?.media?.files?.[0]?.url ||
+    '/image/no-image.png'
+  )
+}
+watchEffect(() => {
+
+  if (!data.value?.data) return
+
+  property.value = data.value.data
+  console.log(data.value);
+  
+  order.value = data.value.data.order || null
+
+ if (order.value) {
+
+  totalAmount.value = Number(order.value.totalAmount || 0)
+  paidAmount.value = Number(order.value.paidAmount || 0)
+  remainingAmount.value = Number(order.value.remainingAmount || 0)
+
+} else {
+
+  if (property.value.type === "land") {
+
+    totalAmount.value =
+      Number(property.value.pricing.price) *
+      Number(property.value.landDetails.quantity)
+
+  } else {
+
+    totalAmount.value =
+      Number(property.value.pricing.price)
+
+  }
+
+  paidAmount.value = 0
+  remainingAmount.value = totalAmount.value
+}
+loading.value = false
+})
+
+
+const hasOrder = computed(() => !!order.value);
+
+const isFullyPaid = computed(() =>
+    order.value?.remainingAmount === 0
+);
+
+const isPartiallyPaid = computed(() =>
+    order.value &&
+    order.value.remainingAmount > 0 &&
+    order.value.escrowAmount > 0
+);
+const pricePerPlot = computed(() => {
+  if (property.value?.type !== "land") return 0
+
+  return Number(property.value?.pricing?.price || 0)
+})
+
+// watch(selectedPlots, (value) => {
+
+//     if (property.value.type !== "land") return
+
+//     if (value < 1)
+//         value = 1
+
+//     if (value > property.value.landDetails.quantity)
+//         value = property.value.landDetails.quantity
+
+//     selectedPlots.value = value
+
+//     amount.value =
+//         value * Number(property.value.pricing.price)
+
+// })
+
+watch(selectedPlots, (value) => {
+
+    if (property.value.type !== "land") return
+
+    if (!value || value < 1) {
+        selectedPlots.value = 1
+        return
+    }
+
+    if (value > property.value.landDetails.quantity) {
+        selectedPlots.value = property.value.landDetails.quantity
+    }
+
+})
+
+const calculatedTotalPrice = computed(() => {
+
+  if (property.value?.type !== "land") {
+    return totalAmount.value
+  }
+
+  return (
+    Number(property.value.pricing.price || 0) *
+    Number(selectedPlots.value || 1)
+  )
+
+})
+
+/*
+|--------------------------------------------------------------------------
+| Percentage Button
+|--------------------------------------------------------------------------
+*/
+
+const selectPercentage = (percent) => {
+  selectedPercentage.value = percent
+
+  amount.value = Math.round(
+    currentRemainingAmount.value * percent / 100
+  )
+}
+/*
+|--------------------------------------------------------------------------
+| Validate Amount
+|--------------------------------------------------------------------------
+*/
+watch(amount, (value) => {
+
+  value = Number(value)
+
+  if (isNaN(value)) value = 0
+
+  if (value < 0) value = 0
+
+  const max = currentRemainingAmount.value
+
+  if (value > max)
+    value = max
+
+  amount.value = value
+
+  const match = percentages.find(percent =>
+    Math.round(
+      currentRemainingAmount.value * percent / 100
+    ) === value
+  )
+
+  selectedPercentage.value = match || null
+
+})
+
+/*
+|--------------------------------------------------------------------------
+| Computed
+|--------------------------------------------------------------------------
+*/
+const currentProgress = computed(() => {
+
+  if (!calculatedTotalPrice.value) return 0
+
+  return Math.round(
+    (paidAmount.value / calculatedTotalPrice.value) * 100
+  )
+
+})
+const paidAfterPayment = computed(() => {
+
+  return paidAmount.value + amount.value
+
+})
+
+// const remainingAfterPayment = computed(() => {
+
+//   return Math.max(
+//     calculatedTotalPrice.value -
+//     paidAfterPayment.value,
+//     0
+//   )
+
+// })
+
+
+const progressAfterPayment = computed(() => {
+
+  if (!calculatedTotalPrice.value) return 0
+
+  return Math.min(
+    100,
+    Math.round(
+      (paidAfterPayment.value / calculatedTotalPrice.value) * 100
+    )
+  )
+
+})
+
+const remainingAfterPayment = computed(() => {
+  return Math.max(
+    currentRemainingAmount.value - amount.value,
+    0
+  )
+})
+const canPay = computed(() => {
+
+  return (
+
+    amount.value > 0 &&
+
+    amount.value <= currentRemainingAmount.value &&
+
+    !pending.value
+
+  )
+
+})
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const formatMoney = (value) =>
+
+  Number(value || 0).toLocaleString("en-NG")
+
+/*
+|--------------------------------------------------------------------------
+| Pay
+|--------------------------------------------------------------------------
+*/
+
+// const payNow = async () =>{
+  
+//         const verify = await useApiFetch("/payment/property/verify-order", {
+//         method: "POST",
+//         body: {
+//           ref: 'ORD-1783000429876-5165-1783002117982-F60U3X'
+//         }
+//       });
+//       console.log(verify);
+      
+// }
+
+
+const payNow = async () => {
+
+  if (!canPay.value) return
+
+  try {
+    console.log(selectedPlots.value,  property.value._id, amount.value, 'sahcbasjxbsjhxbas');
+    // property/verify-order
+    //  `/payment/property/${route.params.slogan}`,
+    const response = await useApiFetch(
+      `/payment/property/${route.params.slogan}`,
+      {
+        method: "POST",
+        body: {
+           totalPlot : selectedPlots.value,
+          propertyId: property.value._id,
+
+          amount: amount.value
+
+        }
+      }
+    )
+
+    
+
+//  'ORD-1782973163326-3673-1782986267408-KJYRCG'
+    if (response.success) { 
+      console.log( response.data.data.payment.txRef);
+        pay({
+
+          email: auth.value.user.email || 'alfaabanise@gmail.com ',
+
+          amount: response.data.data.payment.amount,
+
+          reference: response.data.data.payment.txRef,
+
+          metadata: {
+            orderId: response.data.data.order.orderNumber
+          },
+
+          async onSuccess(transaction) {
+            console.log('succesdcsdcfs');
+            
+            const verify = await useApiFetch("/payment/property/verify-order", {
+              method: "POST",
+              body: {
+                ref: transaction.reference
+              }
+            });
+
+            console.log(verify);
+
+          },
+
+          onCancel() {
+            console.log("Payment cancelled");
+            console.log('cancel');
+          }
+
+        });
+
+      // window.location.href = response.data.data.checkoutUrl
+
+    }
+
+  } catch (err) {
+
+    console.error(err)
+
+  }
+
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+.ibm-plex-mono {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+
+
+.fraunces{
+ font-family: 'Fraunces', serif;
+}
+
+</style>

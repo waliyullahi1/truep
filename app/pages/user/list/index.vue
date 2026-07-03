@@ -109,7 +109,7 @@ const getPriceLabel = (item) => {
 
   const pricing = item?.pricing || {}
 
-  if (item?.type === 'house') {
+  if (item?.type === 'house'   || item?.type === 'hostel' ) {
 
     if (item?.purpose === 'sale') {
 
@@ -433,6 +433,35 @@ const properties = computed(
   () => data.value || []
 )
 
+
+// const getPrice = (item) => {
+
+//   if (!item?.pricing) return 0
+
+//   if (
+//     item.pricing.paymentType ===
+//     'outright'
+//   ) {
+//     return item.pricing.price || 0
+//   }
+
+//   if (
+//     item.pricing.paymentType ===
+//     'installment'
+//   ) {
+//     return item.pricing.installment
+//       ?.monthlyAmount || 0
+//   }
+
+//   if (
+//     item.pricing.paymentType ===
+//     'rent'
+//   ) {
+//     return item.pricing.price || 0
+//   }
+
+//   return 0
+// }
 /* ================= LIFECYCLE ================= */
 
 onMounted(() => {

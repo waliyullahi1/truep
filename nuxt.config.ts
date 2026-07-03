@@ -119,7 +119,12 @@ sitemap: {
           href:
             'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap'
         },
-        {
+         {
+          rel: 'stylesheet',
+          href:
+            'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap'
+        },
+       {
           rel: 'stylesheet',
           href:
             'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
@@ -137,7 +142,8 @@ sitemap: {
     public: {
       projectName: 'true people buy property and sell it',
       mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || '',
-      api_url: process.env.BASE_URL || 'http://localhost:5000'
+      api_url: process.env.BASE_URL || 'http://localhost:5000',
+        paystackPublicKey: process.env.NUXT_PUBLIC_PAYSTACK_PUBLIC_KEY
     }
   }
 })
