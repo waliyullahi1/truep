@@ -173,7 +173,12 @@ const handleregister = async () => {
    Login USER
 ========================= */
 
+const   closeOtpModal = () => {
+window.location.reload();
+}
 const handlelogin = async () => {
+
+
 
   loginloading.value = true
   try {
@@ -208,13 +213,15 @@ const handlelogin = async () => {
     auth.value.checked = true
     auth.value.serverError = false
     /* SUCCESS */
-
+  console.log();
+  
     $toast.success(data.message || 'Login successful')
     
     
     setTimeout(() => {
       console.log('otp processed');
-       router.push('/search')
+      window.location.reload();
+      //  router.push(route.fullPath)
     }, 800)
 
   } catch (err) {
@@ -230,13 +237,13 @@ const handleloginwithGoogle = async () => {
 
   loginWithGoogle.value = true
   try {
-    const response = await fetch(`${config.public.api_url}/auth/login/google`, {
+    const response = await fetch( `${config.public.api_url}/auth/login/google?redirect=${encodeURIComponent(redirect)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-        query: { redirect: currentUrl},
+      
       credentials: 'include',
     })
-  console.log('thanks for login sucesss fully ');
+ 
   
     const data = await response.json()
 
@@ -244,7 +251,8 @@ const handleloginwithGoogle = async () => {
       $toast.error(data.message || 'Login failed')
     
         
-
+  console.log(response, 'response status');
+  
       return
     }
 
@@ -254,7 +262,7 @@ const handleloginwithGoogle = async () => {
     
     
      window.location.href = data.url
-
+   console.log('thanks for login sucesss fully ');
   } catch (err) {
     
     loginWithGoogle.value = false
@@ -275,16 +283,17 @@ watch(
 )
 </script>
 <template>
-  <div class="fixed top- inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4">
+  <div class="fixed top-  inset-0 z-50 bg-black/10 backdrop-blur-sm   flex items-center justify-center  ">
   
     <div v-if="resetpassword" >
      <Forgetpage @close="handleforgetPage" />
     </div>
    
-    <div class=" w-full min-h-screen    ">
+    <div class=" w-full  h-full    ">
         
     
-      <div class="  h-full flex justify-center items-center mt- items-center ">
+      <div class=" bg-slate  h-full flex justify-center  mt- items-center ">
+   
        <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3 h-fit    bg-white rounded-sm shadow-lg p-2 sm:p-8">
         <NavigationBackArrow/>
           <div  v-if="!otpverify" >
@@ -380,7 +389,7 @@ watch(
           </div>
 
           <div v-if="otpverify" class="  sm:max-w-xl  w-full px3  min-h-screen flex justify-center    items-center " >
-             <AuthEmailVerifcation :email=" loginData.email " />
+             <AuthEmailVerifcation :redirect="false" :email=" loginData.email "  @close="closeOtpModal"/>
           </div>
       </div>
 
@@ -482,7 +491,7 @@ watch(
         </div>
 
        <div v-if="otpverify" class="  sm:max-w-xl  w-full px3  min-h-screen flex justify-center    items-center ">
-       <AuthEmailVerifcation :email=" registerData.email " />
+       <AuthEmailVerifcation :redirect="false" :email=" registerData.email "  @close="closeOtpModal"/>
        </div>
         <!-- Title -->
        

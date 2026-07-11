@@ -65,7 +65,7 @@ const isPrivateRoute = computed(() => route.meta.isPrivateRoute)
 
 <template>
   <div>
-
+  <SignIn v-if="auth?.showLoginModal"/> 
     <!-- SELLER NAVBAR -->
     <NavigationSellerNavBar
       v-if="

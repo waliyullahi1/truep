@@ -14,7 +14,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   */
 
   if (isPrivateRoute && !auth.value.authenticated) {
-    return navigateTo('/auth')
+     auth.value.showLoginModal = true
+      // navigateTo('/auth')
+      return 
   }
 
   /*
@@ -27,7 +29,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // not logged in
     if (!auth.value.authenticated) {
-      return navigateTo('/auth')
+      auth.value.showLoginModal = true
+      // navigateTo('/auth')
+      return 
     }
 
     // logged in but normal user
@@ -41,7 +45,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // not logged in
     if (!auth.value.authenticated) {
-      return navigateTo('/auth')
+       auth.value.showLoginModal = true
+      // navigateTo('/auth')
+      return 
+      // return navigateTo('/auth')
     }
     // console.log( auth.value.user?.roles, 'fffffff');
     

@@ -2,7 +2,9 @@
   <div class="min-h-screen bg-slate-50">
     <!-- ================= Header ================= -->
     <!-- ================= Sign ================= -->
-   <SignIn/> ddfdfwewerwe
+
+
+   
     <!-- ================= Loading ================= -->
     <div
       v-if="loading"
@@ -582,7 +584,7 @@ const plots = ref(1)
 
  definePageMeta({
    layout: 'auth',
-
+    isPrivateRoute : true
    })
 /*
 |--------------------------------------------------------------------------

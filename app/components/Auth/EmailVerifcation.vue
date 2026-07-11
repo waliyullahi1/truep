@@ -90,7 +90,7 @@ const verifyCode = async () => {
     auth.value.authenticated = true
     auth.value.checked = true
     auth.value.serverError = false
-
+    auth.value.showLoginModal = false
     if(props.redirect){
     setTimeout(() => {
       console.log('otp processed');

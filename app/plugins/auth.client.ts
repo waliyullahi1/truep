@@ -33,6 +33,8 @@ if (route.path.startsWith('/ogProfile')) {
 
     auth.value.user = response?.data || null
     auth.value.authenticated = true
+    console.log(auth.value);
+    
     auth.value.serverError = false
 
   } catch (error: any) {

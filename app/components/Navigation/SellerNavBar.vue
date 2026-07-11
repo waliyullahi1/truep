@@ -174,7 +174,9 @@ const handleLogout = async()=>{
 
 
     if(!res.ok){
-
+ auth.value.user = null
+    auth.value.authenticated = false
+    auth.value.checked = false
       return $toast.error(
         data.message || "Logout failed"
       )

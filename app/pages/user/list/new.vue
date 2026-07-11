@@ -1,7 +1,7 @@
 <template>
 <div>
   <div class="min-h-screen py-10 px-0 md:px-4">
-    {{ pro }}
+   
    <div v-if="error">
   <NetworkError
   :error="error"

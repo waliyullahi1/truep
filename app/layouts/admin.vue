@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#0b0b14] text-white flex">
-
+  <SignIn v-if="auth?.showLoginModal"/> 
     <!-- SIDEBAR -->
     <NavigationAdminSidebar :links="sidebarLinks" />
 
