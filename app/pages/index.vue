@@ -6,7 +6,7 @@
 
 
 <!-- HERO SECTION -->
-<section class="relative mt-7 min-h-[90vh] overflow-hidden">
+<section class="relative min-h-[90vh] overflow-hidden">
 
   <!-- Background -->
   <div

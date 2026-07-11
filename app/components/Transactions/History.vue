@@ -1,6 +1,6 @@
 <template>
   <div class="rounded-xl border bg-white shadow-sm">
-
+ 
     <!-- ================= Header ================= -->
     <div
       class="flex flex-col gap-3 border-b px-6 py-5 md:flex-row md:items-center md:justify-between"
@@ -23,6 +23,77 @@
     <div class="overflow-x-auto">
 
       <div class="min-w-[1100px]">
+            <!-- =========================
+           SUMMARY CARDS
+      ========================== -->
+      <div v-if="showsummaryCards" 
+        class="
+          mb-8
+          grid
+          grid-cols-1
+          gap-4
+          sm:grid-cols-2
+          lg:grid-cols-4
+        "
+      >
+        <!-- Total Transactions -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Total Transactions
+          </p>
+
+          <h3 class="mt-2 text-2xl font-semibold">
+            {{ transactions.length }}
+          </h3>
+        </div>
+
+        <!-- Completed -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Completed
+          </p>
+
+          <h3
+            class="
+              mt-2
+              text-2xl
+              font-semibold
+              text-green-600
+            "
+          >
+            {{ getTransactionCount('SUCCESS') }}
+          </h3>
+        </div>
+
+        <!-- Pending -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Pending
+          </p>
+
+          <h3
+            class="
+              mt-2
+              text-2xl
+              font-semibold
+              text-yellow-600
+            "
+          >
+            {{ getTransactionCount('PENDING') }}
+          </h3>
+        </div>
+
+        <!-- Total Amount -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Total Amount
+          </p>
+
+          <h3 class="mt-2 text-2xl font-semibold">
+            {{ formatAmount(totalAmount/100) }}
+          </h3>
+        </div>
+      </div>
 
         <!-- ================= Header Row ================= -->
 
@@ -142,7 +213,7 @@
           class="divide-y"
         >
           <div
-            v-for="transaction in transactions"
+            v-for="transaction in transactions.slice(0, 8)"
             :key="transaction._id"
             class="relative grid grid-cols-12 items-center gap-4 px-6 py-5 transition hover:bg-gray-50"
           >
@@ -202,7 +273,7 @@
             <!-- Amount -->
 
             <div class="col-span-1 font-semibold">
-              {{ formatAmount(transaction.amount/100) }}
+             {{ formatAmount(transaction.paidAmount/100) }}
             </div>
 
             <!-- Status -->
@@ -299,6 +370,11 @@ const props = defineProps({
     default: "property.payment.transactions"
   },
 
+  showsummaryCards: {
+    type: Boolean,
+    default: false
+  },
+
   title: {
     type: String,
     default: "Transaction History"
@@ -321,16 +397,17 @@ const {
   refresh
 } = await useAsyncData(
 
-  () => `transactions-${props.propertyId}`,
+  () => `${props.route}`,
 
   async () => {
 
-    if (!props.propertyId) return []
+    
 
     const response = await useApiFetch(
       `${props.route}`
     )
     console.log(response.data,'response data');
+   
     
     return response.data.data || []
 
@@ -341,7 +418,7 @@ const {
   }
 
 )
-
+console.log(data.value,'response data');
 /*
 |--------------------------------------------------------------------------
 | Computed
@@ -369,6 +446,17 @@ const toggleMenu = (id) => {
 
 const closeMenu = () => {
   openMenuId.value = null
+}
+
+const getTransactionCount=(status)=>{
+
+
+if(status==="all"){
+  return transactions.value.length
+  }
+return transactions.value.filter(item=> item.status===status).length
+
+
 }
 
 onMounted(() => {
@@ -405,6 +493,13 @@ const formatDate = date => {
   )
 
 }
+const totalAmount = computed(()=>{
+
+
+return transactions.value.reduce((total,item)=>{
+return total + Number(item.amount || 0)},0)
+})
+
 
 const formattime = (date) => {
   if (!date) return "-"
@@ -463,6 +558,7 @@ const paymentClass = status => {
 | Actions
 |--------------------------------------------------------------------------
 */
+
 
 const viewReceipt = transaction => {
   console.log("View Receipt", transaction)

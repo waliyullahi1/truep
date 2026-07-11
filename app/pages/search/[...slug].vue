@@ -33,7 +33,7 @@ const search = ref('')
 const location = ref('')
 const category = ref('All')
 const visibleCount = ref(9)
-const isMap = ref(false)
+
 const isFixed = ref(false)
 const isShrink = ref(false)
 const searchRef = ref(null)

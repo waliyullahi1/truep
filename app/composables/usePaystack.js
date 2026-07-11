@@ -17,26 +17,12 @@ export const usePaystack = () => {
     const { default: PaystackPop } = await import("@paystack/inline-js");
 
     const popup = new PaystackPop();
-   function calculatePaystackFee(amount) {
-        amount = Number(amount);
-
-        let fee = amount * 0.015;
-
-        if (amount >= 2500) {
-            fee += 100;
-        }
-
-        if (fee > 2000) {
-            fee = 2000;
-        }
-
-        return Math.round(fee);
-    }
+  
     popup.newTransaction({
       key: useRuntimeConfig().public.paystackPublicKey,
 
       email,
-      amount: ( amount+ calculatePaystackFee(amount)),
+      amount:  amount,
       reference,
       metadata,
 

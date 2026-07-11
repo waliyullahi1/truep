@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-slate-50">
     <!-- ================= Header ================= -->
-  
-
+    <!-- ================= Sign ================= -->
+   <SignIn/> ddfdfwewerwe
     <!-- ================= Loading ================= -->
     <div
       v-if="loading"
@@ -515,7 +515,7 @@
     <!-- Validation -->
 
     <div
-      v-if="amount > currentRemainingAmount"
+      v-if="!canPay"
       class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
     >
       Amount cannot exceed the remaining balance.
@@ -531,14 +531,36 @@
     <!-- Button -->
 
     <button
-      @click="payNow"
-      :disabled="!canPay"
-      class="mt-8 w-full h-14  rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all"
-    >
+  @click="payNow"
+  :disabled="!canPay || processing"
+  class="mt-8 w-full h-14 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all flex items-center justify-center gap-2"
+>
+  <svg
+    v-if="processing"
+    class="w-5 h-5 animate-spin"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      class="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      stroke-width="4"
+    />
+    <path
+      class="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+    />
+  </svg>
 
-      Continue to Payment 
-
-    </button>
+  <span>
+    {{ processing ? "Processing..." : "Continue to Payment" }}
+  </span>
+</button>
 
   
   </div>
@@ -547,7 +569,7 @@
 
     </div> 
     <TransactionsHistory :route="`/payment/property/${property._id}/transactions`"
-    :property-id="property._id"
+    
 />
   </div>
 </template>
@@ -560,13 +582,15 @@ const plots = ref(1)
 
  definePageMeta({
    layout: 'auth',
-    isPrivateRoute : true
+
    })
 /*
 |--------------------------------------------------------------------------
 | State
 |--------------------------------------------------------------------------
 */
+const { pay } = usePaystack();
+const auth = useAuth()
 
 const property = ref({})
 const order = ref(null)
@@ -581,9 +605,8 @@ const percentages = [10, 25, 50, 75, 100]
 const amountInput = ref(0)
 const selectedPercentage = ref(null)
 const selectedPlots = ref(1)
+const processing = ref(false)
 
-const { pay } = usePaystack();
-const auth = useAuth()
 
 /*
 |--------------------------------------------------------------------------
@@ -595,6 +618,8 @@ const { data, pending } = await useAsyncData(
   `property-${route.params.slogan}`,
   async () => {
     const response = await useApiFetch(`/property/${route.params.slogan}`)
+    console.log(response.data);
+    
     return response.data
   }
 )
@@ -605,24 +630,36 @@ const { data, pending } = await useAsyncData(
 |--------------------------------------------------------------------------
 */
 const calculatedTotalPrice = computed(() => {
-
-    // Existing order
-    if (order.value) {
-        return Number(order.value.totalAmount)
-    }
-
-    // New property
-    if (property.value?.type === "land") {
+  // Existing order
+  if (order.value) {
+    // If not funded, use the current property price
+    if (order.value.escrowStatus === "NOT_FUNDED") {
+      if (property.value?.type === "land") {
         return (
-            Number(property.value.pricing.price) *
-            Number(selectedPlots.value) *
-            100
+          Number(property.value.pricing.price) *
+          Number(selectedPlots.value) *
+          100
         )
+      }
+
+      return Number(property.value.pricing.price) * 100
     }
 
-    return Number(property.value.pricing.price) * 100
-})
+    // Otherwise, use the order's saved total amount
+    return Number(order.value.totalAmount)
+  }
 
+  // No existing order
+  if (property.value?.type === "land") {
+    return (
+      Number(property.value.pricing.price) *
+      Number(selectedPlots.value) *
+      100
+    )
+  }
+
+  return Number(property.value.pricing.price) * 100
+})
 
 const formattedAmount = computed(() => {
   return Number(amountInput.value || 0).toLocaleString("en-NG")
@@ -693,9 +730,14 @@ const currentRemainingAmount = computed(() => {
 
   // Existing order
   if (order.value) {
+    if (order.value.escrowStatus === "NOT_FUNDED") {
+      return calculatedTotalPrice.value
+      
+    }
+    
     return Number(order.value.remainingAmount || 0)
   }
-
+console.log('other no exist', calculatedTotalPrice.value);
   // New order
   return calculatedTotalPrice.value
 
@@ -762,25 +804,28 @@ const getImage = (item) => {
 //   loading.value = false
 
 // })
-watchEffect(() => {
-    if (!data.value) return
+watch(
+  () => data.value,
+  (newData) => {
+    if (!newData) return
 
-    property.value = data.value.data
-    order.value = data.value.order || null
+    property.value = newData.data
+    order.value = newData.order || null
 
     if (order.value) {
-        paidAmount.value = Number(order.value.escrowAmount || 0)
-        remainingAmount.value = Number(order.value.remainingAmount || 0)
+      paidAmount.value = Number(order.value.escrowAmount)
+      remainingAmount.value = Number(order.value.remainingAmount)
     } else {
-        paidAmount.value = 0
-        remainingAmount.value = calculatedTotalPrice.value
+      paidAmount.value = 0
+      remainingAmount.value = calculatedTotalPrice.value
     }
 
-    // amount.value = remainingAmount.value
-
     loading.value = false
-})
-
+  },
+  {
+    immediate: true
+  }
+)
 const hasOrder = computed(() => !!order.value);
 
 const isFullyPaid = computed(() =>
@@ -860,7 +905,9 @@ watch(selectedPlots, (value) => {
 
 const selectPercentage = (percent) => {
   selectedPercentage.value = percent
-
+  console.log(selectedPercentage.value, 'selectedPercentage');
+  console.log(currentRemainingAmount.value, 'currentRemainingAmount');
+  
   amount.value = Math.round(
     currentRemainingAmount.value * percent / 100
   )
@@ -956,19 +1003,39 @@ const remainingAfterPayment = computed(() => {
     0
   )
 })
+// const canPay = computed(() => {
+//    console.log(amountInput.value);
+//    console.log( Math.round(currentRemainingAmount.value/100, 0));
+//    console.log(pending.value);
+//   return (
+
+//     amountInput.value > 0 &&
+   
+    
+//     amountInput.value < Math.round(currentRemainingAmount.value/100, 0) &&
+
+//     !pending.value
+
+//   )
+
+// })
+
 const canPay = computed(() => {
+  const remaining = Math.round(currentRemainingAmount.value/100, 0); // Kobo -> Naira
+  const amount = Number(amountInput.value || 0);
+
+  console.log({
+    amount,
+    remaining,
+    pending: pending.value,
+  });
 
   return (
-
-    amount.value > 0 &&
-
-    amount.value <= currentRemainingAmount.value &&
-
+    amount > 0 &&
+    amount <= remaining &&
     !pending.value
-
-  )
-
-})
+  );
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -1039,11 +1106,11 @@ const refreshProperty = async () => {
 
 }
 const payNow = async () => {
+  if (!canPay.value || processing.value) return
 
-  if (!canPay.value) return
+  processing.value = true
 
   try {
-
     const response = await useApiFetch(
       `/payment/property/${route.params.slogan}`,
       {
@@ -1056,14 +1123,15 @@ const payNow = async () => {
       }
     )
 
-    if (!response.success) return
-
+    if (!response.success) {
+      processing.value = false
+      return
+    }
+;
+  
     pay({
-
-      email: auth.value.user.email || "alfaabanise@gmail.com",
-
-      amount: response.data.data.payment.amount,
-
+      email: auth.value.user.email,
+      amount: response.data.data.otherDetails.paymentSummary.totalWithCharges,
       reference: response.data.data.payment.txRef,
 
       metadata: {
@@ -1071,9 +1139,7 @@ const payNow = async () => {
       },
 
       async onSuccess(transaction) {
-
         try {
-
           const verify = await useApiFetch(
             "/payment/property/verify-order",
             {
@@ -1087,28 +1153,20 @@ const payNow = async () => {
           if (verify.success) {
             await refreshProperty()
           }
-
-        } catch (err) {
-          console.error(err)
+        } finally {
+          processing.value = false
         }
-
       },
 
       onCancel() {
-
-        console.log("Payment cancelled")
-        console.log("cancel")
-
+        processing.value = false
       }
-
     })
 
   } catch (err) {
-
     console.error(err)
-
+    processing.value = false
   }
-
 }
 </script>
 <style>

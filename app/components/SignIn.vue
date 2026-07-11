@@ -20,7 +20,7 @@ const config = useRuntimeConfig()
 const otpverify = ref(false)
 // const password = ref('')
 // const ispassword = ref(false)
-
+const currentUrl = window.location.href
 const loading = ref(false)
 const registerloading = ref(false)
 const loginloading = ref(false)
@@ -229,9 +229,11 @@ const handleloginwithGoogle = async () => {
     const response = await fetch(`${config.public.api_url}/auth/login/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+        query: { redirect: currentUrl},
       credentials: 'include',
     })
-
+  console.log('thanks for login sucesss fully ');
+  
     const data = await response.json()
 
     if (!response.ok) {
@@ -269,17 +271,17 @@ watch(
 )
 </script>
 <template>
-  <div class="min-h-screen  bg-[url('/images/hero.jpg')] bg-no-repeat  bg-cover fr bg-gray-50 ">
+  <div class="fixed top- inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4">
   
     <div v-if="resetpassword" >
      <Forgetpage @close="handleforgetPage" />
     </div>
    
-    <div class=" w-full min-h-screen    pb-6 l   bg-black/80 ">
+    <div class=" w-full min-h-screen    ">
         
     
-      <div class="  h-full flex justify-end ">
-      <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3  min-h-screen  bg-white rounded-sm shadow-lg p-2 sm:p-8">
+      <div class="  h-full flex justify-center items-center mt- items-center ">
+       <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3 h-fit    bg-white rounded-sm shadow-lg p-2 sm:p-8">
         <NavigationBackArrow/>
           <div  v-if="!otpverify" >
            <div class=" flex mb-3 justify-center ">
@@ -378,7 +380,7 @@ watch(
           </div>
       </div>
 
-       <div v-if="isregisterpage" class=" sm:max-w-xl  w-full px3  p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
+       <div v-if="isregisterpage" class=" sm:max-w-xl  w-full px3  h-fit p-2 sm:p-8 bg-white rounded-sm shadow-lg ">
         <NavigationBackArrow/>
         <div v-if="!otpverify" class="">
                

@@ -16,11 +16,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const projectName = config.public.projectName
 defineProps({
- big:{
-  type:String,
-  default: false
-  
- }
+
 })
 
 const handleLogoClick = () => {
