@@ -140,9 +140,10 @@ sitemap: {
     geminiApiKey: process.env.GEMINI_API_KEY,
 
     public: {
-      projectName: 'true people buy property and sell it',
+      projectName: 'Abanise Marketplace buy  and sell  property it',
       mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || '',
       api_url: process.env.BASE_URL || 'http://localhost:5000',
+      base_url: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
         paystackPublicKey: process.env.NUXT_PUBLIC_PAYSTACK_PUBLIC_KEY
     }
   }

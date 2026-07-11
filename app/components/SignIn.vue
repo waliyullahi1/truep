@@ -20,7 +20,11 @@ const config = useRuntimeConfig()
 const otpverify = ref(false)
 // const password = ref('')
 // const ispassword = ref(false)
-const currentUrl = window.location.href
+// const { public: config } = useRuntimeConfig()
+
+const redirect = `${config.public.base_url}${route.fullPath}`
+console.log(redirect, ' base uril ');
+
 const loading = ref(false)
 const registerloading = ref(false)
 const loginloading = ref(false)
