@@ -1,31 +1,17 @@
 <template>
-  <div class="bg-white border shadow-sm rounded-md p-6">
-
-    <!-- Header -->
-    <div class="flex items-center gap-3">
-      <div
-        class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center"
-      >
-        <Icon
-          name="heroicons:shield-check"
-          class="w-7 h-7 text-green-600"
-        />
-      </div>
-
-      <div>
-        <h2 class="font-bold text-xl">
-          Payment Completed
-        </h2>
-
-        <p class="text-slate-500 text-sm">
-          Your payment has been received and is safely held in escrow.
-        </p>
-      </div>
-    </div>
+  <div class="bg-white border shadow-sm rounded-md p-2">
+<InspectionEvidenceModal
+  v-model="showInspectionModal"
+  :order = props.order
+  @continue="handleInspectionContinue"
+  @skip="handleSkipInspection"
+/>
+  
+   
 
     <!-- Warning -->
     <div
-      class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5"
+      class="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-2"
     >
       <div class="flex gap-3">
 
@@ -40,16 +26,16 @@
             Verify the Property Before Releasing Funds
           </h3>
 
-          <p class="text-sm text-amber-800 mt-2 leading-7">
+          <p class="text-sm text-amber-800 mt-1 leading-5">
             Please inspect the property carefully before releasing the escrow
             payment.
 
-            <br /><br />
+            <br />
 
             Once you release the funds, the money will be transferred to the
             seller.
 
-            <br /><br />
+            <br />
 
             If you discover any issue with the property, do not release the
             payment. Instead, request a refund or raise a dispute.
@@ -82,16 +68,12 @@
     <div class="grid md:grid-cols-2 gap-4 mt-8">
 
       <button
-        :disabled="!confirmed"
-        @click="$emit('release')"
-        class="h-14 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-slate-300 text-white font-semibold transition"
-      >
-        <Icon
-          name="heroicons:banknotes"
-          class="w-5 h-5 inline mr-2"
-        />
-        Release Money
-      </button>
+  :disabled="!confirmed"
+  @click="showInspectionModal = true"
+  class="h-14 rounded-lg bg-green-600 text-white"
+>
+  Release Money
+</button>
 
       <button
         @click="$emit('refund')"
@@ -110,10 +92,34 @@
 </template>
 
 <script setup>
-const confirmed = ref(false)
+import { ref } from "vue"
 
-defineEmits([
+const confirmed = ref(false)
+const showInspectionModal = ref(false)
+
+const props = defineProps({
+  order: {
+    type: Object,
+    required: true
+  }
+})
+
+const emit = defineEmits([
   "release",
   "refund"
 ])
+
+function handleInspectionContinue() {
+  showInspectionModal.value = false
+
+  // Continue to release escrow
+  emit("release")
+}
+
+function handleSkipInspection() {
+  showInspectionModal.value = false
+
+  // Still allow release if user skips
+  emit("release")
+}
 </script>

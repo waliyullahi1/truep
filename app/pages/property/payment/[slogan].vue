@@ -65,6 +65,8 @@
                     name="heroicons:map-pin"
                     class="w-5 h-5"
                   />
+                 
+                   
                         {{ property?.location.address }},   {{ property?.location.city }}, {{ property?.location.state }} <br>
                        
                     </span>
@@ -272,17 +274,27 @@
 
                 </div>
 
-            </div>
-
-                      <EscrowCompleted
+            </div> 
+            <!-- {{order}}
+              {{auth?.user?._id }}   {{ property?.userId?._id}}
+                {{auth?.user?._id === property?.userId?._id}} -->
+               <PropertyOrderStatus
+                  :order="order"
+                  :is-seller="isSeller"
+              />
+            <div v-if="isBuyer && order?.escrowStatus==='FUNDED'">
+               <EscrowCompleted
             v-if="currentProgress === 100"
+             :order="order"
             @release="releaseMoney"
             @refund="requestRefund"
-          />
+              />
+            </div>
+           
 
         <!-- ================= Payment ================= -->
 
-        <div v-if="currentProgress !== 100"
+        <div  v-if="currentProgress !== 100 && auth?.user?._id !== property?.userId?._id"
           class="bg-white rounded-md border shadow-sm p-4"
         >
           <h2
@@ -515,54 +527,58 @@
     </div>
 
     <!-- Validation -->
-
-    <div
-      v-if="!canPay"
-      class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
-    >
-      Amount cannot exceed the remaining balance.
+    <div >
+        <div
+          v-if="amountInput > convertFromKobo(remainingAmount)"
+          class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
+        >
+          Amount cannot exceed the remaining balance.
+        </div>
     </div>
-
-    <!-- <div
-      v-else-if="amount <= 0"
+    <div
+      v-if="amount <= 0 &&  auth?.user?._id !== property?.userId?._id"
       class="mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-700"
     >
       Enter a payment amount to continue.
-    </div> -->
+    </div>
 
     <!-- Button -->
+ 
+  <PaymentRulesModal
+    v-model="showPaymentRules"
+    @continue="payNow"
+/>
+    <button v-if="auth?.user?._id !== property?.userId?._id"
+     @click="showPaymentRules = true"
+      :disabled="!canPay || processing"
+      class="mt-8 w-full h-14 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all flex items-center justify-center gap-2"
+    >
+      <svg
+        v-if="processing"
+        class="w-5 h-5 animate-spin"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        />
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+        />
+      </svg>
 
-    <button
-  @click="payNow"
-  :disabled="!canPay || processing"
-  class="mt-8 w-full h-14 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all flex items-center justify-center gap-2"
->
-  <svg
-    v-if="processing"
-    class="w-5 h-5 animate-spin"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      class="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      stroke-width="4"
-    />
-    <path
-      class="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-    />
-  </svg>
-
-  <span>
-    {{ processing ? "Processing..." : "Continue to Payment" }}
-  </span>
-</button>
+      <span>
+        {{ processing ? "Processing..." : "Continue to Payment" }}
+      </span>
+    </button>
 
   
   </div>
@@ -596,7 +612,7 @@ const auth = useAuth()
 
 const property = ref({})
 const order = ref(null)
-
+ const agreedToTerms = ref(false)
 // const totalAmount = ref(0)
 const paidAmount = ref(0)
 const remainingAmount = ref(0)
@@ -609,7 +625,9 @@ const selectedPercentage = ref(null)
 const selectedPlots = ref(1)
 const processing = ref(false)
 
-
+const isOwn = ref(false)
+const showPaymentRules = ref(false)
+// const agreedToTerms = ref(false)
 /*
 |--------------------------------------------------------------------------
 | Fetch Property
@@ -667,12 +685,23 @@ const formattedAmount = computed(() => {
   return Number(amountInput.value || 0).toLocaleString("en-NG")
 })
 
-const onAmountInput = (event) => {
-  // Remove commas and every non-digit except decimal point
-  const raw = event.target.value.replace(/,/g, "").replace(/[^\d.]/g, "")
 
-  amountInput.value = Number(raw || 0)
-} 
+const isSeller = computed(() => {
+  return auth?.value?.user?._id === property?.value?.userId?._id;
+});
+
+const isBuyer = computed(() => {
+  return auth?.value?.user?._id !== property?.value?.userId?._id;
+});
+const onAmountInput = (event) => {
+  // Keep only digits
+  const cleaned = event.target.value.replace(/\D/g, "");
+
+  amountInput.value = cleaned ? Number(cleaned) : 0;
+
+  // Update the input immediately
+  event.target.value = cleaned;
+};
 const getPriceLabel = (item) => {
 
   const pricing = item?.pricing || {}
@@ -1005,39 +1034,13 @@ const remainingAfterPayment = computed(() => {
     0
   )
 })
-// const canPay = computed(() => {
-//    console.log(amountInput.value);
-//    console.log( Math.round(currentRemainingAmount.value/100, 0));
-//    console.log(pending.value);
-//   return (
-
-//     amountInput.value > 0 &&
-   
-    
-//     amountInput.value < Math.round(currentRemainingAmount.value/100, 0) &&
-
-//     !pending.value
-
-//   )
-
-// })
 
 const canPay = computed(() => {
-  const remaining = Math.round(currentRemainingAmount.value/100, 0); // Kobo -> Naira
-  const amount = Number(amountInput.value || 0);
+  const amount = Number(amountInput.value) || 0
+  const remaining = currentRemainingAmount.value / 100
 
-  console.log({
-    amount,
-    remaining,
-    pending: pending.value,
-  });
-
-  return (
-    amount > 0 &&
-    amount <= remaining &&
-    !pending.value
-  );
-});
+  return amount > 0 && amount <= remaining
+})
 
 /*
 |--------------------------------------------------------------------------
@@ -1154,6 +1157,7 @@ const payNow = async () => {
 
           if (verify.success) {
             await refreshProperty()
+            window.location.reload();
           }
         } finally {
           processing.value = false

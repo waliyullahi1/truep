@@ -500,6 +500,7 @@ const handleLogout = async () => {
       auth.value.user = null
     auth.value.authenticated = false
     auth.value.checked = false
+    window.location.reload();
       return $toast.error(
         data.message || "Logout failed"
       )
@@ -508,7 +509,7 @@ const handleLogout = async () => {
     auth.value.user = null
     auth.value.authenticated = false
     auth.value.checked = false
-
+    window.location.reload();
     closeMenus()
 
     $toast.success(
