@@ -285,45 +285,16 @@ const sampleTransactions = [
 ===================================== */
 
 
-const {
-
-data,
-
-pending,
-
-error,
-
-refresh
-
-
-} = await useAsyncData(
-
-"transactions",
-
-async()=>{
-
-
-const res =
-await useApiFetch(
-"/transaction/history"
-)
-
-
-
-if(!res.success){
-
-
-throw createError({
-
-statusCode:
-res.status || 500,
-
-
-statusMessage:
-res.message ||
+const { data, pending, error, refresh} = await useAsyncData("transactions",
+async()=>{ 
+  const res =await useApiFetch("/payment")
+  console.log(res);
+  
+  if(!res.success){
+  throw createError({ statusCode: res.status || 500,
+ statusMessage: res.message ||
 "Failed loading transactions"
-
-})
+   })
 
 
 }
@@ -379,8 +350,9 @@ server:true
 
 
 const transactions = computed(()=>{
-
-  return sampleTransactions
+  console.log(data.value);
+  
+  return data.value
 
 })
 
@@ -450,10 +422,11 @@ return transactions.value.reduce(
 
 (total,item)=>{
 
-
+ 
+ 
 return total + Number(
 
-item.amount || 0
+item.creditAmount || 0
 
 )
 
@@ -482,12 +455,12 @@ const getTransactionCount=(status)=>{
 
 if(status==="all"){
 
-return transactions.value.length
+return transactions?.value?.length
 
 }
 
 
-return transactions.value.filter(
+return transactions?.value?.filter(
 
 item=>
 
@@ -852,7 +825,7 @@ handleClickOutside
               text-gray-800
             "
           >
-            Transaction History
+            Payment History
           </h1>
 
           <p
@@ -905,7 +878,7 @@ handleClickOutside
               text-green-600
             "
           >
-            {{ getTransactionCount('completed') }}
+            {{ getTransactionCount('SUCCESS') }}
           </h3>
         </div>
 
@@ -934,7 +907,7 @@ handleClickOutside
           </p>
 
           <h3 class="mt-2 text-2xl font-semibold">
-            {{ formatAmount(totalAmount) }}
+            {{ formatAmount(totalAmount/100) }}
           </h3>
         </div>
       </div>
@@ -1012,8 +985,8 @@ handleClickOutside
           >
             <div class="col-span-2">Date</div>
             <div class="col-span-3">Property</div>
-            <div class="col-span-2">Transaction</div>
-            <div class="col-span-2">Customer</div>
+            <div class="col-span-1">Method</div>
+            <div class="col-span-3">Reference</div>
             <div class="col-span-1">Amount</div>
             <div class="col-span-1">Status</div>
             <div class="col-span-1">Action</div>
@@ -1133,24 +1106,22 @@ handleClickOutside
               </div>
 
               <!-- Transaction Type -->
-              <div class="col-span-2 text-sm text-gray-600">
-                {{ formatTransactionType(transaction.type) }}
+              <div class="col-span-1 text-sm text-gray-600">
+                {{ formatTransactionType(transaction.paymentMethod) }}
               </div>
 
               <!-- Customer -->
-              <div class="col-span-2">
-                <p class="text-sm font-medium">
-                  {{ transaction.user?.firstName }}
-                </p>
+              <div class="col-span-3">
+                
 
                 <p class="text-xs text-gray-400">
-                  {{ transaction.user?.email }}
+                  {{ transaction.txRef }}
                 </p>
               </div>
 
               <!-- Amount -->
               <div class="col-span-1 text-sm font-semibold">
-                {{ formatAmount(transaction.amount) }}
+                {{ formatAmount(transaction.amount/100) }}
               </div>
 
               <!-- Status -->

@@ -1,11 +1,11 @@
 <template>
   <div class="bg-white border shadow-sm rounded-md p-2">
-<InspectionEvidenceModal
-  v-model="showInspectionModal"
-  :order = props.order
-  @continue="handleInspectionContinue"
-  @skip="handleSkipInspection"
-/>
+    <InspectionEvidenceModal
+      v-model="showInspectionModal"
+      :order = props.order
+      @continue="handleInspectionContinue"
+      @skip="handleSkipInspection"
+    />
   
    
 
@@ -100,7 +100,7 @@
           {{ releasing ? "Loading..." : "Release Money" }}
         </span>
 
-  </button>
+      </button>
 
       <button
         @click="$emit('refund')"
@@ -115,7 +115,7 @@
 
     </div>
 
-  </div>
+    </div>
 </template>
 
 <script setup>

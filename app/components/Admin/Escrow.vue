@@ -243,7 +243,7 @@
           class="grid grid-cols-3 gap-4"
         >
 
-    {{order.inspectionEvidence}}
+    
           <img
             v-for="img in order.inspectionEvidence"
             :key="img._id"
@@ -257,21 +257,56 @@
 
       <!-- Footer -->
 
-      <div class="grid md:grid-cols-2 gap-5">
+       <div class="grid md:grid-cols-2 gap-4 mt-8">
 
-        <button
-          class="h-14 rounded-xl border border-red-300 bg-red-50 text-red-700 font-semibold"
+      <button
+        :disabled="loading ||  releasing"
+        @click="realeaseFund"
+        class="h-14 rounded-lg bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white flex items-center justify-center gap-2"
+      >
+
+        <svg
+          v-if="releasing"
+          class="w-5 h-5 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
         >
-          Reject Release
-        </button>
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          />
+        </svg>
 
-        <button
-          class="h-14 rounded-xl bg-green-600 text-white font-semibold"
-        >
-          Release Funds
-        </button>
+        <span>
+          {{ releasing ? "Loading..." : "Release Money" }}
+        </span>
 
-      </div>
+      </button>
+
+      <button
+       :disabled="loading || cancell"
+        @click="$emit('cance')"
+        class="h-14 rounded-lg border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 font-semibold transition"
+      >
+        <Icon
+          name="heroicons:arrow-uturn-left"
+          class="w-5 h-5 inline mr-2"
+        />
+        Request Refund
+      </button>
+
+    </div>
+
 
     </div>
 
@@ -280,6 +315,9 @@
 
 <script setup>
 const defaultAvatar = '/image/icon/avatar.svg'
+import { useRouter, useRoute, useRuntimeConfig } from '#app'
+
+const { $toast } = useNuxtApp()
 const props = defineProps({
   order: {
     type: Object,
@@ -294,7 +332,51 @@ const emit = defineEmits([
 ])
 
 const processing = ref(false)
+const loading = ref(false)
+const releasing = ref(false)
+const cancell = ref(false)
+const updateStatus = async (action) =>{
+  try {
+     const data  = await useApiFetch(
+      `/order/status/${props.order._id}/${action}`,
+      {
+        method: "POST",
+        
+      }
+    )
+   if(!data.success){
+    console.log(data);
+    
+    $toast.error(data?.message || "Something went wrong.")
+    releasing.value = false
+    loading.value = false
+    return
+   }
+      $toast.success(message || "Money released successfully.")
+    return data
+  } catch (err) {
+    console.log("Error object:", err)
+  console.log("Status:", err.status)
+  console.log("Backend response:", err.data)
 
+  $toast.error(err.data?.message || "Something went wrong.")
+     releasing.value = false
+  }
+  
+
+   
+    
+}
+
+
+const realeaseFund = async () =>{
+  releasing.value = true
+    loading.value = true
+    await updateStatus('approveRelease')
+      window.location.reload();
+      releasing.value = false
+    loading.value = false
+}
 const formatNaira = (value) =>
   Number(value || 0).toLocaleString("en-NG")
 </script>

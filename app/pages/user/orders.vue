@@ -1,348 +1,732 @@
+<script setup>
+import { ref, computed, onMounted,  onBeforeUnmount } from 'vue'
+
+import { useRouter, useRoute } from 'vue-router'
+const type = ref("in")
+const router = useRouter()
+const route = useRoute()
+const { $toast } = useNuxtApp()
+
+definePageMeta({
+  layout: 'auth',
+  access: 'seller',
+   sellerOnly: true
+})
+
+
+// const smartMoney = (value) => {
+
+//   const num = Number(value || 0)
+
+//   if (num >= 1_000_000_000) {
+//     return "₦" +
+//       (
+//         num / 1_000_000_000
+//       ).toFixed(1) +
+//       "B"
+//   }
+
+//   if (num >= 1_000_000) {
+//     return "₦" +
+//       (
+//         num / 1_000_000
+//       ).toFixed(1) +
+//       "M"
+//   }
+
+//   if (num >= 1_000) {
+//     return "₦" +
+//       (
+//         num / 1_000
+//       ).toFixed(1) +
+//       "K"
+//   }
+
+//   return "₦" +
+//     num.toLocaleString()
+// }
+/* ================= STATE ================= */
+const filter = ref('all')
+const search = ref('')
+const statusFilter = ref('')
+const sortBy = ref('-createdAt')
+const openMenuId = ref(null)
+const deleteId = ref(null)
+const changingStatus = ref(null)
+
+
+/* ================= DATA ================= */
+// const properties = ref([])
+
+/* ================= COMPUTED ================= */
+const totalItems = computed(() => orders.value.length)
+
+const filteredList = computed(() => {
+  let list = [...orders.value]
+
+  if (filter.value !== 'all') {
+    list = list.filter(
+      item =>
+        item.escrowStatus?.toLowerCase() ===
+        filter.value.toLowerCase()
+    )
+  }
+
+  if (statusFilter.value) {
+    list = list.filter(
+      item =>
+        item.paymentStatus === statusFilter.value
+    )
+  }
+
+  if (search.value.trim()) {
+    const keyword = search.value.toLowerCase()
+
+    list = list.filter(item =>
+      item.orderNumber?.toLowerCase().includes(keyword) ||
+      item.property?.title?.toLowerCase().includes(keyword) ||
+      `${item.buyer?.firstName} ${item.buyer?.lastName}`
+        .toLowerCase()
+        .includes(keyword)
+    )
+  }
+
+  return list
+})
+
+const statuses = [
+  'all',
+  'NOT_FUNDED',
+  'PARTIALLY_FUNDED',
+  'FUNDED',
+  'RELEASED',
+  'REFUNDED'
+]
+
+/* ================= HELPERS ================= */
+const formatDate = (date) => {
+
+  if (!date) return ''
+
+  return new Date(date)
+    .toLocaleDateString(
+      "en-US",
+      {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }
+    )
+}
+
+const getPrice = (item) => {
+
+  if (!item?.pricing) return 0
+
+  if (
+    item.pricing.paymentType ===
+    'outright'
+  ) {
+    return item.pricing.price || 0
+  }
+
+  if (
+    item.pricing.paymentType ===
+    'installment'
+  ) {
+    return item.pricing.installment
+      ?.monthlyAmount || 0
+  }
+
+  if (
+    item.pricing.paymentType ===
+    'rent'
+  ) {
+    return item.pricing.price || 0
+  }
+
+  return 0
+}
+
+const getImage = (item) => {
+
+  return (
+    item?.media?.files?.[0]?.url ||
+    '/image/no-image.png'
+  )
+}
+const smartMoney = (value) => {
+
+  const num = Number(value || 0)
+
+  if (num >= 1_000_000_000) {
+    return "₦" +
+      (
+        num / 1_000_000_000
+      ).toFixed(1) +
+      "B"
+  }
+
+  if (num >= 1_000_000) {
+    return "₦" +
+      (
+        num / 1_000_000
+      ).toFixed(1) +
+      "M"
+  }
+
+  if (num >= 1_000) {
+    return "₦" +
+      (
+        num / 1_000
+      ).toFixed(1) +
+      "K"
+  }
+
+  return "₦" +
+    num.toLocaleString()
+}
+
+const progress = item => {
+  if (!item.totalAmount) return 0
+
+  return Math.round(
+    (item.amountPaid / item.totalAmount) * 100
+  )
+}
+const getLocation = (item) => {
+
+  return `${
+    item?.location?.state || ''
+  }/${
+    item?.location?.city || ''
+  }`
+}
+
+
+
+const formatStatus = (s = '') =>
+  s.charAt(0).toUpperCase() +
+  s.slice(1).toLowerCase()
+
+/* ================= METHODS ================= */
+
+const getPriceLabel = (item) => {
+
+  const pricing = item?.pricing || {}
+
+  if (item?.type === 'house'   || item?.type === 'hostel' ) {
+
+    if (item?.purpose === 'sale') {
+
+      if (
+        pricing.paymentType ===
+        'installment'
+      ) {
+        return '/monthly payment'
+      }
+
+      return '/outright'
+    }
+
+    if (item?.purpose === 'rent') {
+
+      const unit =
+        pricing.rent?.duration?.unit
+
+      return unit
+        ? `/${unit}`
+        : ''
+    }
+  }
+
+  if (item?.type === 'land') {
+
+    if (
+      pricing.paymentType ===
+      'outright'
+    ) {
+
+      return item.landDetails?.unit
+        ? `/per ${item.landDetails.unit}`
+        : ''
+    }
+
+    if (
+      pricing.paymentType ===
+      'installment'
+    ) {
+
+      return `/per ${
+        item.landDetails?.unit ||
+        'plot'
+      } /monthly`
+    }
+  }
+
+  return ''
+}
+
+const toggleMenu = (id) => {
+
+  openMenuId.value =
+    openMenuId.value === id
+      ? null
+      : id
+}
+
+const viewOrder = (id) =>{
+ router.push(`/property/payment/${id}`)
+}
+
+
+const handleClickOutside = () => {
+
+  openMenuId.value = null
+}
+
+/* ================= FETCH ================= */
+
+const { data, pending, error, refresh } = await useAsyncData(
+  'orders',
+  async () => {
+    const res = await useApiFetch("/order",{
+    query:{
+        type:type.value
+    }
+    })
+  console.log(res);
+  
+    if (!res.success) {
+      throw createError({
+        statusCode: res.status || 500,
+        statusMessage: res.message
+      })
+    }
+
+    return res.data.orders || []
+  },
+  {
+    lazy: true,
+    server: true
+  }
+)
+const getStatusCount = status => {
+  if (status === 'all')
+    return orders.value.length
+
+  return orders.value.filter(
+    o => o.escrowStatus === status
+  ).length
+}
+const orders = computed(() => data.value || [])
+watch(type, () => {
+    refresh()
+})
+
+onMounted(() => {
+
+  window.addEventListener(
+    'click',
+    handleClickOutside
+  )
+
+  
+})
+
+onBeforeUnmount(() => {
+
+  window.removeEventListener(
+    'click',
+    handleClickOutside
+  )
+})
+</script>
 <template>
-  <div class="min-h-screen bg-slate-50">
+<div class="min-h-screen bg-gray-50 py-8">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <ContainerUser>
 
-      <!-- =========================
-          Summary
-      ========================== -->
+    <!-- HEADER -->
+    <div class="flex  justify-between flex-col sm:flex-row gap-3">
+            <h1 class="text-2xl sm:text-3xl font-light text-gray-800">
+        Orders
+      </h1>
+     
 
-      <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-
-        <div class="rounded-2xl bg-white border p-6 shadow-sm">
-          <div class="flex items-center justify-between">
-
-            <div>
-
-              <p class="text-slate-500 text-sm">
-                Total Orders
-              </p>
-
-              <h2 class="mt-2 text-3xl font-bold">
-                {{ statistics.total }}
-              </h2>
-
-            </div>
-
-            <div
-              class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center"
-            >
-              <Icon
-                name="heroicons:squares-2x2"
-                class="w-7 h-7 text-blue-600"
-              />
-            </div>
-
-          </div>
-        </div>
-
-        <div class="rounded-2xl bg-white border p-6 shadow-sm">
-          <div class="flex items-center justify-between">
-
-            <div>
-
-              <p class="text-slate-500 text-sm">
-                Active Escrows
-              </p>
-
-              <h2 class="mt-2 text-3xl font-bold">
-                {{ statistics.active }}
-              </h2>
-
-            </div>
-
-            <div
-              class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center"
-            >
-              <Icon
-                name="heroicons:shield-check"
-                class="w-7 h-7 text-green-600"
-              />
-            </div>
-
-          </div>
-        </div>
-
-        <div class="rounded-2xl bg-white border p-6 shadow-sm">
-          <div class="flex items-center justify-between">
-
-            <div>
-
-              <p class="text-slate-500 text-sm">
-                Completed
-              </p>
-
-              <h2 class="mt-2 text-3xl font-bold">
-                {{ statistics.completed }}
-              </h2>
-
-            </div>
-
-            <div
-              class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center"
-            >
-              <Icon
-                name="heroicons:check-badge"
-                class="w-7 h-7 text-purple-600"
-              />
-            </div>
-
-          </div>
-        </div>
-
-        <div class="rounded-2xl bg-white border p-6 shadow-sm">
-          <div class="flex items-center justify-between">
-
-            <div>
-
-              <p class="text-slate-500 text-sm">
-                Refunded
-              </p>
-
-              <h2 class="mt-2 text-3xl font-bold">
-                {{ statistics.refunded }}
-              </h2>
-
-            </div>
-
-            <div
-              class="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center"
-            >
-              <Icon
-                name="heroicons:arrow-uturn-left"
-                class="w-7 h-7 text-orange-600"
-              />
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-      <!-- =========================
-            Search
-      ========================== -->
-
-      <div
-        class="bg-white rounded-2xl border shadow-sm mt-8 p-6"
+      <button
+        @click="refresh()"
+        class="px-5 py-2 rounded-md bg-primary text-white hover:primarytransition"
       >
+        Refresh
+      </button>
 
-        <div
-          class="grid gap-4 lg:grid-cols-3"
-        >
+    </div>
 
-          <div class="relative">
+    <div class="flex items-center gap-8 border-b mb-6">
 
-            <Icon
-              name="heroicons:magnifying-glass"
-              class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-            />
+  <button
+    @click="type='in'"
+    class="pb-3 font-medium relative"
+    :class="type==='in'
+      ? 'text-primary border-b-2 border-primary'
+      : 'text-gray-500'"
+  >
+    Incoming Orders
 
-            <input
-              v-model="search"
-              placeholder="Search property..."
-              class="w-full h-14 rounded-xl border pl-12 pr-4 outline-none"
-            />
+    <span
+      v-if="type==='in'"
+      class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rotate-45"
+    />
+  </button>
 
-          </div>
+  <button
+    @click="type='out'"
+    class="pb-3 font-medium relative"
+    :class="type==='out'
+      ? 'text-primary border-b-2 border-primary'
+      : 'text-gray-500'"
+  >
+    Outgoing Orders
 
-          <select
-            v-model="status"
-            class="h-14 rounded-xl border px-4"
-          >
+    <span
+      v-if="type==='out'"
+      class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rotate-45"
+    />
+  </button>
 
-            <option value="">
-              All Status
-            </option>
+</div>
 
-            <option value="NOT_FUNDED">
-              Not Funded
-            </option>
-
-            <option value="PARTIALLY_FUNDED">
-              Partially Funded
-            </option>
-
-            <option value="FUNDED">
-              Funded
-            </option>
-
-            <option value="RELEASE_PENDING">
-              Release Pending
-            </option>
-
-            <option value="RELEASED">
-              Released
-            </option>
-
-            <option value="REFUND_PENDING">
-              Refund Pending
-            </option>
-
-            <option value="REFUNDED">
-              Refunded
-            </option>
-
-          </select>
-
-          <select
-            v-model="sort"
-            class="h-14 rounded-xl border px-4"
-          >
-
-            <option value="-createdAt">
-              Newest First
-            </option>
-
-            <option value="createdAt">
-              Oldest First
-            </option>
-
-          </select>
-
-        </div>
-
-      </div>
-
-      <!-- =========================
-            Loading
-      ========================== -->
-
-      <div
-        v-if="pending"
-        class="grid xl:grid-cols-2 gap-8 mt-8"
+    <!-- STATUS TABS -->
+    <div
+      class="flex gap-8 border-b text-sm mb-6 text-gray-500 font-medium overflow-x-auto whitespace-nowrap scrollbar-hide"
+    >
+      <button
+        v-for="s in statuses"
+        :key="s"
+        @click="filter=s"
+        class="pb-3 relative uppercase tracking-wide shrink-0"
+        :class="filter===s ? 'text-black border-b-2 border-black' : ''"
       >
+        {{ s }} {{ getStatusCount(s) }}
 
-        <div
-          v-for="i in 6"
-          :key="i"
-          class="animate-pulse bg-white rounded-3xl border p-5"
-        >
+        <span
+          v-if="filter===s"
+          class="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"
+        ></span>
+      </button>
+    </div>
 
-          <div class="bg-slate-200 rounded-xl h-64"></div>
+    <!-- TABLE WRAPPER -->
+    <div class="bg-white border rounded-md overflow-x-auto">
 
-          <div class="space-y-3 mt-5">
+      <!-- MIN WIDTH FOR MOBILE -->
+      <div class="min-w-[950px]">
 
-            <div class="h-6 w-3/4 bg-slate-200 rounded"></div>
+        <!-- TABLE HEADER -->
+<!-- TABLE HEADER -->
+<div
+  class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500 border-b bg-gray-50"
+>
 
-            <div class="h-4 w-1/2 bg-slate-200 rounded"></div>
+  <!-- Order
+  <div class="col-span-2">
+    Order
+  </div> -->
 
-            <div class="h-4 w-full bg-slate-200 rounded"></div>
+    <!-- Property -->
+  <div class="col-span-4">
+    Property
+  </div>
 
-            <div class="h-4 w-2/3 bg-slate-200 rounded"></div>
+  <!-- Buyer -->
+<div class="col-span-2">
+    {{ type === "in" ? "Buyer" : "Seller" }}
+</div>
 
-          </div>
 
-        </div>
 
-      </div>
+  
 
-      <!-- =========================
-           Empty
-      ========================== -->
+  <!-- Paid -->
+  <div class="col-span-1 text-center">
+    Paid
+  </div>
 
-      <div
-        v-else-if="orders.length === 0"
-        class="rounded-3xl bg-white border p-20 text-center mt-8"
-      >
+  <!-- Remaining -->
+  <div class="col-span-1 text-center">
+    Remaining
+  </div>
 
-        <div
-          class="mx-auto w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center"
-        >
+ 
+<div class="col-span-1 text-center">
+    Progress
+  </div>
+  <!-- Escrow -->
+  <div class="col-span-2 text-center">
+    Escrow
+  </div>
 
-          <Icon
-            name="heroicons:home-modern"
-            class="w-12 h-12 text-slate-400"
+  <!-- Actions -->
+  <div class="col-span-1 text-right">
+    Actions
+  </div>
+
+</div>
+
+        <!-- ERROR -->
+        <div v-if="error">
+          <NetworkError
+            :error="error"
+            @retry="refreshData"
           />
+        </div>
+
+        <!-- LOADING -->
+        <div
+          v-else-if="pending"
+          class="animate-pulse"
+        >
+
+          <div
+            v-for="i in 6"
+            :key="i"
+            class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-5 items-center border-b"
+          >
+            <div class="col-span-1">
+              <div class="w-14 h-14 bg-gray-300 rounded"></div>
+            </div>
+
+            <div class="col-span-5 space-y-2">
+              <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-center">
+              <div class="h-4 w-10 bg-gray-200 rounded"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-center">
+              <div class="h-4 w-10 bg-gray-200 rounded"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-center">
+              <div class="h-4 w-16 bg-gray-300 rounded"></div>
+            </div>
+
+            <div class="col-span-2 flex justify-center">
+              <div class="h-6 w-20 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <div class="col-span-1 flex justify-end">
+              <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
 
         </div>
 
-        <h2
-          class="text-3xl font-bold mt-8"
-        >
-          No Property Orders
-        </h2>
-
-        <p
-          class="text-slate-500 mt-3 max-w-lg mx-auto"
-        >
-          You haven't purchased any property yet.
-          Browse available listings and make your
-          first investment.
-        </p>
-
-        <NuxtLink
-          to="/property"
-          class="inline-flex mt-8 h-12 px-8 rounded-xl bg-primary text-white items-center"
-        >
-          Browse Properties
-        </NuxtLink>
-
-      </div>
-
-      <!-- =========================
-             Orders
-      ========================== -->
-
-      <div
-        v-else
-        class="grid xl:grid-cols-2 gap-8 mt-8"
-      >
-
-        <div
-          v-for="order in orders"
-          :key="order._id"
-          class="bg-white rounded-3xl overflow-hidden border shadow-sm hover:shadow-lg transition"
-        >
-
-          <!-- Image -->
-
-          <div class="relative">
-
-            <!-- <img
-              :src="order.property.media.images[0].url"
-              class="h-72 w-full object-cover"
-            > -->
+        <!-- DATA -->
+       <div v-else>
 
             <div
-              class="absolute top-5 right-5"
+              v-if="!filteredList.length"
+              class="py-20 text-center text-gray-400"
             >
-              <PropertyEscrowStatusBadge
-                :status="order.escrowStatus"
-              />
+              No orders found
             </div>
 
-          </div>
-
-          <div class="p-6">
-
-            <!-- title -->
-
             <div
-              class="flex justify-between gap-5"
+              v-for="item in filteredList"
+              :key="item._id"
+              class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-5 items-center border-b hover:bg-gray-50 transition relative"
             >
+             
+            <div class="col-span-1">
+              <img
+                :src="getImage(item)"
+                class="w-14 h-14 object-cover rounded"
+              />
+            </div>
+              <!-- PROPERTY -->
+            <div class="col-span-3">
+              <p class="font-medium text-gray-800 line-clamp-1">
+                <!-- {{ item?.property?.title }} -->
+              </p>
 
-              <div>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ formatStatus(item?.property?.type) }}
+                for
+                {{ formatStatus(item?.property?.purpose) }}
 
-                <h2
-                  class="text-2xl font-bold line-clamp-2"
+                at 📍 {{ getLocation(item?.property) }}
+
+                <br>
+
+                 {{ smartMoney(item.totalAmount/100|| 0) }}
+                {{ getPriceLabel(item?.property) }}
+
+                <br>
+
+                Created:
+                {{ formatDate(item.createdAt) }}
+              </p>
+            </div>
+              <!-- ORDER ID -->
+              <!-- <div class="col-span-2">
+
+                <p class="font-semibold text-gray-900">
+                  #{{ item.orderNumber }}
+                </p>
+
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ formatDate(item.createdAt) }}
+                </p>
+
+              </div> -->
+
+              <!-- BUYER -->
+             <div class="col-span-2">
+
+                <template v-if="type==='in'">
+
+                    {{ item.buyer.firstName }}
+                    {{ item.buyer.lastName }}
+
+                </template>
+
+                <template v-else>
+
+                    {{ item.seller.firstName }}
+                    {{ item.seller.lastName }}
+
+                </template>
+
+            </div>
+
+              <!-- PROPERTY -->
+             
+
+              
+              <!-- PAID -->
+              <div class="col-span-1 text-center">
+                 
+                <p class="font-semibold text-green-600">
+                  {{ smartMoney(item.escrowAmount/100 || 0) }}
+                </p>
+
+              </div>
+
+              <!-- REMAINING -->
+              <div class="col-span-1 text-center">
+
+                <p class="font-semibold text-red-500">
+                  {{ smartMoney(item.remainingAmount/100 || 0) }}
+                </p>
+
+              </div>
+
+              <!-- PROGRESS -->
+              <div class="col-span-1">
+
+                <div class="w-full">
+
+                  <div class="flex justify-between text-[11px] mb-1">
+
+                    <span class="text-gray-500">
+                      Progress
+                    </span>
+
+                    <span class="font-medium">
+                      {{ item.progress || 0 }}%
+                    </span>
+
+                  </div>
+
+                  <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+
+                    <div
+                      class="h-full bg-green-500 rounded-full"
+                      :style="{ width: `${item.progress || 0}%` }"
+                    />
+
+                  </div>
+
+                </div>
+
+              </div> 
+
+              <!-- ESCROW STATUS -->
+              <div class="col-span-2 text-center">
+
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium"
+                  :class="{
+                    'bg-yellow-100 text-yellow-700': item.escrowStatus === 'NOT_FUNDED',
+                    'bg-blue-100 text-blue-700': item.escrowStatus === 'PARTIALLY_FUNDED',
+                    'bg-green-100 text-green-700': item.escrowStatus === 'FUNDED',
+                    'bg-purple-100 text-purple-700': item.escrowStatus === 'RELEASED',
+                    'bg-red-100 text-red-700': item.escrowStatus === 'REFUNDED'
+                  }"
                 >
-                  {{ order.property.title }}
-                </h2>
+                  {{ item.escrowStatus }}
+                </span>
+   
+              </div>
+
+              <!-- ACTION -->
+              <div class="col-span-1 flex justify-end relative">
+
+                <button
+                  @click.stop="toggleMenu(item._id)"
+                  class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                >
+                  ⋮
+                </button>
 
                 <div
-                  class="flex items-center gap-2 text-slate-500 mt-2"
+                  v-if="openMenuId === item._id"
+                  class="absolute right-0 top-10 w-56 bg-white border rounded-xl shadow-lg text-sm z-50 overflow-hidden"
                 >
 
-                  <Icon
-                    name="heroicons:map-pin"
-                  />
+                  <button
+                    @click.stop="viewOrder(item.property.slug)"
+                    class="block w-full text-left px-4 py-3 hover:bg-gray-50"
+                  >
+                    View Order
+                  </button>
+            
+                  <button
+                    v-if="item.escrowStatus === 'FUNDED'"
+                    @click.stop="viewOrder(item.slug)"
+                    class="block w-full text-left px-4 py-3 hover:bg-gray-50"
+                  >
+                    Release Funds
+                  </button>
 
-                  <span>
+                  <button
+                    @click.stop="viewOrder(item.slug)"
+                    class="block w-full text-left px-4 py-3 hover:bg-gray-50"
+                  >
+                    Payment History
+                  </button>
 
-                    {{ order.property.location.address }}
+                  <button
+                    v-if="item.paymentStatus !== 'PAID'"
+                    @click.stop="viewOrder(item.slug)"
+                    class="block w-full text-left px-4 py-3 hover:bg-gray-50"
+                  >
+                    Send Reminder
+                  </button>
 
-                  </span>
+                  <button
+                    v-if="item.refundRequested"
+                    @click.stop="reviewRefund(item)"
+                    class="block w-full text-left px-4 py-3 hover:bg-gray-50"
+                  >
+                    Review Refund
+                  </button>
 
                 </div>
 
@@ -350,324 +734,28 @@
 
             </div>
 
-            <!-- seller -->
-
-            <div
-              class="mt-6 flex items-center gap-4"
-            >
-
-              <img
-                :src="order.seller.profileImage"
-                class="w-14 h-14 rounded-full object-cover"
-              >
-
-              <div>
-
-                <p class="font-semibold">
-                  {{ order.seller.firstName }}
-                  {{ order.seller.lastName }}
-                </p>
-
-                <p class="text-slate-500 text-sm">
-                  Seller
-                </p>
-
-              </div>
-
-            </div>
-
-            <!-- payment -->
-
-            <div class="mt-8">
-
-              <div
-                class="flex justify-between text-sm"
-              >
-
-                <span>
-                  Payment Progress
-                </span>
-
-                <strong>
-
-                  {{ order.progress }}%
-
-                </strong>
-
-              </div>
-
-              <div
-                class="h-3 rounded-full bg-slate-200 mt-3 overflow-hidden"
-              >
-
-                <div
-                  class="h-full bg-green-500 rounded-full"
-                  :style="{
-                    width: order.progress + '%'
-                  }"
-                />
-
-              </div>
-
-            </div>
-
-            <!-- Amount -->
-
-            <div
-              class="grid grid-cols-3 gap-4 mt-8"
-            >
-
-              <div>
-
-                <p
-                  class="text-xs uppercase text-slate-500"
-                >
-                  Paid
-                </p>
-
-                <h3 class="font-bold mt-1">
-                  ₦{{ formatNaira(order.amountPaid) }}
-                </h3>
-
-              </div>
-
-              <div>
-
-                <p
-                  class="text-xs uppercase text-slate-500"
-                >
-                  Remaining
-                </p>
-
-                <h3 class="font-bold mt-1">
-                  ₦{{ formatNaira(order.remainingAmount) }}
-                </h3>
-
-              </div>
-
-              <div>
-
-                <p
-                  class="text-xs uppercase text-slate-500"
-                >
-                  Total
-                </p>
-
-                <h3 class="font-bold mt-1">
-                  ₦{{ formatNaira(order.totalAmount) }}
-                </h3>
-
-              </div>
-
-            </div>
-
-            <!-- footer -->
-
-            <div
-              class="flex gap-4 mt-8"
-            >
-
-              <NuxtLink
-                :to="`/property/payment/${order.property.slug}`"
-                class="flex-1 h-12 rounded-xl border flex items-center justify-center font-semibold"
-              >
-                View Order
-              </NuxtLink>
-
-              <NuxtLink
-                v-if="order.remainingAmount > 0"
-                :to="`/property/payment/${order.property.slug}`"
-                class="flex-1 h-12 rounded-xl bg-primary text-white flex items-center justify-center font-semibold"
-              >
-                Continue Payment
-              </NuxtLink>
-
-              <NuxtLink
-                v-else
-                :to="`/property/payment/${order.property.slug}`"
-                class="flex-1 h-12 rounded-xl bg-green-600 text-white flex items-center justify-center font-semibold"
-              >
-                View Details
-              </NuxtLink>
-
-            </div>
-
           </div>
-
-        </div>
-
-      </div>
-
-      <!-- =========================
-             Pagination
-      ========================== -->
-
-      <div
-        v-if="orders.length"
-        class="flex justify-center mt-12"
-      >
-
-        <Pagination
-          v-model="page"
-          :total-pages="totalPages"
-        />
 
       </div>
 
     </div>
 
-  </div>
+  </ContainerUser>
+
+</div>
 </template>
-<script setup>
-import { ref, computed, watch } from "vue"
 
-const page = ref(1)
-const limit = ref(10)
 
-const search = ref("")
-const status = ref("")
-const sort = ref("-createdAt")
-
-/* ------------------------------------
-Fetch Orders
------------------------------------- */
-
-const query = computed(() => ({
-  page: page.value,
-  limit: limit.value,
-  search: search.value,
-  status: status.value,
-  sort: sort.value
-}))
-
-const {
-  data,
-  pending,
-  error,
-  refresh
-} = await useApiFetch("/order", {
-  query: query.value
-})
-
-/* ------------------------------------
-Reload Filters
------------------------------------- */
-
-watch(
-  [search, status, sort, page],
-  () => refresh()
-)
-
-/* ------------------------------------
-Safe API Response
------------------------------------- */
-
-const response = computed(() => data ?? {})
-
- /* ------------------------------------
-Orders
------------------------------------- */
-console.log(response.value)
-const orders = computed(() => {
-
-  const list = response.value?.orders
-
-  return Array.isArray(list) ? list : []
-})
-
-/* ------------------------------------
-Pagination
------------------------------------- */
-
-const pagination = computed(() => {
-  return response.value?.pagination ?? {}
-})
-
-const totalPages = computed(() => {
-  return Number(pagination.value?.totalPages ?? 1)
-})
-
-const totalOrders = computed(() => {
-  return Number(pagination.value?.total ?? 0)
-})
-
-/* ------------------------------------
-Statistics
------------------------------------- */
-
-const statistics = computed(() => {
-
-  const list = orders.value
-
-  return {
-
-    total: totalOrders.value,
-
-    active: list.filter(order =>
-      [
-        "PARTIALLY_FUNDED",
-        "FUNDED",
-        "RELEASE_PENDING",
-        "REFUND_PENDING"
-      ].includes(order.escrowStatus)
-    ).length,
-
-    completed: list.filter(
-      order => order.escrowStatus === "RELEASED"
-    ).length,
-
-    refunded: list.filter(
-      order => order.escrowStatus === "REFUNDED"
-    ).length
-
-  }
-
-})
-
-/* ------------------------------------
-Format Money
------------------------------------- */
-
-const formatNaira = (value = 0) => {
-
-  return (Number(value) / 100).toLocaleString(
-    "en-NG",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }
-  )
-
+<style scoped>
+.badge {
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-/* ------------------------------------
-Progress
------------------------------------- */
-
-const getProgress = (order = {}) => {
-
-  const total = Number(order.totalAmount || 0)
-  const paid = Number(order.amountPaid || 0)
-
-  if (!total) return 0
-
-  return Math.min(
-    100,
-    Math.round((paid / total) * 100)
-  )
-
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
-/* ------------------------------------
-Orders With Progress
------------------------------------- */
-
-const orderList = computed(() => {
-
-  return orders.value.map(order => ({
-    ...order,
-    progress: getProgress(order)
-  }))
-
-})
-</script>
+</style>
