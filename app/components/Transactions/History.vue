@@ -406,7 +406,7 @@ const {
     const response = await useApiFetch(
       `${props.route}`
     )
-    console.log(response.data,'response data');
+   
    
     
     return response.data.data || []
@@ -418,7 +418,7 @@ const {
   }
 
 )
-console.log(data.value,'response data');
+
 /*
 |--------------------------------------------------------------------------
 | Computed

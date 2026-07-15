@@ -192,25 +192,18 @@ const colorClass = computed(() => ({
 
     <div class="flex gap-4">
 
-        <div
-            class="w-14 h-14 rounded-full flex justify-center items-center"
-            :class="colorClass"
-        >
-
-            <Icon
-                :name="current.icon"
-                class="w-7 h-7"
-            />
-
-        </div>
+       
 
         <div class="flex-1">
 
-            <h2 class="font-bold text-xl">
-                {{ current?.title }}
-            </h2>
+            <div class="font-bold flex gap-1 items-center  text-xl">
+             <div  class="sm:w-14 sm:h-14 h-7 w-7 rounded-full flex justify-center items-center" :class="colorClass" >
+                    <Icon   :name="current.icon"   class="w-7 h-7"  />
+                </div>
+               <span> {{ current?.title }} </span>
+            </div>
 
-            <p class="text-slate-600 mt-2 leading-7">
+            <p class="text-slate-600 mt-2 text-[16px] e leading-7 ">
                 {{ current?.description }}
             </p>
 

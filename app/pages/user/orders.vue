@@ -1,558 +1,673 @@
-<!-- pages/dashboard/analytics.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <!-- Header -->
-    <div
-      class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
-    >
-      <div>
-        <h1 class="text-4xl font-bold text-gray-900">
-          Orders Analytics
-        </h1>
+  <div class="min-h-screen bg-slate-50">
 
-        <p class="mt-2 text-gray-500">
-          Track your property sales, rentals, and performance insights.
-        </p>
-      </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div
-        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
-      >
-        <Icon name="lucide:calendar-days" class="h-5 w-5 text-gray-500" />
+      <!-- =========================
+          Summary
+      ========================== -->
 
-        <span class="text-sm font-medium text-gray-700">
-          Apr 11 - May 10, 2026
-        </span>
+      <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-        <Icon name="lucide:chevron-down" class="h-4 w-4 text-gray-400" />
-      </div>
-    </div>
+        <div class="rounded-2xl bg-white border p-6 shadow-sm">
+          <div class="flex items-center justify-between">
 
-    <!-- Tabs -->
-    <div
-      class="mb-8 flex flex-wrap items-center gap-8 border-b border-gray-200"
-    >
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        class="border-b-2 pb-4 text-sm font-semibold transition"
-        :class="
-          activeTab === tab
-            ? 'border-green-600 text-green-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
-        "
-        @click="activeTab = tab"
-      >
-        {{ tab }}
-      </button>
-    </div>
+            <div>
 
-    <!-- Stats -->
-    <div
-      class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5"
-    >
-      <div
-        v-for="item in stats"
-        :key="item.title"
-        class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
-      >
-        <div class="flex items-start justify-between">
-          <div
-            class="flex h-14 w-14 items-center justify-center rounded-full"
-            :class="item.bg"
-          >
-            <Icon
-              :name="item.icon"
-              class="h-7 w-7"
-              :class="item.color"
-            />
-          </div>
+              <p class="text-slate-500 text-sm">
+                Total Orders
+              </p>
 
-          <Icon
-            name="lucide:help-circle"
-            class="h-4 w-4 text-gray-400"
-          />
-        </div>
+              <h2 class="mt-2 text-3xl font-bold">
+                {{ statistics.total }}
+              </h2>
 
-        <div class="mt-5">
-          <p class="text-sm text-gray-500">
-            {{ item.title }}
-          </p>
-
-          <h2 class="mt-2 text-4xl font-bold" :class="item.color">
-            {{ item.value }}
-          </h2>
-
-          <p class="mt-2 text-sm font-medium text-green-600">
-            {{ item.change }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Overview Chart -->
-    <div
-      class="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-    >
-      <div
-        class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
-      >
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900">
-            Overview
-          </h2>
-
-          <div class="mt-4 flex flex-wrap gap-6">
-            <div
-              v-for="legend in legends"
-              :key="legend.label"
-              class="flex items-center gap-2"
-            >
-              <span
-                class="h-3 w-3 rounded-full"
-                :class="legend.dot"
-              />
-
-              <span class="text-sm font-medium text-gray-600">
-                {{ legend.label }}
-              </span>
-
-              <span class="font-bold text-gray-900">
-                {{ legend.value }}
-              </span>
             </div>
+
+            <div
+              class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <Icon
+                name="heroicons:squares-2x2"
+                class="w-7 h-7 text-blue-600"
+              />
+            </div>
+
           </div>
         </div>
 
-        <div
-          class="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-3"
-        >
-          <span class="text-sm font-medium text-gray-700">
-            Last 30 days
-          </span>
+        <div class="rounded-2xl bg-white border p-6 shadow-sm">
+          <div class="flex items-center justify-between">
 
-          <Icon
-            name="lucide:chevron-down"
-            class="h-4 w-4 text-gray-400"
-          />
+            <div>
+
+              <p class="text-slate-500 text-sm">
+                Active Escrows
+              </p>
+
+              <h2 class="mt-2 text-3xl font-bold">
+                {{ statistics.active }}
+              </h2>
+
+            </div>
+
+            <div
+              class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <Icon
+                name="heroicons:shield-check"
+                class="w-7 h-7 text-green-600"
+              />
+            </div>
+
+          </div>
         </div>
+
+        <div class="rounded-2xl bg-white border p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+
+            <div>
+
+              <p class="text-slate-500 text-sm">
+                Completed
+              </p>
+
+              <h2 class="mt-2 text-3xl font-bold">
+                {{ statistics.completed }}
+              </h2>
+
+            </div>
+
+            <div
+              class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center"
+            >
+              <Icon
+                name="heroicons:check-badge"
+                class="w-7 h-7 text-purple-600"
+              />
+            </div>
+
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-white border p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+
+            <div>
+
+              <p class="text-slate-500 text-sm">
+                Refunded
+              </p>
+
+              <h2 class="mt-2 text-3xl font-bold">
+                {{ statistics.refunded }}
+              </h2>
+
+            </div>
+
+            <div
+              class="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center"
+            >
+              <Icon
+                name="heroicons:arrow-uturn-left"
+                class="w-7 h-7 text-orange-600"
+              />
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
-      <!-- Fake chart -->
+      <!-- =========================
+            Search
+      ========================== -->
+
       <div
-        class="relative h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-green-50 to-white"
+        class="bg-white rounded-2xl border shadow-sm mt-8 p-6"
       >
+
         <div
-          class="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:80px_80px]"
+          class="grid gap-4 lg:grid-cols-3"
+        >
+
+          <div class="relative">
+
+            <Icon
+              name="heroicons:magnifying-glass"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+            />
+
+            <input
+              v-model="search"
+              placeholder="Search property..."
+              class="w-full h-14 rounded-xl border pl-12 pr-4 outline-none"
+            />
+
+          </div>
+
+          <select
+            v-model="status"
+            class="h-14 rounded-xl border px-4"
+          >
+
+            <option value="">
+              All Status
+            </option>
+
+            <option value="NOT_FUNDED">
+              Not Funded
+            </option>
+
+            <option value="PARTIALLY_FUNDED">
+              Partially Funded
+            </option>
+
+            <option value="FUNDED">
+              Funded
+            </option>
+
+            <option value="RELEASE_PENDING">
+              Release Pending
+            </option>
+
+            <option value="RELEASED">
+              Released
+            </option>
+
+            <option value="REFUND_PENDING">
+              Refund Pending
+            </option>
+
+            <option value="REFUNDED">
+              Refunded
+            </option>
+
+          </select>
+
+          <select
+            v-model="sort"
+            class="h-14 rounded-xl border px-4"
+          >
+
+            <option value="-createdAt">
+              Newest First
+            </option>
+
+            <option value="createdAt">
+              Oldest First
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      <!-- =========================
+            Loading
+      ========================== -->
+
+      <div
+        v-if="pending"
+        class="grid xl:grid-cols-2 gap-8 mt-8"
+      >
+
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="animate-pulse bg-white rounded-3xl border p-5"
+        >
+
+          <div class="bg-slate-200 rounded-xl h-64"></div>
+
+          <div class="space-y-3 mt-5">
+
+            <div class="h-6 w-3/4 bg-slate-200 rounded"></div>
+
+            <div class="h-4 w-1/2 bg-slate-200 rounded"></div>
+
+            <div class="h-4 w-full bg-slate-200 rounded"></div>
+
+            <div class="h-4 w-2/3 bg-slate-200 rounded"></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- =========================
+           Empty
+      ========================== -->
+
+      <div
+        v-else-if="orders.length === 0"
+        class="rounded-3xl bg-white border p-20 text-center mt-8"
+      >
+
+        <div
+          class="mx-auto w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center"
+        >
+
+          <Icon
+            name="heroicons:home-modern"
+            class="w-12 h-12 text-slate-400"
+          />
+
+        </div>
+
+        <h2
+          class="text-3xl font-bold mt-8"
+        >
+          No Property Orders
+        </h2>
+
+        <p
+          class="text-slate-500 mt-3 max-w-lg mx-auto"
+        >
+          You haven't purchased any property yet.
+          Browse available listings and make your
+          first investment.
+        </p>
+
+        <NuxtLink
+          to="/property"
+          class="inline-flex mt-8 h-12 px-8 rounded-xl bg-primary text-white items-center"
+        >
+          Browse Properties
+        </NuxtLink>
+
+      </div>
+
+      <!-- =========================
+             Orders
+      ========================== -->
+
+      <div
+        v-else
+        class="grid xl:grid-cols-2 gap-8 mt-8"
+      >
+
+        <div
+          v-for="order in orders"
+          :key="order._id"
+          class="bg-white rounded-3xl overflow-hidden border shadow-sm hover:shadow-lg transition"
+        >
+
+          <!-- Image -->
+
+          <div class="relative">
+
+            <!-- <img
+              :src="order.property.media.images[0].url"
+              class="h-72 w-full object-cover"
+            > -->
+
+            <div
+              class="absolute top-5 right-5"
+            >
+              <PropertyEscrowStatusBadge
+                :status="order.escrowStatus"
+              />
+            </div>
+
+          </div>
+
+          <div class="p-6">
+
+            <!-- title -->
+
+            <div
+              class="flex justify-between gap-5"
+            >
+
+              <div>
+
+                <h2
+                  class="text-2xl font-bold line-clamp-2"
+                >
+                  {{ order.property.title }}
+                </h2>
+
+                <div
+                  class="flex items-center gap-2 text-slate-500 mt-2"
+                >
+
+                  <Icon
+                    name="heroicons:map-pin"
+                  />
+
+                  <span>
+
+                    {{ order.property.location.address }}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- seller -->
+
+            <div
+              class="mt-6 flex items-center gap-4"
+            >
+
+              <img
+                :src="order.seller.profileImage"
+                class="w-14 h-14 rounded-full object-cover"
+              >
+
+              <div>
+
+                <p class="font-semibold">
+                  {{ order.seller.firstName }}
+                  {{ order.seller.lastName }}
+                </p>
+
+                <p class="text-slate-500 text-sm">
+                  Seller
+                </p>
+
+              </div>
+
+            </div>
+
+            <!-- payment -->
+
+            <div class="mt-8">
+
+              <div
+                class="flex justify-between text-sm"
+              >
+
+                <span>
+                  Payment Progress
+                </span>
+
+                <strong>
+
+                  {{ order.progress }}%
+
+                </strong>
+
+              </div>
+
+              <div
+                class="h-3 rounded-full bg-slate-200 mt-3 overflow-hidden"
+              >
+
+                <div
+                  class="h-full bg-green-500 rounded-full"
+                  :style="{
+                    width: order.progress + '%'
+                  }"
+                />
+
+              </div>
+
+            </div>
+
+            <!-- Amount -->
+
+            <div
+              class="grid grid-cols-3 gap-4 mt-8"
+            >
+
+              <div>
+
+                <p
+                  class="text-xs uppercase text-slate-500"
+                >
+                  Paid
+                </p>
+
+                <h3 class="font-bold mt-1">
+                  ₦{{ formatNaira(order.amountPaid) }}
+                </h3>
+
+              </div>
+
+              <div>
+
+                <p
+                  class="text-xs uppercase text-slate-500"
+                >
+                  Remaining
+                </p>
+
+                <h3 class="font-bold mt-1">
+                  ₦{{ formatNaira(order.remainingAmount) }}
+                </h3>
+
+              </div>
+
+              <div>
+
+                <p
+                  class="text-xs uppercase text-slate-500"
+                >
+                  Total
+                </p>
+
+                <h3 class="font-bold mt-1">
+                  ₦{{ formatNaira(order.totalAmount) }}
+                </h3>
+
+              </div>
+
+            </div>
+
+            <!-- footer -->
+
+            <div
+              class="flex gap-4 mt-8"
+            >
+
+              <NuxtLink
+                :to="`/property/payment/${order.property.slug}`"
+                class="flex-1 h-12 rounded-xl border flex items-center justify-center font-semibold"
+              >
+                View Order
+              </NuxtLink>
+
+              <NuxtLink
+                v-if="order.remainingAmount > 0"
+                :to="`/property/payment/${order.property.slug}`"
+                class="flex-1 h-12 rounded-xl bg-primary text-white flex items-center justify-center font-semibold"
+              >
+                Continue Payment
+              </NuxtLink>
+
+              <NuxtLink
+                v-else
+                :to="`/property/payment/${order.property.slug}`"
+                class="flex-1 h-12 rounded-xl bg-green-600 text-white flex items-center justify-center font-semibold"
+              >
+                View Details
+              </NuxtLink>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- =========================
+             Pagination
+      ========================== -->
+
+      <div
+        v-if="orders.length"
+        class="flex justify-center mt-12"
+      >
+
+        <Pagination
+          v-model="page"
+          :total-pages="totalPages"
         />
 
-        <!-- Green -->
-        <svg
-          class="absolute inset-0 h-full w-full"
-          viewBox="0 0 1000 400"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,260
-            C80,240 120,180 180,200
-            C240,220 300,100 360,160
-            C420,220 520,180 580,170
-            C640,160 700,200 760,180
-            C820,160 900,100 1000,60"
-            fill="none"
-            stroke="#10b981"
-            stroke-width="4"
-          />
-        </svg>
-
-        <!-- Blue -->
-        <svg
-          class="absolute inset-0 h-full w-full"
-          viewBox="0 0 1000 400"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,300
-            C100,270 180,250 240,260
-            C320,270 380,240 460,250
-            C520,260 620,280 700,260
-            C800,240 900,260 1000,220"
-            fill="none"
-            stroke="#3b82f6"
-            stroke-width="4"
-          />
-        </svg>
       </div>
+
     </div>
 
-    <!-- Bottom cards -->
-    <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-      <!-- Sales -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Sales Overview
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="sale in salesOverview"
-            :key="sale.label"
-            class="flex items-center justify-between"
-          >
-            <span class="text-gray-500">
-              {{ sale.label }}
-            </span>
-
-            <div class="text-right">
-              <div class="font-bold text-gray-900">
-                {{ sale.value }}
-              </div>
-
-              <div class="text-sm text-green-600">
-                {{ sale.change }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rentals -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Rentals Overview
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="rent in rentalsOverview"
-            :key="rent.label"
-            class="flex items-center justify-between"
-          >
-            <span class="text-gray-500">
-              {{ rent.label }}
-            </span>
-
-            <div class="text-right">
-              <div class="font-bold text-gray-900">
-                {{ rent.value }}
-              </div>
-
-              <div class="text-sm text-green-600">
-                {{ rent.change }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Properties -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Top Performing Properties
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="property in properties"
-            :key="property.name"
-            class="flex items-center gap-4"
-          >
-            <img
-              :src="property.image"
-              class="h-16 w-20 rounded-xl object-cover"
-            />
-
-            <div class="flex-1">
-              <h4 class="font-semibold text-gray-900">
-                {{ property.name }}
-              </h4>
-
-              <p class="text-sm text-gray-500">
-                {{ property.price }}
-              </p>
-            </div>
-
-            <span
-              class="rounded-full px-3 py-1 text-xs font-bold"
-              :class="
-                property.status === 'Sold'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-blue-100 text-blue-700'
-              "
-            >
-              {{ property.status }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Activity -->
-    <div
-      class="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-    >
-      <div class="mb-6 flex items-center justify-between">
-        <h3 class="text-2xl font-bold text-gray-900">
-          Recent Activity
-        </h3>
-
-        <button class="text-sm font-semibold text-green-600">
-          View all
-        </button>
-      </div>
-
-      <div
-        class="grid grid-cols-1 gap-6 lg:grid-cols-4"
-      >
-        <div
-          v-for="activity in activities"
-          :key="activity.title"
-          class="flex items-start gap-4 rounded-2xl bg-gray-50 p-4"
-        >
-          <div
-            class="flex h-14 w-14 items-center justify-center rounded-full"
-            :class="activity.bg"
-          >
-            <Icon
-              :name="activity.icon"
-              class="h-6 w-6"
-              :class="activity.color"
-            />
-          </div>
-
-          <div>
-            <p class="text-sm text-gray-500">
-              {{ activity.type }}
-            </p>
-
-            <h4 class="mt-1 font-bold text-gray-900">
-              {{ activity.title }}
-            </h4>
-
-            <p class="mt-1 text-sm text-gray-500">
-              {{ activity.amount }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div > 
-       <!-- <OverlayMaintanance />  -->
-    </div>
-     
-    
   </div>
 </template>
-
 <script setup>
-const activeTab = ref("Overview")
+import { ref, computed, watch } from "vue"
 
-definePageMeta({
-  layout: 'auth',
-  access: 'seller',
-   sellerOnly: true
+const page = ref(1)
+const limit = ref(10)
+
+const search = ref("")
+const status = ref("")
+const sort = ref("-createdAt")
+
+/* ------------------------------------
+Fetch Orders
+------------------------------------ */
+
+const query = computed(() => ({
+  page: page.value,
+  limit: limit.value,
+  search: search.value,
+  status: status.value,
+  sort: sort.value
+}))
+
+const {
+  data,
+  pending,
+  error,
+  refresh
+} = await useApiFetch("/order", {
+  query: query.value
 })
-const tabs = [
-  "Overview",
-  "Sales",
-  "Rentals",
-  "Properties",
-  "Leads",
-  "Reports"
-]
 
-const stats = [
-  {
-    title: "Total Earnings",
-    value: "$24,680",
-    change: "+12.5% vs previous month",
-    icon: "lucide:badge-dollar-sign",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    title: "Sales Earnings",
-    value: "$16,420",
-    change: "+10.3% vs previous month",
-    icon: "lucide:shopping-cart",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  },
-  {
-    title: "Rental Earnings",
-    value: "$8,260",
-    change: "+15.7% vs previous month",
-    icon: "lucide:key-round",
-    color: "text-orange-500",
-    bg: "bg-orange-100"
-  },
-  {
-    title: "Properties Listed",
-    value: "28",
-    change: "+4 new properties",
-    icon: "lucide:building-2",
-    color: "text-purple-600",
-    bg: "bg-purple-100"
-  },
-  {
-    title: "Total Views",
-    value: "12,456",
-    change: "+8.2% this month",
-    icon: "lucide:eye",
-    color: "text-cyan-600",
-    bg: "bg-cyan-100"
-  }
-]
+/* ------------------------------------
+Reload Filters
+------------------------------------ */
 
-const legends = [
-  {
-    label: "Sales Earnings",
-    value: "$16,420",
-    dot: "bg-green-500"
-  },
-  {
-    label: "Rental Earnings",
-    value: "$8,260",
-    dot: "bg-blue-500"
-  },
-  {
-    label: "Sold Properties",
-    value: "8",
-    dot: "bg-violet-500"
-  },
-  {
-    label: "Rented Properties",
-    value: "12",
-    dot: "bg-orange-500"
-  }
-]
+watch(
+  [search, status, sort, page],
+  () => refresh()
+)
 
-const salesOverview = [
-  {
-    label: "Total Sales",
-    value: "$16,420",
-    change: "+10.3%"
-  },
-  {
-    label: "Properties Sold",
-    value: "8",
-    change: "+5.0%"
-  },
-  {
-    label: "Avg. Sale Price",
-    value: "$205,250",
-    change: "+7.6%"
-  },
-  {
-    label: "New Sales Listings",
-    value: "14",
-    change: "+16.7%"
-  }
-]
+/* ------------------------------------
+Safe API Response
+------------------------------------ */
 
-const rentalsOverview = [
-  {
-    label: "Total Rental Income",
-    value: "$8,260",
-    change: "+15.7%"
-  },
-  {
-    label: "Properties Rented",
-    value: "12",
-    change: "+20%"
-  },
-  {
-    label: "Avg. Monthly Rent",
-    value: "$688",
-    change: "+6.3%"
-  },
-  {
-    label: "Occupancy Rate",
-    value: "92%",
-    change: "+3.2%"
-  }
-]
+const response = computed(() => data ?? {})
 
-const properties = [
-  {
-    name: "Luxury Villa in Downtown",
-    price: "$850,000",
-    status: "Sold",
-    image:
-      "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1200"
-  },
-  {
-    name: "Modern Apartment",
-    price: "$1,200 / month",
-    status: "Rented",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200"
-  },
-  {
-    name: "Beachfront Condo",
-    price: "$620,000",
-    status: "Sold",
-    image:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200"
-  }
-]
+ /* ------------------------------------
+Orders
+------------------------------------ */
+console.log(response.value)
+const orders = computed(() => {
 
-const activities = [
-  {
-    type: "Property Sold",
-    title: "Luxury Villa in Downtown",
-    amount: "$850,000 • May 5, 2026",
-    icon: "lucide:shopping-cart",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    type: "Property Rented",
-    title: "Modern Apartment",
-    amount: "$1,200/month • May 1, 2026",
-    icon: "lucide:key-round",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  },
-  {
-    type: "Property Sold",
-    title: "Beachfront Condo",
-    amount: "$620,000 • Apr 28, 2026",
-    icon: "lucide:shopping-cart",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    type: "Property Rented",
-    title: "City Center Studio",
-    amount: "$850/month • Apr 25, 2026",
-    icon: "lucide:key-round",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
+  const list = response.value?.orders
+
+  return Array.isArray(list) ? list : []
+})
+
+/* ------------------------------------
+Pagination
+------------------------------------ */
+
+const pagination = computed(() => {
+  return response.value?.pagination ?? {}
+})
+
+const totalPages = computed(() => {
+  return Number(pagination.value?.totalPages ?? 1)
+})
+
+const totalOrders = computed(() => {
+  return Number(pagination.value?.total ?? 0)
+})
+
+/* ------------------------------------
+Statistics
+------------------------------------ */
+
+const statistics = computed(() => {
+
+  const list = orders.value
+
+  return {
+
+    total: totalOrders.value,
+
+    active: list.filter(order =>
+      [
+        "PARTIALLY_FUNDED",
+        "FUNDED",
+        "RELEASE_PENDING",
+        "REFUND_PENDING"
+      ].includes(order.escrowStatus)
+    ).length,
+
+    completed: list.filter(
+      order => order.escrowStatus === "RELEASED"
+    ).length,
+
+    refunded: list.filter(
+      order => order.escrowStatus === "REFUNDED"
+    ).length
+
   }
-]
+
+})
+
+/* ------------------------------------
+Format Money
+------------------------------------ */
+
+const formatNaira = (value = 0) => {
+
+  return (Number(value) / 100).toLocaleString(
+    "en-NG",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  )
+
+}
+
+/* ------------------------------------
+Progress
+------------------------------------ */
+
+const getProgress = (order = {}) => {
+
+  const total = Number(order.totalAmount || 0)
+  const paid = Number(order.amountPaid || 0)
+
+  if (!total) return 0
+
+  return Math.min(
+    100,
+    Math.round((paid / total) * 100)
+  )
+
+}
+
+/* ------------------------------------
+Orders With Progress
+------------------------------------ */
+
+const orderList = computed(() => {
+
+  return orders.value.map(order => ({
+    ...order,
+    progress: getProgress(order)
+  }))
+
+})
 </script>

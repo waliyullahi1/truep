@@ -45,14 +45,15 @@
 
         <div class="flex gap-3">
 
-          <Icon
-            name="heroicons:shield-check"
-            class="w-6 h-6 text-amber-600 flex-shrink-0"
-          />
+          
 
           <div>
 
-            <h3 class="font-semibold text-sm text-amber-900">
+            <h3 class="font-semibold flex gap-2 items-center text-sm text-amber-900">
+                  <Icon
+                name="heroicons:shield-check"
+                class="w-6 h-6 text-amber-600 flex-shrink-0"
+              />
               Upload Inspection Evidence
             </h3>
 
@@ -725,6 +726,7 @@ async function loadEvidence() {
 BUTTONS
 ===================================== */
 
+
 function skip() {
 
   emit("skip")
@@ -742,6 +744,8 @@ function continueRelease() {
     return
 
   }
+
+  
 
   emit("continue", {
     buyerPhoto: buyerPhoto.value,

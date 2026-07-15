@@ -278,19 +278,27 @@
             <!-- {{order}}
               {{auth?.user?._id }}   {{ property?.userId?._id}}
                 {{auth?.user?._id === property?.userId?._id}} -->
-               <PropertyOrderStatus
+               <PropertyOrderStatus v-if="order"
                   :order="order"
                   :is-seller="isSeller"
               />
             <div v-if="isBuyer && order?.escrowStatus==='FUNDED'">
                <EscrowCompleted
-            v-if="currentProgress === 100"
-             :order="order"
-            @release="releaseMoney"
-            @refund="requestRefund"
-              />
-            </div>
-           
+              v-if="currentProgress === 100"
+              :order="order"
+              @release="releaseMoney"
+            
+                />
+            
+
+               <!-- @refund="requestRefund" -->
+            </div>  
+                  <AdminEscrow
+    :order="order"
+    @close="showReview = false"
+    @release="releaseFunds"
+    @reject="rejectRelease"
+     />
 
         <!-- ================= Payment ================= -->
 
@@ -508,87 +516,90 @@
 
     <!-- Status Card -->
 
-    <div
-      class="mt-4 rounded-2xl flex bg-indigo-50 border border-indigo-100 p-2"
-    >
+      <div v-if="canShowPaymentButtons">
+          <div
+            class="mt-4 rounded-2xl flex bg-indigo-50 border border-indigo-100 p-2"
+          >
 
-      <p class="text-slate-500  text-sm">
-        After this payment
-      
+            <p class="text-slate-500  text-sm">
+              After this payment
+            
 
-      <span class="mt-2 text-xl font-bold text-indigo-700">
-        {{ progressAfterPayment }}%
-      </span>
+            <span class="mt-2 text-xl font-bold text-indigo-700">
+              {{ progressAfterPayment }}%
+            </span>
 
-      
-        of this property's total price will have been paid.
-      </p>
+            
+              of this property's total price will have been paid.
+            </p>
 
-    </div>
+          </div>
 
-    <!-- Validation -->
-    <div >
-        <div
-          v-if="amountInput > convertFromKobo(remainingAmount)"
-          class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
-        >
-          Amount cannot exceed the remaining balance.
-        </div>
-    </div>
-    <div
-      v-if="amount <= 0 &&  auth?.user?._id !== property?.userId?._id"
-      class="mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-700"
-    >
-      Enter a payment amount to continue.
-    </div>
-
+          <!-- Validation -->
+          <div >
+              <div
+                v-if="amountInput > convertFromKobo(remainingAmount)"
+                class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
+              >
+                Amount cannot exceed the remaining balance.
+              </div>
+          </div>
+          <div
+            v-if="amount <= 0 &&  auth?.user?._id !== property?.userId?._id"
+            class="mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-700"
+          >
+            Enter a payment amount to continue.
+          </div>
+      </div>
     <!-- Button -->
  
-  <PaymentRulesModal
-    v-model="showPaymentRules"
-    @continue="payNow"
-/>
-    <button v-if="auth?.user?._id !== property?.userId?._id"
-     @click="showPaymentRules = true"
-      :disabled="!canPay || processing"
-      class="mt-8 w-full h-14 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all flex items-center justify-center gap-2"
-    >
-      <svg
-        v-if="processing"
-        class="w-5 h-5 animate-spin"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        />
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-        />
-      </svg>
+     <PaymentRulesModal  v-model="showPaymentRules"  @continue="payNow"/>
 
-      <span>
-        {{ processing ? "Processing..." : "Continue to Payment" }}
-      </span>
-    </button>
 
+      <div v-if="canShowPaymentButtons">
+          <button v-if="auth?.user?._id !== property?.userId?._id ||
+          order?.escrowStatus === 'PARTIALLY_FUNDED' "
+          @click="showPaymentRules = true"
+            :disabled="!canPay || processing"
+            class="mt-8 w-full h-14 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-lg transition-all flex items-center justify-center gap-2"
+          >
+            <svg
+              v-if="processing"
+              class="w-5 h-5 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              />
+            </svg>
+
+            <span>
+              {{ processing ? "Processing..." : "Continue to Payment" }}
+            </span>
+          </button>
+      </div>
   
   </div>
     </div>
 
 
     </div> 
-    <TransactionsHistory :route="`/payment/property/${property._id}/transactions`"
-    
-/>
+    <TransactionsHistory :route="`/payment/property/${property._id}/transactions`"/>
+
+
+ 
   </div>
 </template>
 
@@ -638,7 +649,7 @@ const { data, pending } = await useAsyncData(
   `property-${route.params.slogan}`,
   async () => {
     const response = await useApiFetch(`/property/${route.params.slogan}`)
-    console.log(response.data);
+    // console.log(response.data);
     
     return response.data
   }
@@ -685,7 +696,16 @@ const formattedAmount = computed(() => {
   return Number(amountInput.value || 0).toLocaleString("en-NG")
 })
 
+const canShowPaymentButtons = computed(()=>{
+ 
+  if(order.value){
+        
+      return  ['PARTIALLY_FUNDED', 'NOT_FUNDED', 'PARTIALLY_FUNDED'].includes(order?.value?.escrowStatus)
+    
+  }
 
+  return true
+})
 const isSeller = computed(() => {
   return auth?.value?.user?._id === property?.value?.userId?._id;
 });
@@ -768,7 +788,7 @@ const currentRemainingAmount = computed(() => {
     
     return Number(order.value.remainingAmount || 0)
   }
-console.log('other no exist', calculatedTotalPrice.value);
+
   // New order
   return calculatedTotalPrice.value
 
@@ -936,9 +956,7 @@ watch(selectedPlots, (value) => {
 
 const selectPercentage = (percent) => {
   selectedPercentage.value = percent
-  console.log(selectedPercentage.value, 'selectedPercentage');
-  console.log(currentRemainingAmount.value, 'currentRemainingAmount');
-  
+
   amount.value = Math.round(
     currentRemainingAmount.value * percent / 100
   )

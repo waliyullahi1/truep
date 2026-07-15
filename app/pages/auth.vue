@@ -131,6 +131,7 @@ const handleregister = async () => {
         lastName: registerData.full_name.split(' ')[1],
         email: registerData.email,
         password: registerData.password,
+        phone: registerData.phone
         
       })
     })
@@ -408,7 +409,7 @@ watch(
                 
                 <FormInput  type="text" v-model:inputValue="registerData.full_name"  :required="true" :usePlaceholder=true   class=" "  label="Full name">
                     <template #prefix>
-                    <img src="/image/icon/person.svg" alt="" srcset="">
+                   <Icon name="heroicons:user"  class="w-5 h-5 text-gray-500"/>
                     </template>
                 </FormInput>
               </div>
@@ -417,11 +418,17 @@ watch(
               <div >
                 <FormInput type="email" :required="true" v-model:inputValue="registerData.email"  :usePlaceholder=true  label="email">
                     <template #prefix>
-                    <img src="/image/icon/person.svg" alt="" srcset="">
+                   <Icon   name="heroicons:envelope" class="w-5 h-5 text-gray-500"/>
                     </template>
                 </FormInput>
               </div>
-
+              <div >
+                <FormInput type="email" :required="true" v-model:inputValue="registerData.phone"  :usePlaceholder=true  label="Phone No:">
+                    <template #prefix>
+                     <Icon  name="heroicons:device-phone-mobile"  class="w-5 h-5 text-gray-500" />
+                    </template>
+                </FormInput>
+              </div>
               <!-- passwords -->
                
               <div  class="">
