@@ -30,52 +30,160 @@
 
     <div
       v-if="show"
-      class="fixed left-1/2 top-1/2 z-50 w-[95%] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-white shadow-[0_40px_80px_rgba(0,0,0,.18)]"
+      class="fixed left-1/2 top-1/2 z-50 w-[95%] overflow-y-auto h-[95%] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-md bg-white shadow-[0_40px_80px_rgba(0,0,0,.18)]"
     >
 
       <!-- Header -->
-      <div class="relative bg-gradient-to-r from-green-600 via-emerald-500 to-green-500 px-8 py-7 text-white">
+      <div class="relative border-b-2 bg-gradient-to-r f px-2 sm:px-8 py-4 te">
 
         <button
           @click="closeModal"
-          class="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 transition hover:bg-white/30"
+          class="absolute right-6 top-6 flex  items-center justify-center rounded-xl bg-white/20 transition hover:bg-white/30"
         >
           <Icon
             name="lucide:x"
-            class="h-5 w-5"
+            class="h-8 w-8"
           />
         </button>
 
         <div class="flex items-center gap-4">
 
-          <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
-
-            <Icon
-              name="lucide:landmark"
-              class="h-9 w-9"
-            />
-
-          </div>
+          
 
           <div>
 
-            <h2 class="text-2xl font-bold">
+            <div class="text-xl flex items-center gap-2  font-bold">
+               
+                <Icon
+                name="lucide:landmark"
+                class="sm:h-5 sm:w-5 w-3 h-3"
+              />
+             
+            
               Add Bank Account
-            </h2>
+            </div>
 
-            <p class="mt-2 text-green-100">
+            <p class=" text-sm  text-gray-700">
               Add a verified bank account for withdrawals.
             </p>
 
           </div>
 
+          
         </div>
 
       </div>
+       <!-- Header -->
+       <div class=" bg-amber-200   text-[13px] textm px-4 py-1 text-justify roundd w-full ">
+       <span class=" font-semibold">Important:</span> The bank account you add must belong to you and must match the name used during your NIN identity verification (KYC). We cannot release funds to bank accounts that do not match your verified identity.
+       </div>
+        
+        <div
+          
+            class="mx-3 mt-4 rounded-xl border p-4"
+            :class="{
+              'border-amber-200 bg-amber-50': bankAccount?.status === 'PENDING',
+              'border-green-200 bg-green-50': bankAccount?.status === 'VERIFIED',
+              'border-red-200 bg-red-50': bankAccount?.status === 'REJECTED'
+            }"
+          >
+
+            
+            <div class="flex items-start justify-between">
+
+              <div>
+
+                <p class="font-semibold text-gray-900">
+                  Bank Account Status
+                </p>
+
+                <p class="mt-1 text-sm text-gray-600">
+                  {{ bankAccount?.bankName }}
+                </p>
+
+                <p class="text-sm text-gray-600">
+                  {{ bankAccount?.accountName }}
+                </p>
+
+                <p class="text-sm text-gray-500">
+                  ****{{ bankAccount?.accountNumber.slice(-4) }}
+                </p>
+
+              </div>
+
+              <span
+                class="rounded-full px-3 py-1 text-xs font-semibold"
+                :class="{
+                  'bg-amber-100 text-amber-700': bankAccount?.status === 'PENDING',
+                  'bg-green-100 text-green-700': bankAccount?.status === 'VERIFIED',
+                  'bg-red-100 text-red-700': bankAccount?.status === 'REJECTED'
+                }"
+              >
+                {{ bankAccount?.status }}
+              </span>
+
+            </div>
+
+            <!-- Pending -->
+            <div
+              v-if="bankAccount?.status === 'PENDING'"
+              
+              class="mt-4 flex items-start gap-2 text-sm text-amber-700"
+            >
+              <Icon name="lucide:clock-3" class="mt-0.5 h-5 w-5" />
+
+              <p>
+                Your bank account has been submitted and is awaiting admin verification.
+                Withdrawals will be enabled after approval.
+              </p>
+            </div>
+
+            <!-- Verified -->
+            <div
+              v-else-if="bankAccount?.status === 'VERIFIED'"
+              class="mt-4 flex items-start gap-2 text-sm text-green-700"
+            >
+              <Icon name="lucide:badge-check" class="mt-0.5 h-5 w-5" />
+
+              <p>
+                Your bank account has been verified. You can now receive withdrawals.
+              </p>
+            </div>
+       
+            <!-- Rejected -->
+            <div
+              v-else-if="bankAccount?.status === 'REJECTED'"
+              class="mt-4 flex items-start gap-2 text-sm text-red-700"
+            >
+              <Icon name="lucide:circle-alert" class="mt-0.5 h-5 w-5" />
+
+              <div>
+                <p>
+                  Your bank account was rejected.
+                </p>
+                 {{bankAccount.rejectionReason}}
+                <p
+                  v-if="bankAccount.rejectionReason"
+                  class="mt-1 text-xs"
+                >
+                  Reason: {{ bankAccount?.rejectionReason }}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+
+
+
 
       <!-- Body -->
-      <div class="space-y-7 p-8">
-
+     
+      <div      class="space-y-7 p-3 sm:p-8">
+       {{bankAccount?.status}}
         <!-- Bank -->
         <div>
 
@@ -89,16 +197,16 @@
 
             <button
               @click="bankDropdown = !bankDropdown"
-              class="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 transition hover:border-green-400"
+              class="flex w-full items-center justify-between text-sm rounded-md border border-gray-200 bg-white px-3 py-2 transition hover:border-green-400"
             >
 
               <div class="flex items-center gap-3">
 
-                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100">
+                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-green-100">
 
                   <Icon
                     name="lucide:building-2"
-                    class="h-6 w-6 text-green-600"
+                    class="h-4 w-4 text-green-600"
                   />
 
                 </div>
@@ -134,25 +242,25 @@
 
             <div
               v-if="bankDropdown"
-              class="absolute left-0 right-0 top-full z-20 mt-3 overflow-hidden rounded-2xl border bg-white shadow-xl"
+              class="absolute left-0 right-0 top-full z-20 mt-3 overflow-hidden rounded-md border bg-white shadow-xl"
             >
 
               <!-- Search -->
 
-              <div class="border-b p-4">
+              <div class="border-b p-2">
 
                 <div class="relative">
 
                   <Icon
                     name="lucide:search"
-                    class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                    class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
                   />
 
                   <input
                     v-model="search"
-                    type="text"
+                    type="text" 
                     placeholder="Search bank..."
-                    class="w-full rounded-xl border bg-gray-50 py-3 pl-12 pr-4 outline-none focus:border-green-500"
+                    class="w-full text-sm rounded-md border bg-gray-50 py-3 pl-12 pr-4 outline-none focus:border-green-500"
                   >
 
                 </div>
@@ -167,22 +275,18 @@
                   v-for="bank in filteredBanks"
                   :key="bank.code"
                   @click="selectBank(bank)"
-                  class="flex w-full items-center justify-between border-b px-5 py-4 text-left transition hover:bg-green-50"
+                  class="flex w-full items-center justify-between border-b text-sm px-5 py-2 text-left transition hover:bg-green-50"
                 >
 
                   <div>
 
-                    <p class="font-medium text-gray-800">
+                    <p class="font-medium  text-gray-800">
 
-                      {{ bank.name }}
-
-                    </p>
-
-                    <p class="text-xs text-gray-400">
-
-                      {{ bank.code }}
+                      {{ bank.name }} <span class="text-xs text-gray-400"> {{ bank.code }}</span>
 
                     </p>
+
+                    
 
                   </div>
 
@@ -218,7 +322,7 @@
               v-model="accountNumber"
               maxlength="10"
               placeholder="Enter 10-digit account number"
-              class="w-full rounded-2xl border border-gray-200 px-5 py-4 pr-14 outline-none transition focus:border-green-500"
+              class="w-full  text-sm border rounded-md border-gray-200 px-3 py-3 pr-14 outline-none transition focus:border-green-500"
             >
 
             <div
@@ -260,7 +364,7 @@
           </label>
 
           <div
-            class="flex min-h-[64px] items-center rounded-2xl border bg-gray-50 px-5"
+            class="flex min-h-[40px] items-center rounded-md text-sm border bg-gray-50 px-5"
           >
 
             <template v-if="loading">
@@ -282,7 +386,7 @@
 
             </template>
 
-            <template v-else-if="verified">
+            <template v-else-if="verified || bankAccount">
 
               <div class="flex w-full items-center justify-between">
 
@@ -290,7 +394,7 @@
 
                   <p class="font-semibold text-gray-800">
 
-                    {{ accountName }}
+                    {{accountName || bankAccount?.accountName }}
 
                   </p>
 
@@ -328,7 +432,7 @@
         <!-- Error -->
 
         <div
-          v-if="error"
+          v-if="!bankAccount?.accountName  && error"
           class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4"
         >
 
@@ -362,7 +466,7 @@
         <!-- Success -->
 
         <div
-          v-if="verified"
+          v-if=" verified"
           class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4"
         >
 
@@ -407,9 +511,9 @@
           Cancel
 
         </button>
-
+      
         <button
-          :disabled="!verified || saving"
+          :disabled=" !bankAccount?.accountName  && !verified || saving   "
           @click="saveBankAccount"
           class="flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-8 py-3 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -468,7 +572,7 @@ const bankDropdown = ref(false)
 const selectedBank = ref(null)
 
 const accountNumber = ref("")
-
+const bankAccount = ref(null)
 const accountName = ref("")
 
 /* ===========================================
@@ -599,9 +703,36 @@ const loadbanks = async () => {
 /* ===========================================
 FILTER BANKS
 =========================================== */
+const loadBankAccount = async () => {
+  try {
+    const res = await useApiFetch("/payout/bank-details", {
+      method: "GET",
+    })
+  console.log(res.data.data);
+  
+    if (res.success && res.data.data) {
+      bankAccount.value = res.data.data
 
+      selectedBank.value = {
+        name: res.data.data.bankName,
+        code: res.data.data.bankCode,
+
+      }
+
+      accountNumber.value = res.data.data.accountNumber
+      accountName.value = res.data.data.accountName
+      accountName
+      verified.value = true
+    }
+
+  } catch (err) {
+    console.log(err)
+  }
+}
+loadBankAccount()
 onMounted(() => {
   loadbanks()
+ 
 })
 const filteredBanks = computed(() => {
 
@@ -634,6 +765,9 @@ const selectBank = bank => {
   error.value = ""
 
 }
+
+
+
 
 /* ===========================================
 VERIFY ACCOUNT
@@ -673,7 +807,9 @@ watch(accountNumber, async value => {
     })
 
     if (!res.success) {
+    
       throw new Error(res.message)
+       verified.value = false
     }
     console.log(res);
     
@@ -689,10 +825,13 @@ watch(accountNumber, async value => {
 
   }
   catch (err) {
-
+    
     error.value = err.message || "Unable to verify account."
 
     verified.value = false
+    if ( accountName.value) {
+       
+    }
 
   }
   finally {
@@ -709,28 +848,28 @@ SAVE ACCOUNT
 
 const saveBankAccount = async () => {
 
-  if (!verified.value) return
+  if (!verified.value && !bankAccount.value ) return
 
   saving.value = true
 
   try {
 
-    /*
-    ======================================
-    Save to backend
-    ======================================
-
-    await useApiFetch("/bank-account",{
+  
+    // ======================================
+    // Save to backend
+    // ======================================
+  console.log(accountName.value,'accountName.value');
+  
+    await useApiFetch("/payout/save-bank-account",{
       method:"POST",
       body:{
         bankName:selectedBank.value.name,
         bankCode:selectedBank.value.code,
         accountNumber:accountNumber.value,
-        accountName:accountName.value
+        accountName:accountName.value || bankAccount.value.accountName
       }
     })
 
-    */
 
     await new Promise(resolve => setTimeout(resolve, 1200))
 

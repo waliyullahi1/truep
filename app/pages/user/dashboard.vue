@@ -1,14 +1,19 @@
 <template>
   <div class="min-h-screen bg-slate-50 py-4">
-  <WIthdraw/>
-  <ProfileAccountdetails/>
+   
+ 
+  <ProfileAccountdetails  v-if="showModal"
+    :user-id="selectedUserId"
+    @close="closeModal"
+    @updated="refreshAccounts"/>
+ 
     <!-- ERROR -->
     <div
       v-if="error"
       class="mb-6 bg-red-50 border  border-red-200 text-red-700 px-4 py-4 rounded-xl flex items-center justify-between max-w-7xl mx-auto"
     >
       <p>{{ error }}</p>
-
+ 
       <button
         @click="loadProfile"
         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
@@ -38,7 +43,12 @@
               :src="data?.avatar || defaultAvatar"
               class="w-24 h-24 mx-auto rounded-full object-cover shadow"
             />
-
+             <!-- <button
+    @click="openModal()"
+    class="bg-green-600 text-white px-4 py-2 rounded-lg"
+  >
+    Review
+  </button> -->
             <!-- Name -->
             <div
               v-if="loading"
@@ -418,6 +428,8 @@ const data = ref({})
 const loading = ref(true)
 const error = ref(null)
 
+const showModal = ref(false)
+const selectedUserId = ref(null)
 const defaultAvatar = '/image/icon/avatar.svg'
 
 const fullName = computed(() => {
@@ -483,4 +495,18 @@ const smartMoney = value =>
 onMounted(() => {
   loadProfile()
 })
+
+
+// const showModal = ref(false)
+// const selectedUserId = ref(null)
+
+const openModal = (userId) => {
+  selectedUserId.value = userId
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  selectedUserId.value = null
+}
 </script>
