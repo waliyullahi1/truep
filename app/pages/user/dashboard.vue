@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-50 py-4">
-
+  <WIthdraw/>
+  <ProfileAccountdetails/>
     <!-- ERROR -->
     <div
       v-if="error"
@@ -196,7 +197,7 @@
           <div class="bg-white flex justify-between rounded-2xl shadow-sm p-6">
 
             <p class="text-sm text-gray-500">
-              Earned this month
+              Earned
             </p>
 
             <div
@@ -206,9 +207,9 @@
 
             <h2
               v-else
-              class="text-2xl font-bold mt-1"
+              class="text-xl font-bold mt-1"
             >
-              $0
+              {{smartMoney(data.balance)}}
             </h2>
 
           </div>
@@ -474,7 +475,11 @@ const loadProfile = async () => {
   }
 
 }
-
+const smartMoney = value =>
+  (Number(value || 0) / 100).toLocaleString('en-NG', {
+    style: 'currency',
+    currency: 'NGN'
+  })
 onMounted(() => {
   loadProfile()
 })
