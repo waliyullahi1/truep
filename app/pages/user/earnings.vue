@@ -1,554 +1,601 @@
-<!-- pages/dashboard/analytics.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-       <OverlayMaintanance /> 
-    <!-- Header -->
-    <div
-      class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
-    >
-      <div>
-        <h1 class="text-4xl font-bold text-gray-900">
-          Property Analytics
-        </h1>
+  <ContainerUser class="max-w-5xl mx-auto py-8 px-4 space-y-8">
+  <PaymentWithdraw
+   v-model:show="showWithdrawal"
+    @withdraw="withdraw"
+    @edit-account="showModal = true"
+ />
+ 
 
-        <p class="mt-2 text-gray-500">
-          Track your property sales, rentals, and performance insights.
-        </p>
-      </div>
+   <ProfileAccountdetails  v-if="showModal"
+    :user-id="selectedUserId"
+    @close="closeModal"
+    @updated="refreshAccounts"/>
 
-      <div
-        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
-      >
-        <Icon name="lucide:calendar-days" class="h-5 w-5 text-gray-500" />
 
-        <span class="text-sm font-medium text-gray-700">
-          Apr 11 - May 10, 2026
-        </span>
 
-        <Icon name="lucide:chevron-down" class="h-4 w-4 text-gray-400" />
-      </div>
-    </div>
+  <div class="  sm:w-1/2 w-full">
+    <h1 class="text-3xl font-bold">
+      Earnings
+    </h1>
 
-    <!-- Tabs -->
-    <div
-      class="mb-8 flex flex-wrap items-center gap-8 border-b border-gray-200"
-    >
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        class="border-b-2 pb-4 text-sm font-semibold transition"
-        :class="
-          activeTab === tab
-            ? 'border-green-600 text-green-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
-        "
-        @click="activeTab = tab"
-      >
-        {{ tab }}
-      </button>
-    </div>
+    <p class="mt-2 text-slate-500">
+      Monitor your property earnings, available balance, withdrawals, and recent transactions in one place.
+    </p>
+  </div>
+    <div class="grid md:grid-cols-4 gap-5">
 
-    <!-- Stats -->
-    <div
-      class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5"
-    >
-      <div
-        v-for="item in stats"
-        :key="item.title"
-        class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
-      >
-        <div class="flex items-start justify-between">
-          <div
-            class="flex h-14 w-14 items-center justify-center rounded-full"
-            :class="item.bg"
-          >
-            <Icon
-              :name="item.icon"
-              class="h-7 w-7"
-              :class="item.color"
-            />
-          </div>
+      <div class="rounded-2xl bg-white border p-6">
 
-          <Icon
-            name="lucide:help-circle"
-            class="h-4 w-4 text-gray-400"
-          />
-        </div>
+        <div class="flex items-center justify-between">
 
-        <div class="mt-5">
-          <p class="text-sm text-gray-500">
-            {{ item.title }}
-          </p>
-
-          <h2 class="mt-2 text-4xl font-bold" :class="item.color">
-            {{ item.value }}
-          </h2>
-
-          <p class="mt-2 text-sm font-medium text-green-600">
-            {{ item.change }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Overview Chart -->
-    <div
-      class="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-    >
-      <div
-        class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
-      >
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900">
-            Overview
-          </h2>
-
-          <div class="mt-4 flex flex-wrap gap-6">
-            <div
-              v-for="legend in legends"
-              :key="legend.label"
-              class="flex items-center gap-2"
-            >
-              <span
-                class="h-3 w-3 rounded-full"
-                :class="legend.dot"
-              />
-
-              <span class="text-sm font-medium text-gray-600">
-                {{ legend.label }}
-              </span>
-
-              <span class="font-bold text-gray-900">
-                {{ legend.value }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-3"
-        >
-          <span class="text-sm font-medium text-gray-700">
-            Last 30 days
+          <span class="text-slate-500 text-sm">
+            Total Earned
           </span>
 
           <Icon
-            name="lucide:chevron-down"
-            class="h-4 w-4 text-gray-400"
+            name="lucide:arrow-down-left"
+            class="w-5 h-5 text-green-600"
           />
+
         </div>
+
+        <h2 class="mt-4 text-2xl font-bold">
+          {{formatMoney(data?.data?.summary?.totalCredit)}}
+        </h2>
+
       </div>
 
-      <!-- Fake chart -->
-      <div
-        class="relative h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-green-50 to-white"
-      >
-        <div
-          class="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:80px_80px]"
-        />
+      <div class="rounded-2xl bg-white border p-6">
 
-        <!-- Green -->
-        <svg
-          class="absolute inset-0 h-full w-full"
-          viewBox="0 0 1000 400"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,260
-            C80,240 120,180 180,200
-            C240,220 300,100 360,160
-            C420,220 520,180 580,170
-            C640,160 700,200 760,180
-            C820,160 900,100 1000,60"
-            fill="none"
-            stroke="#10b981"
-            stroke-width="4"
-          />
-        </svg>
+        <div class="flex items-center justify-between">
 
-        <!-- Blue -->
-        <svg
-          class="absolute inset-0 h-full w-full"
-          viewBox="0 0 1000 400"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,300
-            C100,270 180,250 240,260
-            C320,270 380,240 460,250
-            C520,260 620,280 700,260
-            C800,240 900,260 1000,220"
-            fill="none"
-            stroke="#3b82f6"
-            stroke-width="4"
+          <span class="text-slate-500 text-sm">
+            In Escrow
+          </span>
+
+          <Icon
+            name="lucide:shield-check"
+            class="w-5 h-5 text-blue-600"
           />
-        </svg>
+
+        </div>
+
+        <h2 class="mt-4 text-2xl font-bold">
+         {{formatMoney(data?.data?.summary?.totalEscrow)}}
+        </h2>
+
       </div>
+
+      <div class="rounded-2xl bg-white border p-6">
+
+        <div class="flex items-center justify-between">
+
+          <span class="text-slate-500 text-sm">
+           Available Balance
+          </span>
+
+          <Icon
+            name="lucide:wallet"
+            class="w-5 h-5 text-emerald-600"
+          />
+
+        </div>
+
+        <h2 class="mt-4 text-2xl font-bold">
+          {{formatMoney(auth?.user?.wallet?.balance)}}
+        </h2>
+
+      </div>
+
+      <div class="rounded-2xl bg-white border p-6">
+
+        <div class="flex items-center justify-between">
+
+          <span class="text-slate-500 text-sm">
+            Withdrawn
+          </span>
+
+          <Icon
+            name="lucide:banknote"
+            class="w-5 h-5 text-orange-500"
+          />
+
+        </div>
+
+        <h2 class="mt-4 text-2xl font-bold">
+          {{formatMoney(data?.data?.summary?.totalWithdrawal)}}
+        </h2>
+
+      </div>
+
     </div>
 
-    <!-- Bottom cards -->
-    <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-      <!-- Sales -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Sales Overview
-          </h3>
+    <!-- Money Flow -->
 
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
+    <!-- <div class="rounded-2xl border bg-white p-8">
 
-        <div class="space-y-5">
-          <div
-            v-for="sale in salesOverview"
-            :key="sale.label"
-            class="flex items-center justify-between"
-          >
-            <span class="text-gray-500">
-              {{ sale.label }}
-            </span>
+      <h2 class="font-bold text-xl">
+        How Your Money Moves
+      </h2>
 
-            <div class="text-right">
-              <div class="font-bold text-gray-900">
-                {{ sale.value }}
-              </div>
+      <div class="grid md:grid-cols-4 gap-6 mt-8">
 
-              <div class="text-sm text-green-600">
-                {{ sale.change }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        <div class="text-center">
 
-      <!-- Rentals -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Rentals Overview
-          </h3>
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
 
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="rent in rentalsOverview"
-            :key="rent.label"
-            class="flex items-center justify-between"
-          >
-            <span class="text-gray-500">
-              {{ rent.label }}
-            </span>
-
-            <div class="text-right">
-              <div class="font-bold text-gray-900">
-                {{ rent.value }}
-              </div>
-
-              <div class="text-sm text-green-600">
-                {{ rent.change }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Properties -->
-      <div
-        class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-      >
-        <div class="mb-6 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">
-            Top Performing Properties
-          </h3>
-
-          <button class="text-sm font-semibold text-green-600">
-            View all
-          </button>
-        </div>
-
-        <div class="space-y-5">
-          <div
-            v-for="property in properties"
-            :key="property.name"
-            class="flex items-center gap-4"
-          >
-            <img
-              :src="property.image"
-              class="h-16 w-20 rounded-xl object-cover"
+            <Icon
+              name="lucide:credit-card"
+              class="w-8 h-8 text-blue-600"
             />
 
-            <div class="flex-1">
-              <h4 class="font-semibold text-gray-900">
-                {{ property.name }}
-              </h4>
-
-              <p class="text-sm text-gray-500">
-                {{ property.price }}
-              </p>
-            </div>
-
-            <span
-              class="rounded-full px-3 py-1 text-xs font-bold"
-              :class="
-                property.status === 'Sold'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-blue-100 text-blue-700'
-              "
-            >
-              {{ property.status }}
-            </span>
           </div>
+
+          <h3 class="font-semibold mt-4">
+            Buyer Pays
+          </h3>
+
+          <p class="text-sm text-slate-500 mt-2">
+            Buyer pays securely through the platform.
+          </p>
+
         </div>
+
+        <div class="text-center">
+
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
+
+            <Icon
+              name="lucide:shield"
+              class="w-8 h-8 text-yellow-600"
+            />
+
+          </div>
+
+          <h3 class="font-semibold mt-4">
+            Escrow
+          </h3>
+
+          <p class="text-sm text-slate-500 mt-2">
+            Funds remain protected until the transaction is completed.
+          </p>
+
+        </div>
+
+        <div class="text-center">
+
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+
+            <Icon
+              name="lucide:badge-check"
+              class="w-8 h-8 text-green-600"
+            />
+
+          </div>
+
+          <h3 class="font-semibold mt-4">
+            Approved
+          </h3>
+
+          <p class="text-sm text-slate-500 mt-2">
+            Once approved, funds become available for withdrawal.
+          </p>
+
+        </div>
+
+        <div class="text-center">
+
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+
+            <Icon
+              name="lucide:landmark"
+              class="w-8 h-8 text-purple-600"
+            />
+
+          </div>
+
+          <h3 class="font-semibold mt-4">
+            Withdrawal
+          </h3>
+
+          <p class="text-sm text-slate-500 mt-2">
+            Withdraw funds directly to your verified bank account.
+          </p>
+
+        </div>
+
       </div>
+
+    </div> -->
+
+    <!-- Recent Fund Activities -->
+
+  
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-6 py-5 border-b">
+      <h2 class="text-lg font-bold text-slate-900">
+       Earnings History
+      </h2>
     </div>
 
-    <!-- Activity -->
-    <div
-      class="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
-    >
-      <div class="mb-6 flex items-center justify-between">
-        <h3 class="text-2xl font-bold text-gray-900">
-          Recent Activity
-        </h3>
+    <!-- Table -->
+    <div class="overflow-x-auto">
 
-        <button class="text-sm font-semibold text-green-600">
-          View all
-        </button>
-      </div>
+      <table class="min-w-full">
 
-      <div
-        class="grid grid-cols-1 gap-6 lg:grid-cols-4"
-      >
-        <div
-          v-for="activity in activities"
-          :key="activity.title"
-          class="flex items-start gap-4 rounded-2xl bg-gray-50 p-4"
-        >
-          <div
-            class="flex h-14 w-14 items-center justify-center rounded-full"
-            :class="activity.bg"
+        <thead class="bg-slate-50 border-b">
+
+          <tr>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Transaction
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Property
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Amount
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Status
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Date
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          <!-- Loading -->
+          <template v-if="pending">
+
+            <tr
+              v-for="i in 6"
+              :key="i"
+              class="border-b animate-pulse"
+            >
+              <td class="px-6 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-slate-200"></div>
+
+                  <div class="space-y-2">
+                    <div class="h-4 w-40 rounded bg-slate-200"></div>
+                    <div class="h-3 w-28 rounded bg-slate-100"></div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-6">
+                <div class="h-4 w-32 rounded bg-slate-200"></div>
+              </td>
+
+              <td class="px-6">
+                <div class="h-4 w-24 rounded bg-slate-200"></div>
+              </td>
+
+              <td class="px-6">
+                <div class="h-7 w-20 rounded-full bg-slate-200"></div>
+              </td>
+
+              <td class="px-6">
+                <div class="h-4 w-28 rounded bg-slate-200"></div>
+              </td>
+
+            </tr>
+
+          </template>
+
+          <!-- Empty -->
+          <tr
+            v-else-if="!data?.data?.transactions?.length"
           >
+            <td
+              colspan="5"
+              class="py-16 text-center"
+            >
+
+              <Icon
+                name="lucide:receipt"
+                class="w-12 h-12 mx-auto text-slate-300"
+              />
+
+              <h3 class="mt-4 font-semibold text-slate-700">
+                No Transactions
+              </h3>
+
+              <p class="text-slate-500 mt-1">
+                Your transaction history will appear here.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Data -->
+          <tr
+            v-else
+            v-for="item in data.data.transactions"
+            :key="item._id"
+            class="border-b hover:bg-slate-50 transition"
+          >
+
+            <!-- Transaction -->
+            <td class="px-6 py-5">
+
+              <div class="flex items-center gap-3">
+
+                <div
+                  class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center"
+                >
+                  <Icon
+                    :name="getLedgerCategory(item.category).icon"
+                    class="w-5 h-5 text-indigo-600"
+                  />
+                </div>
+
+                <div>
+
+                  <p class="font-semibold whitespace-nowrap">
+                    {{ getLedgerCategory(item.category).title }}
+                  </p>
+
+                  <p class="text-xs whitespace-nowrap text-slate-500">
+                    {{ item.reference }}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </td>
+
+            <!-- Property -->
+            <td class="px-6 py-5">
+                <span v-if="item.order?.property">
+                  {{ item.order.property.title }}
+                </span>
+
+                <span v-else-if="item.category === 'WITHDRAWAL'">
+                  {{ item.metadata?.bankName }} • ****{{ item.metadata?.last4 }}
+                </span>
+
+                <span v-else-if="item.category === 'WALLET_FUNDING'">
+                  {{ item.metadata?.gateway || 'Wallet Funding' }}
+                </span>
+
+                <span v-else>
+                  —
+                </span>
+              </td>
+
+            <!-- Amount -->
+            <td class="px-6 py-5">
+
+              <span
+                class="font-bold whitespace-nowrap"
+                :class="item.type === 'CREDIT'
+                  ? 'text-green-600'
+                  : 'text-red-600'"
+              >
+                {{ item.type === "CREDIT" ? "+" : "-" }}
+                {{ formatMoney(item.amount) }}
+              </span>
+
+            </td>
+
+            <!-- Status -->
+            <td class="px-6 py-5">
+
+              <span
+                :class="[
+                  'inline-flex rounded-full whitespace-nowrap px-3 py-1 text-xs font-semibold',
+                  statusClass(item.status)
+                ]"
+              >
+                {{ item.status }}
+              </span>
+
+            </td>
+
+            <!-- Date -->
+            <td class="px-6 py-5 whitespace-nowrap text-sm text-slate-500">
+
+              {{ formatDate(item.createdAt) }}
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+       <!-- Upload Bank Account Widget -->
+      <div
+        class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+      >
+        <div class="flex items-start gap-4">
+
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100">
             <Icon
-              :name="activity.icon"
-              class="h-6 w-6"
-              :class="activity.color"
+              name="lucide:landmark"
+              class="h-7 w-7 text-amber-600"
             />
           </div>
 
           <div>
-            <p class="text-sm text-gray-500">
-              {{ activity.type }}
+
+            <h3 class="text-lg font-bold text-slate-800">
+              Add Your Withdrawal Bank Account
+            </h3>
+
+            <p class="mt-2 text-sm text-slate-600 max-w-lg">
+              Before you can receive money from completed property sales, you need to
+              add and verify your bank account. Your account details must match the
+              information on your verified NIN.
             </p>
 
-            <h4 class="mt-1 font-bold text-gray-900">
-              {{ activity.title }}
-            </h4>
-
-            <p class="mt-1 text-sm text-gray-500">
-              {{ activity.amount }}
-            </p>
           </div>
+
         </div>
+
+        <button
+          @click="showModal = true"
+          class="rounded-xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+        >
+          Upload Bank Account
+        </button>
+
       </div>
-    </div>
-  </div>
+
+         <!--  Bank Account Widget -->
+      <div
+        class="rounded-2xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+      >
+        <div class="flex items-start gap-4">
+
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100">
+            <Icon
+              name="lucide:wallet"
+              class="h-7 w-7 text-green-600"
+            />
+          </div>
+
+          <div>
+
+            <h3 class="text-lg font-bold text-slate-800">
+              Withdraw Your Available Funds
+            </h3>
+
+            <p class="mt-2 text-sm text-slate-600 max-w-lg">
+              Funds released from escrow are now available in your wallet. Withdraw
+              them directly to your verified bank account.
+            </p>
+
+          </div>
+
+        </div>
+
+        <button
+          @click="withdraw"
+          class="rounded-xl bg-black px-6 py-3 font-semibold text-white hover:bg-slate-800"
+        >
+          Withdraw Now
+        </button>
+
+      </div>
+
+   
+
+
+  </ContainerUser>
 </template>
 
 <script setup>
-const activeTab = ref("Overview")
+import { ref, computed, onMounted } from 'vue'
+import { Star } from 'lucide-vue-next'
+import { getLedgerCategory } from "~/utils/ledger";
 
 definePageMeta({
   layout: 'auth',
   access: 'seller',
    sellerOnly: true
 })
-const tabs = [
-  "Overview",
-  "Sales",
-  "Rentals",
-  "Properties",
-  "Leads",
-  "Reports"
-]
+const auth = useAuth()
 
-const stats = [
-  {
-    title: "Total Earnings",
-    value: "$24,680",
-    change: "+12.5% vs previous month",
-    icon: "lucide:badge-dollar-sign",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    title: "Sales Earnings",
-    value: "$16,420",
-    change: "+10.3% vs previous month",
-    icon: "lucide:shopping-cart",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  },
-  {
-    title: "Rental Earnings",
-    value: "$8,260",
-    change: "+15.7% vs previous month",
-    icon: "lucide:key-round",
-    color: "text-orange-500",
-    bg: "bg-orange-100"
-  },
-  {
-    title: "Properties Listed",
-    value: "28",
-    change: "+4 new properties",
-    icon: "lucide:building-2",
-    color: "text-purple-600",
-    bg: "bg-purple-100"
-  },
-  {
-    title: "Total Views",
-    value: "12,456",
-    change: "+8.2% this month",
-    icon: "lucide:eye",
-    color: "text-cyan-600",
-    bg: "bg-cyan-100"
-  }
-]
+const showWithdrawal = ref(false)
+const showModal = ref(false)
 
-const legends = [
-  {
-    label: "Sales Earnings",
-    value: "$16,420",
-    dot: "bg-green-500"
-  },
-  {
-    label: "Rental Earnings",
-    value: "$8,260",
-    dot: "bg-blue-500"
-  },
-  {
-    label: "Sold Properties",
-    value: "8",
-    dot: "bg-violet-500"
-  },
-  {
-    label: "Rented Properties",
-    value: "12",
-    dot: "bg-orange-500"
-  }
-]
 
-const salesOverview = [
-  {
-    label: "Total Sales",
-    value: "$16,420",
-    change: "+10.3%"
-  },
-  {
-    label: "Properties Sold",
-    value: "8",
-    change: "+5.0%"
-  },
-  {
-    label: "Avg. Sale Price",
-    value: "$205,250",
-    change: "+7.6%"
-  },
-  {
-    label: "New Sales Listings",
-    value: "14",
-    change: "+16.7%"
-  }
-]
+const openModal = (userId) => {
+  selectedUserId.value = userId
+  showModal.value = true
+}
 
-const rentalsOverview = [
-  {
-    label: "Total Rental Income",
-    value: "$8,260",
-    change: "+15.7%"
-  },
-  {
-    label: "Properties Rented",
-    value: "12",
-    change: "+20%"
-  },
-  {
-    label: "Avg. Monthly Rent",
-    value: "$688",
-    change: "+6.3%"
-  },
-  {
-    label: "Occupancy Rate",
-    value: "92%",
-    change: "+3.2%"
-  }
-]
+const formatMoney = value => {
+  return (Number(value || 0) / 100).toLocaleString(
+    "en-NG",
+    {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2
+    }
+  )
+}
+const closeModal = () => {
+  showModal.value = false
+  selectedUserId.value = null
+}
 
-const properties = [
-  {
-    name: "Luxury Villa in Downtown",
-    price: "$850,000",
-    status: "Sold",
-    image:
-      "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1200"
-  },
-  {
-    name: "Modern Apartment",
-    price: "$1,200 / month",
-    status: "Rented",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200"
-  },
-  {
-    name: "Beachfront Condo",
-    price: "$620,000",
-    status: "Sold",
-    image:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200"
-  }
-]
 
-const activities = [
-  {
-    type: "Property Sold",
-    title: "Luxury Villa in Downtown",
-    amount: "$850,000 • May 5, 2026",
-    icon: "lucide:shopping-cart",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    type: "Property Rented",
-    title: "Modern Apartment",
-    amount: "$1,200/month • May 1, 2026",
-    icon: "lucide:key-round",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
-  },
-  {
-    type: "Property Sold",
-    title: "Beachfront Condo",
-    amount: "$620,000 • Apr 28, 2026",
-    icon: "lucide:shopping-cart",
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    type: "Property Rented",
-    title: "City Center Studio",
-    amount: "$850/month • Apr 25, 2026",
-    icon: "lucide:key-round",
-    color: "text-blue-600",
-    bg: "bg-blue-100"
+
+
+const withdraw = (amount) => {
+  console.log("Withdraw:", amount);
+
+  showWithdrawal.value = true;
+};
+const {
+  data,
+  pending,
+  error,
+  refresh
+} = await useApiFetch("/transactions/wallet/dashboard", {
+
+})
+
+// watch(
+//   [page, search, status, category, sort],
+//   () => refresh()
+// )
+
+/* =====================================
+TRANSACTIONS
+===================================== */
+
+
+
+const editAccount = () => {
+  console.log("Edit Account");
+};
+
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleString("en-NG", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
+
+const statusClass = (status) => {
+  switch (status) {
+    case "COMPLETED":
+      return "bg-green-100 text-green-700";
+    case "PENDING":
+      return "bg-yellow-100 text-yellow-700";
+    case "FAILED":
+      return "bg-red-100 text-red-700";
+    case "REJECTED":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
   }
-]
+};
 </script>

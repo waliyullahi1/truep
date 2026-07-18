@@ -16,7 +16,7 @@ const avatars = [
 /* slides */
 const slides = [
   { text: 'Abanise was founded in 2019 by a team of real estate and technology experts with over 20 years of experience in the rental industry.' },
-  { text: 'As part of Reva Group, we have the expertise to deliver a platform that simplifies Buy/renting property while maintaining a high level of trust and security for tenants, property owners and agencies.' },
+  { text: 'We have the expertise to deliver a platform that simplifies Buy/renting property while maintaining a high level of trust and security for tenants, property owners and agencies.' },
   { text: 'With operations in 36 State worldwide, Abanise is a global platform dedicated to making the buying/rental process easier and more transparent for everyone involved' }
 ]
 

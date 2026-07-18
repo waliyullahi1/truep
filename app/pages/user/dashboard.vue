@@ -156,7 +156,7 @@
               <!-- Property -->
               <div class="flex justify-between items-center">
                 <p class="text-sm text-gray-600">
-                  Property
+                  Refrence
                 </p>
 
                 <div

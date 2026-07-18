@@ -450,7 +450,7 @@
             </UiTypographyH2>
             <UiTypographyP class=" text-gray-600">Register and get your home listed as a property owner</UiTypographyP>
             <div class="flex items-center justify-center mt-10">
-           <UiButtonsPrimary>GET LISTED</UiButtonsPrimary>
+           <UiButtonsPrimary @click="router.push('/auth?type=register-page')" >GET LISTED</UiButtonsPrimary>
            </div>
         </div>
        

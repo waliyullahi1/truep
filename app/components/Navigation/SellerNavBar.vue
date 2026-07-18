@@ -47,8 +47,8 @@ const navLinks = [
 
   },
   {
-    name: "Transactions",
-    to: "/user/transactions",
+    name: "Earnings",
+    to: "/user/earnings",
     icon: "heroicons:banknotes",
     hideOnMd:false,
 

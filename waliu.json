@@ -1,0 +1,90 @@
+{
+    "wallet": {
+        "_id": "6a575cddb57fd7271c85e3f9",
+        "owner": "69ad99a2b7e02a1dfb27b7ae",
+        "ownerType": "USER",
+        "balance": 10000000,
+        "currency": "NGN",
+        "status": "ACTIVE",
+        "lastTransactionAt": "2026-07-15T10:11:41.509Z",
+        "createdAt": "2026-07-15T10:11:41.235Z",
+        "updatedAt": "2026-07-15T10:11:41.510Z"
+    },
+    "summary": {
+        "_id": null,
+        "totalCredit": 10000000,
+        "totalWithdrawal": 0,
+        "totalEscrow": 0,
+        "totalRefund": 0
+    },
+    "transactions": [
+        {
+            "_id": "6a575cddb57fd7271c85e3fc",
+            "wallet": "6a575cddb57fd7271c85e3f9",
+            "payment": null,
+            "order": {
+                "_id": "6a536c03c8b864a7e23f8c41",
+                "orderNumber": "ORD-1783852035320-8887",
+                "property": {
+                    "pricing": {
+                        "rent": {
+                            "duration": {
+                                "value": null,
+                                "unit": "yearly"
+                            }
+                        },
+                        "installment": {
+                            "months": null,
+                            "monthlyAmount": null
+                        },
+                        "price": 100000,
+                        "currency": "NGN",
+                        "negotiable": false,
+                        "paymentType": "rent"
+                    },
+                    "_id": "6a1488e00a66f42f90640d2b",
+                    "title": "1 BEDROOM SELF CONTAIN AT ILORIN EAST KWARA FOR RENT",
+                    "type": "house",
+                    "purpose": "rent",
+                    "slug": "1-bedroom-self-contain-at-ilorin-east-kwara-for-rent"
+                },
+                "buyer": "69fb67fe521fa864d72d6976",
+                "seller": "69ad99a2b7e02a1dfb27b7ae",
+                "totalAmount": 10000000,
+                "amountPaid": 10000000,
+                "totalPlot": null,
+                "pricePerPlot": null,
+                "escrowAmount": 0,
+                "currency": "NGN",
+                "allowInstallment": false,
+                "minimumInstallment": 0,
+                "paymentStatus": "FULLY_PAID",
+                "escrowStatus": "RELEASED",
+                "orderStatus": "COMPLETED",
+                "payments": [],
+                "createdAt": "2026-07-12T10:27:15.324Z",
+                "updatedAt": "2026-07-15T10:11:42.019Z",
+                "remainingAmount": 0,
+                "inspectionEvidence": [],
+                "metadata": {
+                    "releaseRequestedAt": "2026-07-14T16:54:45.453Z"
+                },
+                "completedAt": "2026-07-15T10:11:42.016Z",
+                "releasedAt": "2026-07-15T10:11:42.016Z"
+            },
+            "refund": null,
+            "type": "CREDIT",
+            "category": "ESCROW_RELEASE",
+            "amount": 10000000,
+            "currency": "NGN",
+            "balanceBefore": 0,
+            "balanceAfter": 10000000,
+            "reference": "ORD-1783852035320-8887",
+            "description": "Escrow received",
+            "status": "COMPLETED",
+            "relatedLedger": null,
+            "createdAt": "2026-07-15T10:11:41.750Z",
+            "updatedAt": "2026-07-15T10:11:41.750Z"
+        }
+    ]
+}

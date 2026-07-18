@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 text-black">
     <AdminBanksdetails
   v-if="showVerifyModal"
   :user-id="selectedUserId"
@@ -210,7 +210,7 @@ const filteredAccounts = computed(() => {
 
 const loadAccounts = async () => {
   const res = await useApiFetch("/payout/get-accounts")
-    console.log(res.data.data);
+    console.log(res.data);
     
   accounts.value = res.data.data
 
