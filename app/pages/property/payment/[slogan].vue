@@ -3,8 +3,10 @@
     <!-- ================= Header ================= -->
     <!-- ================= Sign ================= -->
 
-
-   
+    <Verifyidentity  ref="kycRef" kycType="individual"  :hiddenButton="true" :reload="true" v-model:isVerify="verifiedModel" v-model:open="showVerification" />
+                <button @click="openVerification">
+          
+        </button>
     <!-- ================= Loading ================= -->
     <div
       v-if="loading"
@@ -278,27 +280,32 @@
             <!-- {{order}}
               {{auth?.user?._id }}   {{ property?.userId?._id}}
                 {{auth?.user?._id === property?.userId?._id}} -->
+                
                <PropertyOrderStatus v-if="order"
                   :order="order"
                   :is-seller="isSeller"
               />
+
+               
             <div v-if="isBuyer && order?.escrowStatus==='FUNDED'">
                <EscrowCompleted
               v-if="currentProgress === 100"
               :order="order"
               @release="releaseMoney"
-            
+              @refund = ""
                 />
             
 
                <!-- @refund="requestRefund" -->
+               
             </div>  
-                  <AdminEscrow
-    :order="order"
-    @close="showReview = false"
-    @release="releaseFunds"
-    @reject="rejectRelease"
-     />
+           
+                  <AdminEscrow  v-if="auth?.user?.roles?.includes('Admin') && order?.escrowStatus === 'RELEASE_PENDING'"
+                    :order="order"
+                    @close="showReview = false"
+                    @release="releaseFunds"
+                    @reject="rejectRelease"
+                    />
 
         <!-- ================= Payment ================= -->
 
@@ -590,6 +597,16 @@
             </span>
           </button>
       </div>
+     <OrderActions
+          :order="order"
+          @cancel="cancelOrder"
+          @refund="requestRefund"
+          @reactivate="reactivateOrder"
+          @cancelRefund="cancelRefundRequest"
+        />
+                
+
+               
   
   </div>
     </div>
@@ -609,18 +626,15 @@ const config = useRuntimeConfig()
 const loading = ref(true)
 const plots = ref(1)
 
- definePageMeta({
-   layout: 'auth',
-    isPrivateRoute : true
-   })
-/*
-|--------------------------------------------------------------------------
-| State
-|--------------------------------------------------------------------------
-*/
+// //  definePageMeta({
+// //    layout: 'auth',
+// //     isPrivateRoute : true
+// //    })
+
+const kycRef = ref()
 const { pay } = usePaystack();
 const auth = useAuth()
-
+const showVerification = ref(true)
 const property = ref({})
 const order = ref(null)
  const agreedToTerms = ref(false)
@@ -637,6 +651,8 @@ const selectedPlots = ref(1)
 const processing = ref(false)
 
 const isOwn = ref(false)
+const kycType = ref('individual')
+const verifiedModel = ref(false)
 const showPaymentRules = ref(false)
 // const agreedToTerms = ref(false)
 /*
@@ -706,10 +722,29 @@ const canShowPaymentButtons = computed(()=>{
 
   return true
 })
+
+const canReactivateOrder = computed(() => {
+  return (
+    order.value &&
+    order.value.orderStatus === "CANCELLED"
+  )
+})
 const isSeller = computed(() => {
   return auth?.value?.user?._id === property?.value?.userId?._id;
 });
 
+
+const canCancelOrder = computed(() => {
+  if (!order.value) return false
+
+  return [
+    "NOT_FUNDED",
+    "PARTIALLY_FUNDED",
+    "FUNDED"
+  ].includes(order.value.escrowStatus)
+  &&
+  order.value.orderStatus !== "CANCELLED"
+})
 const isBuyer = computed(() => {
   return auth?.value?.user?._id !== property?.value?.userId?._id;
 });
@@ -808,6 +843,12 @@ const getImage = (item) => {
     '/image/no-image.png'
   )
 }
+
+
+const openVerification = () => {
+  kycRef.value?.startverification()
+}
+
 // watchEffect(() => {
 
 //   if (!data.value) return
@@ -1088,6 +1129,49 @@ const formatMoney = (value) =>
       
 // }
 
+const updateStatus = async (action, reason) =>{
+  try {
+     const data  = await useApiFetch(
+      `/order/status/${order.value._id}/${action}`,
+      {
+        method: "POST",
+        body:{
+          reason
+        }
+      }
+    )
+   if(!data.success){
+    $toast.error(data?.message || "Something went wrong.")
+     releasing.value = false
+    return
+   }
+    
+    return data
+  } catch (err) {
+    console.log("Error object:", err)
+  console.log("Status:", err.status)
+  console.log("Backend response:", err.data)
+
+  $toast.error(err.data?.message || "Something went wrong.")
+     releasing.value = false
+  }
+  
+
+   
+    
+}
+const cancelOrder = async ({ reason }) => {
+   await updateStatus("cancel", reason)
+ 
+
+}
+const requestRefund = async (reason) => {
+ await updateStatus("refund", reason)
+ 
+
+}
+
+
 
 const refreshProperty = async () => {
 
@@ -1128,6 +1212,11 @@ const refreshProperty = async () => {
   }
 
 }
+
+
+
+
+
 const payNow = async () => {
   if (!canPay.value || processing.value) return
 
@@ -1173,10 +1262,19 @@ const payNow = async () => {
             }
           )
 
-          if (verify.success) {
-            await refreshProperty()
-            window.location.reload();
+         if (verify.success) {
+          await refreshProperty()
+
+          const isVerified = await kycRef.value.startverification()
+
+          if (!isVerified) {
+            // Modal will already be opened by startverification()
+            return
           }
+
+          // User is verified
+          window.location.reload()
+        }
         } finally {
           processing.value = false
         }

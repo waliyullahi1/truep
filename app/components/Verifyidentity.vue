@@ -5,7 +5,8 @@
 {{ isBusinessVerify }}
 {{ isFaceVerify }} -->
     <!-- OPEN BUTTON -->
-<button
+  <!-- hiddenButton:{type: Boolean, default:false }, -->
+<button  v-if="!hiddenButton"
   :disabled="verifyLabel === 'Loading...' || verifyLabel === 'verified'"
   @click="startverification"
   class="bg-slate-800  text-white px-5 py-2.5 rounded-xl flex items-center gap-2 justify-center"
@@ -279,6 +280,8 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const { $toast } = useNuxtApp()
 const props = defineProps({
+  reload: {type: Boolean, default: false },
+  hiddenButton:{type: Boolean, default:false },
   kycType: { type: String, default: 'individual' },
 
   isVerify: { type: Boolean, default: false },
@@ -357,99 +360,57 @@ const base64ToFile = async (b64, name) => {
 /* ---------------- START VERIFICATION ---------------- */
 
 const startverification = async () => {
-  verifyLabel.value = 'Loading...'
+  verifyLabel.value = "Loading..."
 
   try {
-    const res = await useApiFetch('/kyc', { method: 'GET' })
+    const res = await useApiFetch("/kyc", {
+      method: "GET"
+    })
+
     const data = res.data
-    console.log(res);
+
     if (!res.success) {
-       
-        verifyLabel.value = 'try again'
-        $toast.error(' Failed to fetch')
-        return
-      }
+      verifyLabel.value = "Try Again"
+      return false
+    }
+
+    // Needs NIN
     if (!data?.data?.nin || !data?.data?.phone || !data?.data?.ninImage) {
-       step.value  =  'form'
-       open.value = true 
-        verifyLabel.value = props.kycType === 'individual' ? 'Verify Identity' : 'Verify Business'
-       return
-    }
-
-    if (!data?.data?.faceImage) {
-       step.value  =  'instruction'
-       open.value = true 
-        verifyLabel.value = props.kycType === 'individual' ? 'Verify Identity' : 'Verify Business'
-       return
-    }
-     if (props.kycType === 'business' && !res?.data?.business?.name) {
-      step.value = 'business'
+      step.value = "form"
       open.value = true
-      verifyLabel.value = 'Verify Business'
-      return
+      return false
     }
 
-     if (data?.data?.nin && data?.data?.phone && data?.data?.ninImage && data?.data?.faceImage) {
-      console.log();
-      
-      emit('update:isVerify', true)
-      emit('update:isFaceVerify', true) 
-      
-      
-
-      
-      // emit('update:isVerify', true)
-      if (props.kycType === 'business' && res?.data?.business?.name) {
-        console.log('riche 2');
-        emit('update:isBusinessVerify', true)
-      }
-      return
-      
-    }
-    // prefill
-    form.value.nin = data.nin || ''
-    form.value.phone = data.phone || ''
-    form.value.ninImage = data.ninImage?.url || null
-    form.value.cacImage = data.cacImage?.url || null
-    form.value.businessName = data.business?.name || ''
-    form.value.cacNumber = data.cacNumber || ''
-    form.value.faceVector = data.faceVector || null
-    form.value.faceImage = data.faceImage || null
-
-    step.value = data.currentStep || 'form'
-    if (!data.currentStep) {
-      step.value  =  'form'
-       open.value = true 
-    }
- 
-  
-    if (props.kycType === 'business' && !form.value.businessName) { 
-      step.value = 'business' 
-      verifyLabel.value = 'Verify Business'
-      open.value = true 
-      return
-       
-    }
-    if (step.value === 'review') {
-      console.log(data);
-      
-      verifyLabel.value = 'verified'
-      emit('update:isVerify', true) 
-      return
+    // Needs Face
+    if (!data?.data?.faceImage) {
+      step.value = "instruction"
+      open.value = true
+      return false
     }
 
-    if (props.kycType === 'business' && !form.value.businessName) {
-      step.value = 'business'
-      return
+    // Needs Business
+    if (
+      props.kycType === "business" &&
+      !data?.data?.business?.name
+    ) {
+      step.value = "business"
+      open.value = true
+      return false
     }
 
-    open.value = true
-    verifyLabel.value = 'verified'
-   emit('update:isVerify', true) 
+    emit("update:isVerify", true)
+    emit("update:isFaceVerify", true)
 
-  } catch (e) {
-    console.error(e)
-    verifyLabel.value = 'try again'
+    if (props.kycType === "business") {
+      emit("update:isBusinessVerify", true)
+    }
+
+    verifyLabel.value = "verified"
+
+    return true
+  } catch (err) {
+    verifyLabel.value = "Try Again"
+    return false
   }
 }
 
@@ -530,7 +491,9 @@ const handleFaceResult = async (data) => {
   verifyLabel.value = 'verified'
    emit('update:isVerify', true) 
    onVerify.value = true
-   console.log( props.isVerify);
+   if(props.reload){
+    window.location.reload()
+   }
    
     step.value = 'review'
     open.value = false
@@ -602,4 +565,9 @@ console.log(response.status);
 
 
 }
+
+
+defineExpose({
+  startverification
+})
 </script>
