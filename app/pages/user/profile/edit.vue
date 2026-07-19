@@ -5,18 +5,18 @@
 
         <div class="bg-white flex flex-col justify-center w-full h-full py-7 rounded-2xl">
 
-          <UiTypographyH3 class="text-center">
+          <UiTypographyH2 class="text-center">
             Update Your Information Profile
-          </UiTypographyH3>
+          </UiTypographyH2>
 
-          <UiTypographyP class="text-center mt-2">
+          <UiTypographyP class="text-center mt-1">
             Add missing details to complete your profile.
             You can update it at any time.
           </UiTypographyP>
 
           <!-- STEPS -->
           <div
-            class="grid md:grid-cols-3 sm:grid-cols-2 items-center gap-2 mt-6"
+            class="grid md:grid-cols-3 sm:grid-cols-2 items-center gap-2 mt-9"
           >
 
             <button

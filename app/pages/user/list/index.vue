@@ -15,11 +15,11 @@ const router = useRouter()
 const route = useRoute()
 const { $toast } = useNuxtApp()
 
- definePageMeta({
-   layout: 'auth',
-   access: 'seller',
-    isPrivateRoute : true
-   })
+definePageMeta({
+  layout: 'auth',
+  access: 'seller',
+  isPrivateRoute : true
+})
 
 /* ================= STATE ================= */
 const filter = ref('all')
