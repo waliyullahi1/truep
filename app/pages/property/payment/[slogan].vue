@@ -477,6 +477,7 @@
 
         <span class="font-bold text-green-600">
           ₦{{ formatMoney(convertFromKobo(paidAfterPayment)) }}
+         
         </span>
       </div>
 
@@ -543,9 +544,9 @@
           </div>
 
           <!-- Validation -->
-          <div >
+          <div > {{amountInput*100}} {{Math.round(parseFloat(amountInput) * 100)}} {{ convertFromKobo(remainingAmount)}} {{convertFromKobo(paidAfterPayment)}}
               <div
-                v-if="amountInput > convertFromKobo(remainingAmount)"
+                v-if="amountInput >  Math.round(convertFromKobo(remainingAmount))"
                 class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
               >
                 Amount cannot exceed the remaining balance.
@@ -597,10 +598,11 @@
             </span>
           </button>
       </div>
+      
      <OrderActions
           :order="order"
           @cancel="cancelOrder"
-          @refund="requestRefund"
+          @requestRefund="requestRefund"
           @reactivate="reactivateOrder"
           @cancelRefund="cancelRefundRequest"
         />
@@ -626,10 +628,10 @@ const config = useRuntimeConfig()
 const loading = ref(true)
 const plots = ref(1)
 
-// //  definePageMeta({
-// //    layout: 'auth',
-// //     isPrivateRoute : true
-// //    })
+ definePageMeta({
+   layout: 'auth',
+    isPrivateRoute : true
+   })
 
 const kycRef = ref()
 const { pay } = usePaystack();
@@ -661,7 +663,7 @@ const showPaymentRules = ref(false)
 |--------------------------------------------------------------------------
 */
 
-const { data, pending } = await useAsyncData(
+const { data, pending, refresh } = await useAsyncData(
   `property-${route.params.slogan}`,
   async () => {
     const response = await useApiFetch(`/property/${route.params.slogan}`)
@@ -849,51 +851,7 @@ const openVerification = () => {
   kycRef.value?.startverification()
 }
 
-// watchEffect(() => {
 
-//   if (!data.value) return
-
-//   property.value = data.value.data
-
-//   // FIXED
-//   order.value = data.value.order || null
-
-//   if (order.value) {
-
-//     totalAmount.value = Number(order.value.totalAmount || 0)
-
-//     // Escrow amount is the amount already paid
-//     paidAmount.value = Number(order.value.escrowAmount || 0)
-
-//     remainingAmount.value = Number(order.value.remainingAmount || 0)
-
-//     // If only ₦20,000 remains,
-//     // automatically make that the payment amount
-//     amount.value = remainingAmount.value
-
-//   } else {
-
-
-//     if (order.value) {
-
-//         paidAmount.value = Number(order.value.escrowAmount)
-//         remainingAmount.value = Number(order.value.remainingAmount)
-
-//     } else {
-
-//         paidAmount.value = 0
-//         remainingAmount.value = calculatedTotalPrice.value
-
-//     }
-
-//     paidAmount.value = 0
-//     remainingAmount.value = totalAmount.value
-
-//     // default payment
-//     amount.value = totalAmount.value
-//   }
-
-//   loading.value = false
 
 // })
 watch(
@@ -1031,6 +989,7 @@ const selectPercentage = (percent) => {
 //   selectedPercentage.value = match || null
 
 // })
+// })
 
 watch(amountInput, value => {
     amount.value = Math.round(Number(value || 0) * 100)
@@ -1095,8 +1054,8 @@ const remainingAfterPayment = computed(() => {
 })
 
 const canPay = computed(() => {
-  const amount = Number(amountInput.value) || 0
-  const remaining = currentRemainingAmount.value / 100
+  const amount = Math.round(Number(amountInput.value) || 0)
+  const remaining = Math.round(currentRemainingAmount.value / 100)
 
   return amount > 0 && amount <= remaining
 })
@@ -1106,7 +1065,18 @@ const canPay = computed(() => {
 | Helpers
 |--------------------------------------------------------------------------
 */
-const convertFromKobo = (value) => Number(value || 0) / 100
+const convertFromKobo = (value) => (Math.round(Number(value || 0) / 100))
+
+// const convertFromKobo = (koboValue) => {
+//   // Convert to integer safely, defaulting to 0 if null/undefined
+//   const cents = parseInt(koboValue, 10) || 0;
+  
+//   // Divide by 100 to get the standard Naira value
+//   const nairaAmount = cents / 100;
+
+//   // Format the number strictly according to Nigerian locale
+//   return nairaAmount
+// };
 const formatMoney = (value) =>
 
   (Number(value || 0)).toLocaleString("en-NG")
@@ -1129,48 +1099,48 @@ const formatMoney = (value) =>
       
 // }
 
-const updateStatus = async (action, reason) =>{
-  try {
-     const data  = await useApiFetch(
-      `/order/status/${order.value._id}/${action}`,
-      {
-        method: "POST",
-        body:{
-          reason
-        }
-      }
-    )
-   if(!data.success){
-    $toast.error(data?.message || "Something went wrong.")
-     releasing.value = false
-    return
-   }
+// const updateStatus = async (action, reason) =>{
+//   try {
+//      const data  = await useApiFetch(
+//       `/order/status/${order.value._id}/${action}`,
+//       {
+//         method: "POST",
+//         body:{
+//           reason
+//         }
+//       }
+//     )
+//    if(!data.success){
+//     $toast.error(data?.message || "Something went wrong.")
+//      releasing.value = false
+//     return
+//    }
     
-    return data
-  } catch (err) {
-    console.log("Error object:", err)
-  console.log("Status:", err.status)
-  console.log("Backend response:", err.data)
+//     return data
+//   } catch (err) {
+//     console.log("Error object:", err)
+//   console.log("Status:", err.status)
+//   console.log("Backend response:", err.data)
 
-  $toast.error(err.data?.message || "Something went wrong.")
-     releasing.value = false
-  }
+//   $toast.error(err.data?.message || "Something went wrong.")
+//      releasing.value = false
+//   }
   
 
    
     
-}
-const cancelOrder = async ({ reason }) => {
-   await updateStatus("cancel", reason)
+// }
+// const cancelOrder = async ({ reason }) => {
+//    await updateStatus("cancel", reason)
  
 
-}
-const requestRefund = async (reason) => {
- await updateStatus("refund", reason)
+// }
+// const requestRefund = async (reason) => {
+//  await updateStatus("refund", reason)
  
 
-}
-
+// }
+const router = useRouter()
 
 
 const refreshProperty = async () => {
@@ -1214,7 +1184,32 @@ const refreshProperty = async () => {
 }
 
 
+const cancelOrder = async () => {
+refreshProperty()
+}
 
+const requestRefund = async () => {
+ 
+  
+   await refreshProperty()
+  await refresh()
+  
+await router.go(0)
+}
+
+const cancelRefundRequest = async () =>{
+  console.log('');
+  
+     await refreshProperty()
+   await refresh()
+await router.go(0)
+}
+
+const reactivateOrder = async () => {
+  console.log('asaaa2');
+   await refresh()
+await router.go(0)
+}
 
 
 const payNow = async () => {

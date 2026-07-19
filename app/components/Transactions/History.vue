@@ -413,9 +413,7 @@ const {
 
   },
 
-  {
-    watch: [() => props.propertyId]
-  }
+
 
 )
 

@@ -1,5 +1,6 @@
 <script setup>
-
+const loading = ref(false)
+const { $toast } = useNuxtApp()
 const props = defineProps({
     order: {
         type: Object,
@@ -63,7 +64,7 @@ const statusMap = {
         }
     },
 
-    REFUND_REQUESTED: {
+    REFUND_PENDING: {
         buyer: {
             icon: "heroicons:arrow-uturn-left",
             color: "orange",
@@ -184,6 +185,39 @@ const colorClass = computed(() => ({
 
 }[current.value.color]))
 
+
+
+const updateStatus = async (action) =>{
+  try {
+    loading.value = true
+    
+     const data  = await useApiFetch(
+      `/order/status/${props.order._id}/${action}`,
+      {
+        method: "POST",
+       
+      }
+    )
+   if(!data.success){
+    $toast.error(data?.message || "Something went wrong.")
+    loading.value = false
+     window.location.reload();
+    return
+   }
+     window.location.reload();
+    return data
+  } catch (err) {
+   
+loading.value = false
+  $toast.error(err.data?.message || "Something went wrong.")
+     loading.value = false
+      window.location.reload();
+  }
+  
+
+   
+    
+}
 </script>
 
 <template>
@@ -206,6 +240,15 @@ const colorClass = computed(() => ({
             <p class="text-slate-600 mt-2 text-[16px] e leading-7 ">
                 {{ current?.description }}
             </p>
+        <div  v-if="!isSeller &&  order.escrowStatus === 'REFUND_PENDING'" class=" flex justify-end">
+                <button 
+                    :disabled="loading"
+                    @click="updateStatus('cancelRefund')"
+                    class="px-4 py-2 rounded border mt-4  text-amber-400 bg-primary hover:bg-primary/90"
+                >
+                    {{loading ? 'Loading....' : 'Cancel Refund Request'}}
+                </button>
+        </div>
 
         </div>
 

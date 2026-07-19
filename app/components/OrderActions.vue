@@ -15,29 +15,29 @@
 
       <!-- Refund -->
       <button
-        v-if="canRefund"
-        @click="openModal('refund')"
+        v-if="canRefund" :disabled="loading"
+        @click="openModal('requestRefund')"
         class="px-4 py-2 rounded border border-amber-300 text-amber-600 hover:bg-amber-50"
       >
         Request Refund
       </button>
 
       <!-- Reactivate -->
-      <button
+      <button :disabled="loading"
         v-if="canReactivate"
         @click="reactivateOrder"
         class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
       >
-        Reactivate Order
+        {{loading ? 'Activating....': 'Reactivate Order'}} 
       </button>
 
       <!-- Cancel Refund -->
-      <button
+      <button :disabled="loading"
         v-if="canCancelRefund"
         @click="cancelRefundRequest"
         class="px-4 py-2 rounded border"
       >
-        Cancel Refund Request
+       {{loading ? 'loading..' : 'Cancel Refund Request'}}
       </button>
 
     </div>
@@ -67,18 +67,19 @@
 
       <div class="flex justify-end gap-3 mt-5">
 
-        <button
+        <button :disabled="loading"
           @click="showModal=false"
           class="px-4 py-2 border rounded"
         >
           Close
         </button>
 
-        <button
+        <button :disabled="loading"
           @click="submitAction"
           class="px-4 py-2 bg-indigo-600 text-white rounded"
         >
-          Submit
+          {{loading ? 'Submitiing....': 'Submit'}} 
+         
         </button>
 
       </div>
@@ -88,22 +89,28 @@
 </template>
 
 <script setup>
+
+
+
+const showModal = ref(false)
+const action = ref("")
+const reason = ref("")
+const submitting = ref(true)
+const status = computed(() => props.order?.escrowStatus)
+const { $toast } = useNuxtApp()
+
+const loading = ref(false)
 const props = defineProps({
   order: Object
 })
 
 const emit = defineEmits([
   "cancel",
-  "refund",
+  "requestRefund",
   "reactivate",
   "cancelRefund"
 ])
 
-const showModal = ref(false)
-const action = ref("")
-const reason = ref("")
-
-const status = computed(() => props.order?.escrowStatus)
 
 const canCancel = computed(() =>
   ["NOT_FUNDED", "PARTIALLY_FUNDED", "FUNDED", "HELD"].includes(status.value)
@@ -126,20 +133,98 @@ function openModal(type) {
   reason.value = ""
   showModal.value = true
 }
-
-function submitAction() {
-  if (!reason.value.trim()) return
-
-  emit(action.value, reason.value)
-
+function closeModal() {
   showModal.value = false
 }
 
-function reactivateOrder() {
-  emit("reactivate")
+defineExpose({
+  
+  closeModal,
+ 
+})
+
+const updateStatus = async (action, reason) =>{
+  try {
+    
+    
+     const data  = await useApiFetch(
+      `/order/status/${props.order._id}/${action}`,
+      {
+        method: "POST",
+        body:{
+          reason
+        }
+      }
+    )
+   if(!data.success){
+    $toast.error(data?.message || "Something went wrong.")
+    loading.value = false
+     window.location.reload();
+    return
+   }
+    
+    return data
+  } catch (err) {
+   
+loading.value = false
+  $toast.error(err.data?.message || "Something went wrong.")
+     loading.value = false
+      window.location.reload();
+  }
+  
+
+   
+    
+}
+const submitAction = async () => {
+  try {
+    loading.value = true
+
+    if (!reason.value.trim()) {
+      loading.value = false
+      return
+    }
+
+    const data = await updateStatus(action.value, reason.value)
+
+    if (!data?.success) {
+      console.log(' error the page not found');
+      
+      loading.value = false
+      return
+    }
+  console.log(action.value, 'action.value');
+  
+   if (action.value === "cancel") {
+  emit("cancel", reason.value)
+} else if (action.value === "requestRefund") {
+  console.log(action.value, 'action.value');
+  
+  emit("requestRefund", reason.value)
 }
 
-function cancelRefundRequest() {
+    showModal.value = false
+    loading.value = false
+  } catch (error) {
+    console.error(error)
+    loading.value = false
+  }
+}
+async function reactivateOrder () {
+  loading.value = true
+  
+  
+   const actio = await updateStatus('reactivate')
+  setTimeout(() => {
+
+}, 5000);
+  emit("reactivate")
+  
+}
+
+async function cancelRefundRequest() {
+   loading.value = true
   emit("cancelRefund")
+  const actio = updateStatus('cancelRefund')
 }
 </script>

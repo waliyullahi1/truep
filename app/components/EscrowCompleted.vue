@@ -6,6 +6,49 @@
       @continue="handleInspectionContinue"
       @skip="handleSkipInspection"
     />
+
+      <div
+    v-if="showModal"
+    class="fixed inset-0 bg-black/40 z-30 flex items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-lg w-full max-w-md p-5">
+
+      <h3 class="font-bold text-lg mb-2">
+        {{ action === 'cancel' ? 'Cancel Order' : 'Request Refund' }}
+      </h3>
+
+      <p class="text-sm text-slate-500 mb-4">
+        Please tell us why.
+      </p>
+
+      <textarea
+        v-model="reason"
+        rows="4"
+        class="w-full border rounded p-3"
+        placeholder="Enter your reason..."
+      />
+
+      <div class="flex justify-end gap-3 mt-5">
+
+        <button :disabled="loading"
+          @click="showModal=false"
+          class="px-4 py-2 border rounded"
+        >
+          Close
+        </button>
+
+        <button :disabled="loading"
+          @click="requestrefund"
+          class="px-4 py-2 bg-indigo-600 text-white rounded"
+        >
+          {{loading ? 'Submitiing....': 'Submit'}} 
+         
+        </button>
+
+      </div>
+
+    </div>
+  </div>
   
    
 
@@ -103,14 +146,14 @@
       </button>
 
       <button
-        @click="$emit('refund')"
+        @click="showModal = true" :disabled="refund"
         class="h-14 rounded-lg border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 font-semibold transition"
       >
         <Icon
           name="heroicons:arrow-uturn-left"
           class="w-5 h-5 inline mr-2"
         />
-        Request Refund
+         {{refund?'Sending request.....': 'Request Refund'}} 
       </button>
 
     </div>
@@ -122,11 +165,17 @@
 import { ref } from "vue"
 import { useRouter, useRoute, useRuntimeConfig } from '#app'
 
+
+       
+
 const { $toast } = useNuxtApp()
 const confirmed = ref(false)
 const showInspectionModal = ref(false)
+const loading = ref(false)
 const releasing = ref(false)
-
+const refund = ref(false)
+const showModal = ref(false)
+const reason = ref(null)
 const props = defineProps({
   order: {
     type: Object,
@@ -138,18 +187,24 @@ const emit = defineEmits([
   "release",
   "refund"
 ])
+
 const updateStatus = async (action) =>{
   try {
+
+    
      const data  = await useApiFetch(
       `/order/status/${props.order._id}/${action}`,
       {
         method: "POST",
-        
+        body:{
+          reason: reason.value,
+        }
       }
     )
    if(!data.success){
     $toast.error(data?.message || "Something went wrong.")
      releasing.value = false
+     loading.value  = false
     return
    }
     
@@ -167,6 +222,16 @@ const updateStatus = async (action) =>{
    
     
 }
+
+
+const requestrefund = async (action) =>{
+  loading.value  = true
+  const load = await updateStatus('requestRefund')
+    window.location.reload();
+     emit("release")
+}
+
+
 
 const  handleInspectionContinue =  async() => {
   showInspectionModal.value = false
