@@ -39,8 +39,14 @@ const navLinks = [
 
   },
   {
+  name: "Orders",
+  to: "/user/orders",
+  icon: "heroicons:shopping-bag",
+  hideOnMd: true
+},
+  {
     name: "Payments",
-    to: "/user/orders",
+    to: "/user/payment",
     icon: "heroicons:credit-card",
     badge: "New",
     hideOnMd:false,

@@ -297,11 +297,20 @@
         </NuxtLink>
 
         <NuxtLink
+          to="/user/list"
+          class="menu-link"
+        >
+         Properties
+        </NuxtLink>
+
+        <NuxtLink
           to="/user/list/new"
           class="menu-link"
         >
           Post Property
         </NuxtLink>
+
+        
 
         <NuxtLink
           to="/user/profile/edit"
