@@ -1,1276 +1,552 @@
 <template>
+  <div class="rounded-xl border bg-white shadow-sm">
+  <ContainerUser>
+    <!-- ================= Header ================= -->
+    <div
+      class="flex flex-col gap-3 border-b px-6 py-5 md:flex-row md:items-center md:justify-between"
+    >
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">
+        Payment
+        </h2>
 
-  <div class="min-h-screen bg-slate-50">
-   <!-- {{transactions}} {{transactions.length}} -->
-    <!-- ========================================================= -->
-    <!-- Page Container -->
-    <!-- ========================================================= -->
-
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-
-      <!-- ========================================================= -->
-      <!-- Header -->
-      <!-- ========================================================= -->
-
-      <div
-        class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between"
-      >
-
-        <div>
-
-          <div class="flex items-center gap-3">
-
-            <div
-              class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10"
-            >
-              <Icon
-                name="heroicons:credit-card"
-                class="h-7 w-7 text-primary"
-              />
-            </div>
-
-            <div>
-
-              <h1
-                class="text-3xl font-bold tracking-tight text-slate-900"
-              >
-                Transaction History
-              </h1>
-
-              <p
-                class="mt-1 text-[15px] text-slate-500"
-              >
-                Track every payment, escrow release, refund and wallet activity.
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div
-          class="flex flex-wrap items-center gap-3"
-        >
-
-          <button
-            class="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary"
-          >
-
-            <Icon
-              name="heroicons:arrow-path"
-              class="h-5 w-5"
-            />
-
-            Refresh
-
-          </button>
-
-          <button
-            class="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition hover:opacity-90"
-          >
-
-            <Icon
-              name="heroicons:arrow-down-tray"
-              class="h-5 w-5"
-            />
-
-            Export
-
-          </button>
-
-        </div>
-
+        <p class="mt-1 text-sm text-gray-500">
+          View all payment transactions.
+        </p>
       </div>
 
-      <!-- ========================================================= -->
-      <!-- Statistics -->
-      <!-- ========================================================= -->
-
-      <div
-        class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4"
-      >
-
-        <!-- Card -->
-
-        <div
-          class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-
-          <div
-            class="flex items-start justify-between"
-          >
-
-            <div>
-
-              <p
-                class="text-sm font-medium text-slate-500"
-              >
-                Total Transactions
-              </p>
-
-              <h2
-                class="mt-3 text-4xl font-bold text-slate-900"
-              >
-                <!-- {{ statistics?.total  || "UNKNOWN" }} -->
-              </h2>
-
-            </div>
-
-            <div
-              class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100"
-            >
-
-              <Icon
-                name="heroicons:credit-card"
-                class="h-7 w-7 text-blue-600"
-              />
-
-            </div>
-
-          </div>
-
-          <div
-            class="mt-6 flex items-center gap-2 text-sm"
-          >
-
-            <Icon
-              name="heroicons:arrow-trending-up"
-              class="h-5 w-5 text-green-600"
-            />
-
-            <span class="font-medium text-green-600">
-              +18%
-            </span>
-
-            <span class="text-slate-500">
-              this month
-            </span>
-
-          </div>
-
-        </div>
-
-        <!-- Card -->
-
-        <div
-          class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-
-          <div
-            class="flex items-start justify-between"
-          >
-
-            <div>
-
-              <p
-                class="text-sm font-medium text-slate-500"
-              >
-                Active Escrows
-              </p>
-
-              <h2
-                class="mt-3 text-4xl font-bold text-slate-900"
-              >
-                <!-- {{ statistics?.active  || "UNKNOWN" }} -->
-              </h2>
-
-            </div>
-
-            <div
-              class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100"
-            >
-
-              <Icon
-                name="heroicons:shield-check"
-                class="h-7 w-7 text-amber-600"
-              />
-
-            </div>
-
-          </div>
-
-          <p
-            class="mt-6 text-sm text-slate-500"
-          >
-            Waiting for buyer or admin action
-          </p>
-
-        </div>
-
-        <!-- Card -->
-
-        <div
-          class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-
-          <div
-            class="flex items-start justify-between"
-          >
-
-            <div>
-
-              <p
-                class="text-sm font-medium text-slate-500"
-              >
-                Completed
-              </p>
-
-              <h2
-                class="mt-3 text-4xl font-bold text-slate-900"
-              >
-                <!-- {{ statistics?.completed || "UNKNOWN" }} -->
-              </h2>
-
-            </div>
-
-            <div
-              class="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100"
-            >
-
-              <Icon
-                name="heroicons:check-badge"
-                class="h-7 w-7 text-green-600"
-              />
-
-            </div>
-
-          </div>
-
-          <p
-            class="mt-6 text-sm text-slate-500"
-          >
-            Successfully completed transactions
-          </p>
-
-        </div>
-
-        <!-- Card -->
-
-        <div
-          class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-
-          <div
-            class="flex items-start justify-between"
-          >
-
-            <div>
-
-              <p
-                class="text-sm font-medium text-slate-500"
-              >
-                Refunded
-              </p>
-
-              <h2
-                class="mt-3 text-4xl font-bold text-slate-900"
-              >
-                {{ statistics?.refunded  || "UNKNOWN" }}
-              </h2>
-
-            </div>
-
-            <div
-              class="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100"
-            >
-
-              <Icon
-                name="heroicons:arrow-uturn-left"
-                class="h-7 w-7 text-red-600"
-              />
-
-            </div>
-
-          </div>
-
-          <p
-            class="mt-6 text-sm text-slate-500"
-          >
-            Refunded payments
-          </p>
-
-        </div>
-
-      </div>
-
-      <!-- ========================================================= -->
-      <!-- Filters -->
-      <!-- ========================================================= -->
-
-      <div
-        class="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-      >
-
-        <div
-          class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between"
-        >
-
-          <!-- Search -->
-
-          <div
-            class="relative w-full xl:max-w-lg"
-          >
-
-            <Icon
-              name="heroicons:magnifying-glass"
-              class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
-            />
-
-            <input
-              v-model="search"
-              type="text"
-              placeholder="Search by property, reference or seller..."
-              class="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 outline-none transition focus:border-primary focus:bg-white"
-            >
-
-          </div>
-
-          <!-- Filters -->
-
-          <div
-            class="flex flex-wrap items-center gap-3"
-          >
-
-            <select
-              v-model="status"
-              class="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-primary"
-            >
-
-              <option value="">
-                All Status
-              </option>
-
-              <option value="COMPLETED">
-                Completed
-              </option>
-
-              <option value="PENDING">
-                Pending
-              </option>
-
-              <option value="FAILED">
-                Failed
-              </option>
-
-              <option value="REFUNDED">
-                Refunded
-              </option>
-
-            </select>
-
-            <select
-              v-model="category"
-              class="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-primary"
-            >
-
-              <option value="">
-                All Categories
-              </option>
-
-              <option value="ESCROW_DEPOSIT">
-                Escrow Deposit
-              </option>
-
-              <option value="ESCROW_RELEASE">
-                Escrow Release
-              </option>
-
-              <option value="ESCROW_REFUND">
-                Escrow Refund
-              </option>
-
-              <option value="PROPERTY_PAYMENT">
-                Property Payment
-              </option>
-
-              <option value="WALLET_FUNDING">
-                Wallet Funding
-              </option>
-
-              <option value="WITHDRAWAL">
-                Withdrawal
-              </option>
-
-            </select>
-
-            <select
-              v-model="sort"
-              class="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-primary"
-            >
-
-              <option value="-createdAt">
-                Newest First
-              </option>
-
-              <option value="createdAt">
-                Oldest First
-              </option>
-
-              <option value="-amount">
-                Highest Amount
-              </option>
-
-              <option value="amount">
-                Lowest Amount
-              </option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-        <!-- Quick Filters -->
-
-        <div
-          class="mt-6 flex flex-wrap gap-3"
-        >
-
-          <button
-            class="rounded-full bg-primary px-5 py-2 text-sm font-medium text-white"
-          >
-            All
-          </button>
-
-          <button
-            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-          >
-            Money In
-          </button>
-
-          <button
-            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-          >
-            Money Out
-          </button>
-
-          <button
-            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-          >
-            Escrow
-          </button>
-
-          <button
-            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-          >
-            Refund
-          </button>
-
-          <button
-            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-          >
-            Wallet
-          </button>
-
-        </div>
-
-      </div>
-
-      <!-- ========================================================= -->
-      <!-- Transactions -->
-      <!-- ========================================================= -->
-
-      <div
-        class="mt-10"
-      >
-
-        <div
-          class="mb-6 flex items-center justify-between"
-        >
-
-          <h2
-            class="text-xl font-bold text-slate-900"
-          >
-            Recent Transactions
-          </h2>
-
-          <span
-            class="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600"
-          >
-            {{ transaction?.length  || "UNKNOWN" }} Transactions
-          </span>
-
-        </div>
-
-        <div
-          class="space-y-6"
-        >
-
-          <!-- Transaction Card Starts Here -->
-cxm'd;klmcs'dvkmsdnasdklfn'sdkl'
-          <div
-            v-for="transaction in orders"
-            :key="transaction._id"
-          >
-
-          <!-- ===========================================================
-PART 1B
-Transaction Cards + Action Menu + Pagination + Loading + Empty
-=========================================================== -->
-
-<!-- ===========================
-Loading
-=========================== -->
-dfg'sjdfpogqjd;foasdjfka/ljdsfklansdklafnl dsfsdmfkd/fnsdkf/sdnfs,k
-<div
-  v-if="pending"
-  class="space-y-5 mt-8"
->
-  <div
-    v-for="i in 6"
-    :key="i"
-    class="animate-pulse rounded-3xl border bg-white p-6"
-  >
-    <div class="flex items-center gap-5">
-
-      <div
-        class="h-14 w-14 rounded-full bg-slate-200"
-      />
-
-      <div class="flex-1">
-
-        <div
-          class="h-5 w-56 rounded bg-slate-200"
-        />
-
-        <div
-          class="mt-3 h-4 w-80 rounded bg-slate-100"
-        />
-
-      </div>
-
-      <div
-        class="h-10 w-24 rounded-xl bg-slate-200"
-      />
-
+      <slot name="headerAction" />
     </div>
 
-  </div>
-</div>
+    <!-- ================= Table ================= -->
 
-<!-- ===========================
-Empty State
-=========================== -->
+    <div class="overflow-x-auto">
 
-<div
-  v-else-if="transactions?.length === 0"
-  class="mt-10 rounded-3xl border bg-white p-16 text-center"
->
+      <div class="min-w-[1100px]">
+            <!-- =========================
+           SUMMARY CARDS
+      ========================== -->
+      <div  
+        class="
+          mb-8
+          grid
+          grid-cols-1
+          gap-4
+          sm:grid-cols-2
+          lg:grid-cols-4
+        "
+      >
+        <!-- Total Transactions -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Total Transactions
+          </p>
 
-  <div
-    class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-slate-100"
-  >
-    <Icon
-      name="heroicons:receipt-refund"
-      class="h-12 w-12 text-slate-400"
-    />
-  </div>
-
-  <h2
-    class="mt-6 text-2xl font-bold text-slate-900"
-  >
-    No Transactions Yet
-  </h2>
-
-  <p
-    class="mx-auto mt-3 max-w-lg text-slate-500 leading-7"
-  >
-    Once you fund your wallet, pay for a property, receive
-    escrow funds, request a refund or withdraw money,
-    every activity will appear here.
-  </p>
-
-</div>
-
-<!-- ===========================
-Transaction List
-=========================== -->
-
-<div
-  v-else
-  class="mt-8 space-y-5"
->
- 
-  <div
-    v-for="transaction in transactions"
-    :key="transaction._id"
-    class="rounded-3xl border bg-white p-6 transition hover:shadow-lg"
-  >
-
-    <!-- =======================
-Top Row
-======================= -->
-
-    <div
-      class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between"
-    >
-
-      <!-- Left -->
-
-      <div class="flex gap-5">
-
-        <!-- Icon -->
-
-        <div
-          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-          :class="iconBackground(transaction)"
-        >
-          <Icon
-            :name="iconName(transaction)"
-            class="h-7 w-7"
-            :class="iconColor(transaction)"
-          />
+          <h3 class="mt-2 text-2xl font-semibold">
+            {{ transactions.length }}
+          </h3>
         </div>
 
-        <!-- Details -->
+        <!-- Completed -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Completed
+          </p>
 
-        <div>
-
-          <div
-            class="flex flex-wrap items-center gap-3"
+          <h3
+            class="
+              mt-2
+              text-2xl
+              font-semibold
+              text-green-600
+            "
           >
+            {{ getTransactionCount('SUCCESS') }}
+          </h3>
+        </div>
 
-            <h2
-              class="text-lg font-bold text-slate-900"
-            >
-              {{ transaction.description }}
-            </h2>
+        <!-- Pending -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Pending
+          </p>
 
-            <span
-              class="rounded-full px-3 py-1 text-xs font-semibold"
-              :class="statusBadge(transaction.status)"
-            >
-              {{ transaction.status }}
-            </span>
+          <h3
+            class="
+              mt-2
+              text-2xl
+              font-semibold
+              text-yellow-600
+            "
+          >
+            {{ getTransactionCount('PENDING') }}
+          </h3>
+        </div>
 
-            <span
-              class="rounded-full px-3 py-1 text-xs font-semibold"
-              :class="typeBadge(transaction.type)"
-            >
-              {{ transaction.type }}
-            </span>
+        <!-- Total Amount -->
+        <div class="rounded-xl border bg-white p-5">
+          <p class="text-sm text-gray-500">
+            Total Amount
+          </p>
 
+          <h3 class="mt-2 text-2xl font-semibold">
+            {{ formatAmount(totalAmount/100) }}
+          </h3>
+        </div>
+      </div>
+
+        <!-- ================= Header Row ================= -->
+
+        <div
+          class="grid grid-cols-12 gap-4 border-b bg-gray-50 px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500"
+        >
+          <div class="col-span-2">
+            Date
           </div>
 
-          <p
-            class="mt-2 text-sm text-slate-500"
-          >
-            {{ transaction.reference }}
-          </p>
+          <div class="col-span-3">
+            Property
+          </div>
 
-          <p
-            class="mt-1 text-sm text-slate-500"
-          >
-            {{ formatDate(transaction.createdAt) }}
-          </p>
+          <div class="col-span-2">
+            Transaction
+          </div>
 
-        </div>
-
-      </div>
-
-      <!-- Amount -->
-
-      <div
-        class="text-right"
-      >
-
-        <div
-          class="text-2xl font-extrabold"
-          :class="transaction.type === 'CREDIT'
-            ? 'text-green-600'
-            : 'text-red-600'"
-        >
-          {{ transaction.type === "CREDIT" ? "+" : "-" }}
-
-          ₦{{ formatMoney(transaction.amount) }}
-
-        </div>
-
-        <div
-          class="mt-2 text-sm text-slate-500"
-        >
-          Balance
-
-          <span class="font-semibold">
-
-            ₦{{ formatMoney(transaction.balanceAfter) }}
-
-          </span>
-
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- =======================
-Middle Grid
-======================= -->
-
-    <div
-      class="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-4"
-    >
-
-      <!-- Category -->
-
-      <div>
-
-        <p
-          class="text-xs uppercase tracking-wide text-slate-400"
-        >
-          Category
-        </p>
-
-        <p
-          class="mt-2 font-semibold capitalize"
-        >
-          {{ niceCategory(transaction.category) }}
-        </p>
-
-      </div>
-
-      <!-- Wallet -->
-
-      <div>
-
-        <p
-          class="text-xs uppercase tracking-wide text-slate-400"
-        >
-          Wallet
-        </p>
-
-        <p
-          class="mt-2 font-semibold"
-        >
-          {{ transaction.wallet?.currency }}
-        </p>
-
-      </div>
-
-      <!-- Previous -->
-
-      <div>
-
-        <p
-          class="text-xs uppercase tracking-wide text-slate-400"
-        >
-          Previous Balance
-        </p>
-
-        <p
-          class="mt-2 font-semibold"
-        >
-          ₦{{ formatMoney(transaction.balanceBefore) }}
-        </p>
-
-      </div>
-
-      <!-- Current -->
-
-      <div>
-
-        <p
-          class="text-xs uppercase tracking-wide text-slate-400"
-        >
-          New Balance
-        </p>
-
-        <p
-          class="mt-2 font-semibold text-primary"
-        >
-          ₦{{ formatMoney(transaction.balanceAfter) }}
-        </p>
-
-      </div>
-
-    </div>
-
-    <!-- =======================
-Metadata
-======================= -->
-
-    <div
-      v-if="transaction.metadata"
-      class="mt-7 rounded-2xl bg-slate-50 p-5"
-    >
-
-      <div
-        class="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-      >
-
-        <div
-          v-if="transaction.metadata.gateway"
-        >
-
-          <p class="text-xs text-slate-400">
-            Gateway
-          </p>
-
-          <p class="mt-1 font-semibold">
-            {{ transaction.metadata.gateway }}
-          </p>
-
-        </div>
-
-        <div
-          v-if="transaction.metadata.channel"
-        >
-
-          <p class="text-xs text-slate-400">
-            Channel
-          </p>
-
-          <p class="mt-1 font-semibold">
-            {{ transaction.metadata.channel }}
-          </p>
-
-        </div>
-
-        <div
-          v-if="transaction.metadata.customerEmail"
-        >
-
-          <p class="text-xs text-slate-400">
+          <div class="col-span-2">
             Customer
-          </p>
+          </div>
 
-          <p class="mt-1 font-semibold">
-            {{ transaction.metadata.customerEmail }}
-          </p>
+          <div class="col-span-1">
+            Amount
+          </div>
 
+          <div class="col-span-1">
+            Status
+          </div>
+
+          <div class="col-span-1 text-right">
+            Action
+          </div>
         </div>
+
+        <!-- ================= Error ================= -->
 
         <div
-          v-if="transaction.metadata.gatewayFee"
+          v-if="error"
+          class="p-10"
         >
+          <NetworkError
+            :error="error"
+            @retry="$emit('retry')"
+          />
+        </div>
 
-          <p class="text-xs text-slate-400">
-            Gateway Fee
+        <!-- ================= Loading ================= -->
+
+        <div
+          v-else-if="pending"
+          class="divide-y"
+        >
+          <div
+            v-for="i in 8"
+            :key="i"
+            class="grid grid-cols-12 gap-4 px-6 py-5 animate-pulse"
+          >
+            <div class="col-span-2">
+              <div class="h-4 w-24 rounded bg-gray-200" />
+            </div>
+
+            <div class="col-span-3 space-y-2">
+              <div class="h-4 w-44 rounded bg-gray-200" />
+              <div class="h-3 w-24 rounded bg-gray-100" />
+            </div>
+
+            <div class="col-span-2">
+              <div class="h-4 w-24 rounded bg-gray-200" />
+            </div>
+
+            <div class="col-span-2">
+              <div class="h-4 w-36 rounded bg-gray-200" />
+              <div class="mt-2 h-3 w-28 rounded bg-gray-100" />
+            </div>
+
+            <div class="col-span-1">
+              <div class="h-4 w-16 rounded bg-gray-200" />
+            </div>
+
+            <div class="col-span-1">
+              <div class="h-6 w-20 rounded-full bg-gray-200" />
+            </div>
+
+            <div class="col-span-1 flex justify-end">
+              <div class="h-8 w-8 rounded-full bg-gray-200" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================= Empty ================= -->
+
+        <div
+          v-else-if="!transactions.length"
+          class="flex flex-col items-center justify-center py-20"
+        >
+          <div
+            class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-4xl"
+          >
+            💳
+          </div>
+
+          <h3 class="mt-6 text-lg font-semibold text-gray-800">
+            No Transactions
+          </h3>
+
+          <p class="mt-2 text-sm text-gray-500">
+            There are no transactions available.
           </p>
+        </div>
 
-          <p class="mt-1 font-semibold">
-            ₦{{ formatMoney(transaction.metadata.gatewayFee) }}
-          </p>
+        <!-- ================= Rows ================= -->
 
+        <div
+          v-else
+          class="divide-y"
+        >
+          <div
+            v-for="transaction in transactions.slice(0, 8)"
+            :key="transaction._id"
+            class="relative grid grid-cols-12 items-center gap-4 px-6 py-5 transition hover:bg-gray-50"
+          >
+
+            <!-- Date -->
+
+            <div class="col-span-2">
+              <p class="text-sm font-medium">
+                {{ formatDate(transaction.createdAt) }}
+                <br> <span class="text-xs text-gray-500">{{ formattime(transaction.createdAt) }} </span>
+              </p>
+            </div>
+
+            <!-- Property -->
+
+            <div class="col-span-3">
+
+              <p
+                class="line-clamp-1 font-semibold text-gray-800"
+              >
+                {{ transaction.property?.title || "-" }}
+              </p>
+
+              <p class="mt-1 text-xs text-gray-400">
+                {{ transaction.property?.location?.city }},  {{ transaction.property?.location?.state }}
+              </p>
+
+            </div>
+
+            <!-- Transaction -->
+
+            <div class="col-span-2">
+
+              <span
+                class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700"
+              >
+                {{ formatTransactionType(transaction.purpose) }}
+              </span>
+
+            </div>
+
+            <!-- Customer -->
+
+            <div class="col-span-2">
+
+              <p class="font-medium">
+                {{ transaction.payer?.firstName }}
+                {{ transaction.payer?.lastName }}
+              </p>
+
+              <p class="mt-1 text-xs text-gray-400">
+                {{ transaction.payer?.phone ||  "UNKNOWN" }}
+              </p>
+
+            </div>
+
+            <!-- Amount -->
+
+            <div class="col-span-1 font-semibold">
+             {{ formatAmount(transaction.paidAmount/100) }}
+            </div>
+
+            <!-- Status -->
+
+            <div class="col-span-1">
+
+              <span
+                class="rounded-full px-3 py-1 text-xs font-semibold"
+                :class="paymentClass(transaction.status)"
+              >
+                {{ transaction.status }}
+              </span>
+
+            </div>
+
+            <!-- Action -->
+
+            <div class="relative col-span-1 flex justify-end">
+
+              <button
+                class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-gray-100"
+                @click.stop="toggleMenu(transaction._id)"
+              >
+                <Icon
+                  name="heroicons:ellipsis-vertical"
+                  class="h-5 w-5"
+                />
+              </button>
+
+              <!-- Dropdown -->
+
+              <Transition
+                enter-active-class="transition duration-150"
+                leave-active-class="transition duration-100"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+              >
+
+                <div
+                  v-if="openMenuId === transaction._id"
+                  class="absolute right-0 top-11 z-50 w-52 overflow-hidden rounded-xl border bg-white shadow-xl"
+                >
+
+                  <button
+                    class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-gray-50"
+                    @click="$emit('viewReceipt', transaction)"
+                  >
+                    <Icon
+                      name="heroicons:document-text"
+                      class="h-5 w-5"
+                    />
+
+                    View Receipt
+                  </button>
+
+                  <button
+                    class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-gray-50"
+                    @click="$emit('downloadInvoice', transaction)"
+                  >
+                    <Icon
+                      name="heroicons:arrow-down-tray"
+                      class="h-5 w-5"
+                    />
+
+                    Download Invoice
+                  </button>
+
+                </div>
+
+              </Transition>
+
+            </div>
+
+          </div>
         </div>
 
       </div>
 
     </div>
-
-    <!-- =======================
-Footer
-======================= -->
-
-    <div
-      class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-5"
-    >
-
-      <div
-        class="flex flex-wrap gap-3"
-      >
-
-        <button
-          class="rounded-xl border px-5 py-3 text-sm font-semibold transition hover:bg-slate-100"
-        >
-          View Details
-        </button>
-
-        <button
-          v-if="transaction.order"
-          class="rounded-xl border px-5 py-3 text-sm font-semibold transition hover:bg-slate-100"
-        >
-          View Order
-        </button>
-
-        <button
-          v-if="transaction.payment"
-          class="rounded-xl border px-5 py-3 text-sm font-semibold transition hover:bg-slate-100"
-        >
-          Payment Receipt
-        </button>
-
-      </div>
-
-      <!-- Dropdown -->
-
-      <Menu
-        as="div"
-        class="relative"
-      >
-
-        <MenuButton
-          class="rounded-xl border px-4 py-3 hover:bg-slate-100"
-        >
-          <Icon
-            name="heroicons:ellipsis-horizontal"
-            class="h-5 w-5"
-          />
-        </MenuButton>
-
-        <transition
-          enter-active-class="transition duration-150"
-          enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100"
-          leave-active-class="transition duration-100"
-          leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-95"
-        >
-
-          <MenuItems
-            class="absolute right-0 z-20 mt-3 w-56 rounded-2xl border bg-white p-2 shadow-xl"
-          >
-
-            <MenuItem v-slot="{ active }">
-
-              <button
-                class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left"
-                :class="active && 'bg-slate-100'"
-              >
-                <Icon
-                  name="heroicons:document-text"
-                  class="h-5 w-5"
-                />
-
-                Receipt
-
-              </button>
-
-            </MenuItem>
-
-            <MenuItem v-slot="{ active }">
-
-              <button
-                class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left"
-                :class="active && 'bg-slate-100'"
-              >
-                <Icon
-                  name="heroicons:arrow-down-tray"
-                  class="h-5 w-5"
-                />
-
-                Download
-
-              </button>
-
-            </MenuItem>
-
-            <MenuItem v-slot="{ active }">
-
-              <button
-                class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left"
-                :class="active && 'bg-slate-100'"
-              >
-                <Icon
-                  name="heroicons:share"
-                  class="h-5 w-5"
-                />
-
-                Share
-
-              </button>
-
-            </MenuItem>
-
-          </MenuItems>
-
-        </transition>
-
-      </Menu>
-
-    </div>
-
+  </ContainerUser>
   </div>
-
-</div>
-
-<!-- ===========================
-Pagination
-=========================== -->
-
-<div
- 
-  class="mt-10 flex flex-col gap-5 rounded-3xl border bg-white p-6 lg:flex-row lg:items-center lg:justify-between"
->
-
-  <p
-    class="text-sm text-slate-500"
-  >
-    Showing
-
-    <span class="font-semibold">
-
-      {{ transactions?.length || "UNKNOWN"  }}
-
-    </span>
-
-    of
-
-    <span class="font-semibold">
-
-      {{ totalTransactions }}
-
-    </span>
-
-    transactions
-  </p>
-
-  <div
-    class="flex items-center gap-3"
-  >
-
-    <button
-      :disabled="page === 1"
-      @click="page--"
-      class="rounded-xl border px-5 py-3 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      Previous
-    </button>
-
-    <div
-      class="rounded-xl bg-slate-100 px-5 py-3 font-semibold"
-    >
-      {{ page }}
-
-      /
-
-      {{ totalPages }}
-    </div>
-
-    <button
-      :disabled="page >= totalPages"
-      @click="page++"
-      class="rounded-xl border px-5 py-3 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      Next
-    </button>
-
-  </div>
-
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue"
-import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue"
 
-const router = useRouter()
 
-/* =====================================
-STATE
-===================================== */
-
-const page = ref(1)
-const limit = ref(20)
-
-const search = ref("")
-const status = ref("")
-const category = ref("")
-const sort = ref("-createdAt")
-
-/* =====================================
-QUERY
-===================================== */
-
-const query = computed(() => ({
-  page: page.value,
-  limit: limit.value,
-  search: search.value || undefined,
-  status: status.value || undefined,
-  category: category.value || undefined,
-  sort: sort.value
-}))
-
-/* =====================================
-FETCH
-===================================== */
+const openMenuId = ref(null)
+ definePageMeta({
+   layout: 'auth',
+   access: 'seller',
+    isPrivateRoute : true
+   })
+/*
+|--------------------------------------------------------------------------
+| Fetch Transactions
+|--------------------------------------------------------------------------
+*/
+console.log('fff');
 
 const {
   data,
   pending,
   error,
   refresh
-} = await useApiFetch("/transactions", {
-  query
-})
+} = await useAsyncData(
 
-watch(
-  [page, search, status, category, sort],
-  () => refresh()
+  () => `transaction`,
+
+  async () => {
+
+    
+
+const response =await useApiFetch("/payment")
+   
+   console.log(response);
+   
+    
+    return response.data.data || []
+
+  },
+
+
+
 )
 
-/* =====================================
-TRANSACTIONS
-===================================== */
+/*
+|--------------------------------------------------------------------------
+| Computed
+|--------------------------------------------------------------------------
+*/
 
 const transactions = computed(() => {
-  return Array.isArray(data.value)
-    ? data.value
-    : []
+  return data.value || []
 })
 
-/* =====================================
-STATS
-===================================== */
+/*
+|--------------------------------------------------------------------------
+| Dropdown
+|--------------------------------------------------------------------------
+*/
 
-const statistics = computed(() => ({
-  total: transactions.value.length,
-  completed: transactions.value.filter(
-    t => t.status === "SUCCESS"
-  ).length,
-  refunded: transactions.value.filter(
-    t => t.status === "REFUNDED"
-  ).length,
-  active: transactions.value.filter(
-    t => t.status === "PENDING"
-  ).length
-}))
+const toggleMenu = (id) => {
 
-/* =====================================
-PAGINATION
-===================================== */
+  openMenuId.value =
+    openMenuId.value === id
+      ? null
+      : id
 
-const totalTransactions = computed(
-  () => transactions.value.length
-)
-
-const totalPages = computed(() =>
-  Math.max(
-    1,
-    Math.ceil(
-      totalTransactions.value / limit.value
-    )
-  )
-)
-
-/* =====================================
-FORMATTERS
-===================================== */
-
-const formatMoney = value => {
-  return Number(value || 0).toLocaleString(
-    "en-NG"
-  )
 }
 
-const formatDate = value => {
-  if (!value) return "-"
+const closeMenu = () => {
+  openMenuId.value = null
+}
 
-  return new Date(value).toLocaleString(
+const getTransactionCount=(status)=>{
+
+
+if(status==="all"){
+  return transactions.value.length
+  }
+return transactions.value.filter(item=> item.status===status).length
+
+
+}
+
+onMounted(() => {
+  window.addEventListener("click", closeMenu)
+})
+
+onUnmounted(() => {
+  window.removeEventListener("click", closeMenu)
+})
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const formatAmount = amount => {
+
+  return `₦${Number(amount || 0).toLocaleString("en-NG")}`
+
+}
+
+const formatDate = date => {
+
+  if (!date) return "-"
+
+  return new Date(date).toLocaleDateString(
     "en-NG",
     {
       day: "numeric",
       month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+      year: "numeric"
     }
   )
+
+}
+const totalAmount = computed(()=>{
+
+
+return transactions.value.reduce((total,item)=>{
+return total + Number(item.amount || 0)},0)
+})
+
+
+const formattime = (date) => {
+  if (!date) return "-"
+
+  return new Date(date).toLocaleString("en-NG", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit", // optional
+    hour12: true // false for 24-hour format
+  })
 }
 
-/* =====================================
-BADGES
-===================================== */
+const formatTransactionType = type => {
 
-const statusBadge = status => {
+  const types = {
+    PROPERTY_PAYMENT: "Property Payment",
+    ESCROW: "Escrow Payment",
+    RELEASE: "Money Released",
+    REFUND: "Refund",
+    WITHDRAWAL: "Withdrawal",
+    DEPOSIT: "Deposit"
+  }
+
+  return types[type] || type
+
+}
+
+const paymentClass = status => {
+
   switch (status) {
-    case "SUCCESS":
-      return "bg-green-100 text-green-700"
 
-    case "FAILED":
-      return "bg-red-100 text-red-700"
+    case "SUCCESSFUL":
+      return "bg-green-100 text-green-700"
 
     case "PENDING":
       return "bg-yellow-100 text-yellow-700"
 
-    default:
-      return "bg-slate-100 text-slate-700"
-  }
-}
-
-const typeBadge = purpose => {
-  switch (purpose) {
-    case "PROPERTY_DEPOSIT":
-      return "bg-blue-100 text-blue-700"
-
-    case "WALLET_FUNDING":
-      return "bg-green-100 text-green-700"
-
-    case "WITHDRAWAL":
+    case "FAILED":
       return "bg-red-100 text-red-700"
 
-    default:
-      return "bg-slate-100 text-slate-700"
-  }
-}
+    case "REFUNDED":
+      return "bg-orange-100 text-orange-700"
 
-/* =====================================
-ICONS
-===================================== */
-
-const iconName = transaction => {
-  switch (transaction.purpose) {
-    case "PROPERTY_DEPOSIT":
-      return "heroicons:home"
-
-    case "WALLET_FUNDING":
-      return "heroicons:wallet"
-
-    case "WITHDRAWAL":
-      return "heroicons:arrow-up-circle"
+    case "RELEASED":
+      return "bg-blue-100 text-blue-700"
 
     default:
-      return "heroicons:credit-card"
+      return "bg-gray-100 text-gray-600"
+
   }
+
 }
 
-const iconBackground = transaction => {
-  return transaction.status === "SUCCESS"
-    ? "bg-green-100"
-    : "bg-red-100"
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+
+const viewReceipt = transaction => {
+  console.log("View Receipt", transaction)
 }
 
-const iconColor = transaction => {
-  return transaction.status === "SUCCESS"
-    ? "text-green-700"
-    : "text-red-700"
+const downloadInvoice = transaction => {
+  console.log("Download Invoice", transaction)
 }
-
-const niceCategory = value => {
-  if (!value) return "-"
-
-  return value
-    .replaceAll("_", " ")
-    .toLowerCase()
-}
-
-/* =====================================
-ACTIONS
-===================================== */
-
-const viewDetails = transaction => {
-  router.push(
-    `/user/transactions/${transaction._id}`
-  )
-}
-
-const downloadReceipt = transaction => {
-  router.push(
-    `/user/transactions/${transaction._id}/receipt`
-  )
-}
-
-/* =====================================
-DEBUG
-===================================== */
-
-watchEffect(() => {
-  console.log("Transactions:", transactions.value)
-})
 </script>
