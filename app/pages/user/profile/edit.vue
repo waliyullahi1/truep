@@ -244,37 +244,25 @@
                            <label
                             class="block mb-2 text-sm font-medium text-slate-700"
                           >
+                           Phone Number 
+                          </label>
+                           <ProfileEditText
+                          v-model="user.phone"
+                          placeholder="Enter phone number"
+                        />
+                        </div>
+
+                        <!-- EXPERIENCE -->
+                         <div>
+                           <label
+                            class="block mb-2 text-sm font-medium text-slate-700"
+                          >
                            Whatsapp Number 
                           </label>
                            <ProfileEditText
                           v-model="user.whatsapp_no"
                           placeholder="Enter whatsapp number"
                         />
-                        </div>
-
-                        <!-- EXPERIENCE -->
-                        <div>
-
-                          <label
-                            class="block mb-2 text-sm font-medium text-slate-700"
-                          >
-                            Year of Experience
-                          </label>
-
-                          <ProfileSelectText
-                            v-model="user.yearOfExperience"
-                            placeholder="Select Year of Experience"
-                            :options="[
-                              '0-1 years',
-                              '1-3 years',
-                              '3-5 years',
-                              '5-10 years',
-                              '10+ years'
-                            ]"
-                          />
-
-                          
-
                         </div>
                      </div>
                      

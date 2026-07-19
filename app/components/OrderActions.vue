@@ -42,11 +42,11 @@
 
     </div>
   </div>
-
+<Teleport to="body">
   <!-- Modal -->
   <div
     v-if="showModal"
-    class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50  bg-black/40 flex items-center justify-center p-4"
   >
     <div class="bg-white rounded-lg w-full max-w-md p-5">
 
@@ -85,7 +85,9 @@
       </div>
 
     </div>
+    
   </div>
+  </Teleport>
 </template>
 
 <script setup>

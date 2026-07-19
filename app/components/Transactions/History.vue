@@ -210,12 +210,12 @@
 
         <div
           v-else
-          class="divide-y"
+          class="divide-y "
         >
           <div
             v-for="transaction in transactions.slice(0, 8)"
             :key="transaction._id"
-            class="relative grid grid-cols-12 items-center gap-4 px-6 py-5 transition hover:bg-gray-50"
+            class="relative grid grid-cols-12 z-10 items-center gap-4 px-6 py-5 transition hover:bg-gray-50"
           >
 
             <!-- Date -->

@@ -598,7 +598,7 @@
             </span>
           </button>
       </div>
-      
+      <div class="">
      <OrderActions
           :order="order"
           @cancel="cancelOrder"
@@ -607,7 +607,7 @@
           @cancelRefund="cancelRefundRequest"
         />
                 
-
+      </div>
                
   
   </div>
