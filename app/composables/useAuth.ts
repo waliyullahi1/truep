@@ -5,5 +5,6 @@ export const useAuth = () => useState('auth', () => ({
   authenticated: false,
   checked: false,
   showLoginModal: false,
-  serverError: false
+  serverError: false,
+  csrfToken: null,
 }))

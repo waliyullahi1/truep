@@ -222,7 +222,7 @@ loading.value = false
 
 <template>
 
-<div class="rounded-2xl border bg-white p-6 shadow-sm">
+<div class="rounded-2xl border bg-white sm:p-6  p-2 shadow-sm">
 
     <div class="flex gap-4">
 
@@ -230,14 +230,14 @@ loading.value = false
 
         <div class="flex-1">
 
-            <div class="font-bold flex gap-1 items-center  text-xl">
+            <div class="font-bold flex gap-1 items-center text-sm  sm:text-xl">
              <div  class="sm:w-14 sm:h-14 h-7 w-7 rounded-full flex justify-center items-center" :class="colorClass" >
                     <Icon   :name="current.icon"   class="w-7 h-7"  />
                 </div>
                <span> {{ current?.title }} </span>
             </div>
 
-            <p class="text-slate-600 mt-2 text-[16px] e leading-7 ">
+            <p class="text-slate-600 mt-2 text-sm sm:text-[16px]  leading-6 sm:leading-7 ">
                 {{ current?.description }}
             </p>
         <div  v-if="!isSeller &&  order.escrowStatus === 'REFUND_PENDING'" class=" flex justify-end">

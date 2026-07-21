@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+<div class=" w-full bg-black/30 flex justify-center items-center  top-0 left-0 h-full fixed  ">
+  <div class="bg-white max-w-4xl h-[80%] overflow-auto  rounded-2xl max border shadow-sm o">
 
     <!-- Header -->
     <div class="p-6 border-b">
@@ -311,6 +312,7 @@
     </div>
 
   </div>
+</div>
 </template>
 
 <script setup>
@@ -373,7 +375,7 @@ const realeaseFund = async () =>{
   releasing.value = true
     loading.value = true
     await updateStatus('approveRelease')
-      window.location.reload();
+      // window.location.reload();
       releasing.value = false
     loading.value = false
 }

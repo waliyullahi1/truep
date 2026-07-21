@@ -261,7 +261,7 @@
           <div class="gap-4">
           <p class=" text-gray-500 mb-1  text-sm italic">
           
-          Posted on {{ form.createdAt}}</p>
+          Posted on {{ form.createdAt}} </p>
           
             <ImagesSlides :purpose="form.purpose" :images="form.media.images" />
           </div>
@@ -456,7 +456,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MapPin,House, Toilet,  MapPinned, Share2, MessageSquareText, Home, Bed, Bath, Heart } from 'lucide-vue-next' 
-
+const { timeAgo } = useTimeAgo()
 definePageMeta({
   layout: 'auth',
 })

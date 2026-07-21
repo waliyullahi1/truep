@@ -132,7 +132,7 @@
                   12
                 </p>
               </div>
-
+                <div><ReviewList :userId="data._id"  @stats="handleStats"/></div>
               <!-- Rating -->
               <div class="flex justify-between items-center">
                 <p class="flex text-sm text-gray-600">
@@ -149,7 +149,8 @@
                   class="font-medium text-sm flex gap-1 items-center"
                 >
                   <Star class="w-5 h-5 text-yellow-400" />
-                  0
+                  
+                   {{ sellerStats?.averageRating  || 0}}
                 </p>
               </div>
 
@@ -204,7 +205,7 @@
           </div>
 
           <!-- Earnings -->
-          <div class="bg-white flex justify-between rounded-2xl shadow-sm p-6">
+          <div class="bg-white flex justify-between rounded-sm shadow-sm p-1 sm:p-6">
 
             <p class="text-sm text-gray-500">
               Earned
@@ -217,7 +218,7 @@
 
             <h2
               v-else
-              class="text-xl font-bold mt-1"
+              class="sm:text-xl text-sm font-bold mt-1"
             >
               {{smartMoney(data.balance)}}
             </h2>
@@ -239,11 +240,11 @@
             </div>
 
             <div v-else>
-              <h2 class="text-2xl font-semibold">
+              <h2 class="sm:text-2xl text-xl font-semibold">
                 Welcome back, {{ data.firstName }} 👋
               </h2>
 
-              <p class="text-gray-500 text-sm mt-1">
+              <p class="text-gray-500 text-xs  sm:text-sm mt-1">
                 Here’s what’s happening with your account today.
               </p>
             </div>
@@ -373,17 +374,17 @@
           </div>
 
           <!-- Orders -->
-          <div class="bg-white rounded-2xl shadow-sm p-6">
+          <div class="e rounded-2xl overflow-hidden shadow-sm p-1 sm:p-6">
 
             <div class="flex justify-between items-center mb-4">
 
-              <h4 class="font-semibold">
+              <h4 class="sm:text-sm font-semibold">
                 Recent Orders
               </h4>
 
-              <select class="border rounded-lg px-3 py-1 text-sm">
-                <option>View All</option>
-              </select>
+              <!-- <NuxtLink to="/user/orders" class="border font-semibold rounded-lg px-3 py-1 text-sm">
+               View All
+              </NuxtLink> -->
 
             </div>
 
@@ -396,12 +397,9 @@
               <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
             </div>
 
-            <div
-              v-else
-              class="text-gray-400 text-sm text-center py-8"
-            >
-              No orders yet
-            </div>
+           
+
+             <OrderList v-else/>
 
           </div>
 
@@ -503,6 +501,13 @@ onMounted(() => {
 const openModal = (userId) => {
   selectedUserId.value = userId
   showModal.value = true
+}
+const sellerStats = ref({})
+
+const handleStats = (stats) => {
+  sellerStats.value = stats
+
+  console.log("Stats from child:", stats)
 }
 
 const closeModal = () => {

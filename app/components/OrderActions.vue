@@ -147,6 +147,7 @@ defineExpose({
 
 const updateStatus = async (action, reason) =>{
   try {
+    console.log(action);
     
     
      const data  = await useApiFetch(
@@ -186,7 +187,8 @@ const submitAction = async () => {
       loading.value = false
       return
     }
-
+    console.log('property o');
+    
     const data = await updateStatus(action.value, reason.value)
 
     if (!data?.success) {

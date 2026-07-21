@@ -192,7 +192,7 @@ const progress = item => {
   if (!item.totalAmount) return 0
 
   return Math.round(
-    (item.amountPaid / item.totalAmount) * 100
+    ((item.amountPaid ||  item.escrowAmount ) / item.totalAmount) * 100
   )
 }
 const getLocation = (item) => {
@@ -543,36 +543,36 @@ onBeforeUnmount(() => {
               class="grid grid-cols-12 gap-4 px-4 sm:px-6 py-5 items-center border-b hover:bg-gray-50 transition relative"
             >
              
-            <div class="col-span-1">
-              <img
-                :src="getImage(item)"
-                class="w-14 h-14 object-cover rounded"
-              />
-            </div>
+              <div class="col-span-1">
+                <img
+                  :src="getImage(item)"
+                  class="w-14 h-14 object-cover rounded"
+                />
+              </div>
               <!-- PROPERTY -->
-            <div class="col-span-3">
-              <p class="font-medium text-gray-800 line-clamp-1">
-                <!-- {{ item?.property?.title }} -->
-              </p>
+              <div class="col-span-3">
+                <p class="font-medium text-gray-800 line-clamp-1">
+                  <!-- {{ item?.property?.title }} -->
+                </p>
 
-              <p class="text-xs text-gray-400 mt-1">
-                {{ formatStatus(item?.property?.type) }}
-                for
-                {{ formatStatus(item?.property?.purpose) }}
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ formatStatus(item?.property?.type) }}
+                  for
+                  {{ formatStatus(item?.property?.purpose) }}
 
-                at 📍 {{ getLocation(item?.property) }}
+                  at 📍 {{ getLocation(item?.property) }}
 
-                <br>
+                  <br>
 
-                 {{ smartMoney(item.totalAmount/100|| 0) }}
-                {{ getPriceLabel(item?.property) }}
+                  {{ smartMoney(item.totalAmount/100|| 0) }}
+                  {{ getPriceLabel(item?.property) }}
 
-                <br>
+                  <br>
 
-                Created:
-                {{ formatDate(item.createdAt) }}
-              </p>
-            </div>
+                  Created:
+                  {{ formatDate(item.createdAt) }}
+                </p>
+              </div>
               <!-- ORDER ID -->
               <!-- <div class="col-span-2">
 
@@ -587,23 +587,23 @@ onBeforeUnmount(() => {
               </div> -->
 
               <!-- BUYER -->
-             <div class="col-span-2">
+              <div class="col-span-2">
 
-                <template v-if="type==='in'">
+                  <template v-if="type==='in'">
 
-                    {{ item.buyer.firstName }}
-                    {{ item.buyer.lastName }}
+                      {{ item.buyer.firstName }}
+                      {{ item.buyer.lastName }}
 
-                </template>
+                  </template>
 
-                <template v-else>
+                  <template v-else>
 
-                    {{ item.seller.firstName }}
-                    {{ item.seller.lastName }}
+                      {{ item.seller.firstName }}
+                      {{ item.seller.lastName }}
 
-                </template>
+                  </template>
 
-            </div>
+              </div>
 
               <!-- PROPERTY -->
              
@@ -613,7 +613,7 @@ onBeforeUnmount(() => {
               <div class="col-span-1 text-center">
                  
                 <p class="font-semibold text-green-600">
-                  {{ smartMoney(item.escrowAmount/100 || 0) }}
+                  {{ smartMoney(item.escrowAmount/100 || item.amountPaid || 0) }}
                 </p>
 
               </div>
@@ -639,7 +639,7 @@ onBeforeUnmount(() => {
                     </span>
 
                     <span class="font-medium">
-                      {{ item.progress || 0 }}%
+                      {{ progress(item)  || 0 }}%
                     </span>
 
                   </div>
@@ -648,7 +648,7 @@ onBeforeUnmount(() => {
 
                     <div
                       class="h-full bg-green-500 rounded-full"
-                      :style="{ width: `${item.progress || 0}%` }"
+                      :style="{ width: `${progress(item)  || 0}%` }"
                     />
 
                   </div>

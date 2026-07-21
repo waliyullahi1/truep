@@ -7,6 +7,8 @@
       @skip="handleSkipInspection"
     />
 
+ 
+
       <div
     v-if="showModal"
     class="fixed inset-0 bg-black/40  z-[9999] flex items-center justify-center p-4"

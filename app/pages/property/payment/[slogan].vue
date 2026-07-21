@@ -276,18 +276,42 @@
 
                 </div>
 
-            </div> 
+            </div > 
             <!-- {{order}}
               {{auth?.user?._id }}   {{ property?.userId?._id}}
                 {{auth?.user?._id === property?.userId?._id}} -->
-                
+              <div class="  shadow  bg-white ">
                <PropertyOrderStatus v-if="order"
                   :order="order"
                   :is-seller="isSeller"
               />
+                <div  v-if="isBuyer && ['RELEASE_PENDING', 'RELEASED'].includes(order?.escrowStatus)" class="rounded-md bg-white border border-slate-200 p-4">
+                  <h4 class="font-semibold flex items-center gap-1 text-slate-900">
+                       <Icon
+                      name="heroicons:star-solid"
+                      class="w-5 h-5 text-yellow-500"
+                    /> Help Other Buyers
+                  </h4>
 
+                  <p class="mt-2  text-sm sm:text-[16px]  leading-6 sm:leading-7   text-slate-600">
+                    If the seller provided you with a great experience, please take a moment
+                    to leave a review. Your feedback helps future buyers make informed
+                    decisions and rewards sellers who consistently provide excellent service.
+                  </p>
+
+                  <UiButtonsPrimary @click="showReview=true" class="mt-4">
+                    Leave a Review
+                  </UiButtonsPrimary>
+                </div>
+                   <BuyerReviewModal
+                       v-model:show="showReview"
+                      :order="order"
+                      @close="showReview = false"
+                      @submit="submitReview"
+                  />
+            </div>
                
-            <div v-if="isBuyer && order?.escrowStatus==='FUNDED'">
+            <div v-if="isBuyer && order?.escrowStatus==='FUNDED'" >
                <EscrowCompleted
               v-if="currentProgress === 100"
               :order="order"
@@ -300,13 +324,7 @@
                
             </div>  
            
-                  <AdminEscrow  v-if="auth?.user?.roles?.includes('Admin') && order?.escrowStatus === 'RELEASE_PENDING'"
-                    :order="order"
-                    @close="showReview = false"
-                    @release="releaseFunds"
-                    @reject="rejectRelease"
-                    />
-
+                  
         <!-- ================= Payment ================= -->
 
         <div  v-if="currentProgress !== 100 && auth?.user?._id !== property?.userId?._id"
@@ -410,12 +428,13 @@
           >
          
            <input
-                v-model.number="amount"
-                type="range"
-                :min="0"
-                :max="currentRemainingAmount"
-                step="1"
-                class="w-full accent-indigo-600 h-2"
+              v-model.number="amount"
+              type="range"
+              :min="0"
+              :max="currentRemainingAmount"
+              step="100"
+              class="w-full accent-indigo-600 h-2"
+               
             />
           </div>
         </div>
@@ -544,7 +563,7 @@
           </div>
 
           <!-- Validation -->
-          <div > {{amountInput*100}} {{Math.round(parseFloat(amountInput) * 100)}} {{ convertFromKobo(remainingAmount)}} {{convertFromKobo(paidAfterPayment)}}
+          <div > 
               <div
                 v-if="amountInput >  Math.round(convertFromKobo(remainingAmount))"
                 class="mt-6 rounded-xl bg-red-50 border border-red-200 p-4 text-red-600"
@@ -599,7 +618,7 @@
           </button>
       </div>
       <div class="">
-     <OrderActions
+     <OrderActions v-if="auth?.user?._id !== property?.userId?._id"
           :order="order"
           @cancel="cancelOrder"
           @requestRefund="requestRefund"
@@ -627,7 +646,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const loading = ref(true)
 const plots = ref(1)
-
+const showReview = ref(false)
  definePageMeta({
    layout: 'auth',
     isPrivateRoute : true
@@ -751,14 +770,31 @@ const isBuyer = computed(() => {
   return auth?.value?.user?._id !== property?.value?.userId?._id;
 });
 const onAmountInput = (event) => {
-  // Keep only digits
-  const cleaned = event.target.value.replace(/\D/g, "");
+  const cleaned = event.target.value.replace(/\D/g, "")
 
-  amountInput.value = cleaned ? Number(cleaned) : 0;
+  const nairaValue = cleaned ? Number(cleaned) : 0
 
-  // Update the input immediately
-  event.target.value = cleaned;
-};
+  amountInput.value = nairaValue
+
+  // Convert Naira → Kobo
+  amount.value = nairaValue * 100
+
+  event.target.value = cleaned
+
+  // Remove percentage selection if it doesn't match
+  const remainingNaira = convertFromKobo(
+    currentRemainingAmount.value
+  )
+
+  const matchedPercentage = percentages.find(
+    percent =>
+      nairaValue === Math.round(
+        remainingNaira * percent / 100
+      )
+  )
+
+  selectedPercentage.value = matchedPercentage || null
+}
 const getPriceLabel = (item) => {
 
   const pricing = item?.pricing || {}
@@ -928,6 +964,21 @@ watch(selectedPlots, (value) => {
 
 })
 
+watch(amount, (newValue) => {
+  amountInput.value = Math.round(Number(newValue || 0) / 100)
+
+  // Clear percentage selection if manually changed
+  const currentAmount = amountInput.value
+  const remaining = convertFromKobo(currentRemainingAmount.value)
+
+  const matchedPercentage = percentages.find(
+    percent =>
+      currentAmount === Math.round(remaining * percent / 100)
+  )
+
+  selectedPercentage.value = matchedPercentage || null
+})
+
 // const calculatedTotalPrice = computed(() => {
 
 //     // Existing order
@@ -952,52 +1003,23 @@ watch(selectedPlots, (value) => {
 | Percentage Button
 |--------------------------------------------------------------------------
 */
-
 const selectPercentage = (percent) => {
   selectedPercentage.value = percent
 
-  amount.value = Math.round(
-    currentRemainingAmount.value * percent / 100
+  // currentRemainingAmount is in Kobo
+  // amountInput is in Naira
+  amountInput.value = Math.round(
+    (currentRemainingAmount.value * percent) / 100 / 100
   )
+
+  // Keep slider in sync
+  amount.value = amountInput.value * 100
 }
 /*
 |--------------------------------------------------------------------------
 | Validate Amount
 |--------------------------------------------------------------------------
-*/
-// watch(amount, (value) => {
 
-//   value = Number(value)
-
-//   if (isNaN(value)) value = 0
-
-//   if (value < 0) value = 0
-
-//   const max = currentRemainingAmount.value
-
-//   if (value > max)
-//     value = max
-
-//   amount.value = value
-
-//   const match = percentages.find(percent =>
-//     Math.round(
-//       currentRemainingAmount.value * percent / 100
-//     ) === value
-//   )
-
-//   selectedPercentage.value = match || null
-
-// })
-// })
-
-watch(amountInput, value => {
-    amount.value = Math.round(Number(value || 0) * 100)
-})
-
-watch(amount, value => {
-  amountInput.value = Math.round(value / 100)
-})
 
 /*
 |--------------------------------------------------------------------------

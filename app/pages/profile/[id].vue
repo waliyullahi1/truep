@@ -23,7 +23,8 @@ const { data, pending, error, refresh } = await useAsyncData(
       if (!res?.success) {
         throw new Error(res?.message || 'Failed')
       }
-
+  console.log(res,'res');
+  
       return res?.data?.data || {}
     } catch (err) {
       throw err
@@ -140,6 +141,15 @@ const profileDescription = computed(() => {
     `View ${data.value?.name || 'this agent'} profile, listings and contact details.`
   )
 })
+
+
+const sellerStats = ref({})
+
+const handleStats = (stats) => {
+  sellerStats.value = stats
+
+  console.log("Stats from child:", stats)
+}
 
 /* =============================
    OPEN GRAPH / WHATSAPP
@@ -321,15 +331,24 @@ watch(() => route.params.id, () => refresh())
         </div>
 
         <div class="border rounded-lg p-6 text-center">
-          <h2 class="text-2xl font-bold">
-            {{ agent?.rating || 0 }}
-          </h2>
-          <p class="text-sm text-gray-500">Rating</p>
+        <p class="text-3xl font-bold text-yellow-500"> {{sellerStats?.averageRating || 0}}</p>
+        <div class="flex justify-center mt-1">
+          <Icon
+            v-for="i in sellerStats?.averageRating"
+            :key="i"
+            name="heroicons:star-solid"
+            class="w-4 h-4 text-yellow-400"
+          />
+        </div>
+          
+          <p class="text-sm text-gray-500">  Average Rating</p>
         </div>
 
         <div class="border rounded-lg p-6 text-center">
+
+        
           <h2 class="text-2xl font-bold">
-            {{ agent?.reviews || 0 }}
+             {{ sellerStats?.totalReviews  || 0}}
           </h2>
           <p class="text-sm text-gray-500">Reviews</p>
         </div>
@@ -361,25 +380,20 @@ watch(() => route.params.id, () => refresh())
       </div>
 
       <!-- CONTENT -->
-      <div class="border rounded-lg sm:p-10 p-4 mt-4 text-center">
+      <div class="border rounded-lg  sm:p-8 p-1 mt-4 text-center">
 
-        <div v-if="activeTab === 'reviews'">
-          <div class="flex flex-col items-center text-gray-500">
-            <div class="text-4xl mb-3">💬</div>
-            <p class="font-medium">No reviews yet</p>
-            <p class="text-sm">Be the first to review this agent.</p>
+        <div v-show="activeTab === 'reviews'">
+        <ReviewList  @stats="handleStats"/>
+         <!-- <Reviews/> -->
 
-            <NuxtLink to="/auth?type=register-page" class="mt-4 bg-green-600 text-white px-4 py-2 rounded">
-              Write a Review
-            </NuxtLink>
-          </div>
+         
         </div>
 
-        <div v-if="activeTab === 'about'" class="text-left">
+        <div v-show="activeTab === 'about'" class="text-left">
           <AgentInfoCard :agent="agent" />
         </div>
 
-        <div v-if="activeTab === 'properties'">
+        <div v-show="activeTab === 'properties'">
           <p v-if="!agent?.properties?.length" class="text-gray-500">
             No properties uploaded yet.
           </p>

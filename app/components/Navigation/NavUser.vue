@@ -310,6 +310,13 @@
           Post Property
         </NuxtLink>
 
+        <NuxtLink
+          to="/user/list/orders"
+          class="menu-link"
+        >
+         Orders
+        </NuxtLink>
+
         
 
         <NuxtLink

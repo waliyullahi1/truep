@@ -295,7 +295,7 @@ const who_is_this_for = ref([
   { 
     image: 'earth.svg',
     title: 'Global Reach',
-    description: 'Discover your next home, anywhere in the world. With Rentola, you gain access to a truly global selection, spanning 36 countries and featuring over 1 million properties. We make finding your next home simple, no matter where you are.'
+    description: 'Discover your next home, anywhere in the world. With Rentola, you gain access to a truly global selection, spanning 36 State and featuring over 1 million properties. We make finding your next home simple, no matter where you are.'
   }
 ])
 
