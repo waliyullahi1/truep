@@ -158,7 +158,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
-
+definePageMeta({
+  layout: 'admin',
+  adminOnly: true
+})
 // definePageMeta({
 //   layout: "admin",
 //   adminOnly: true,

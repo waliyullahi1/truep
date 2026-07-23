@@ -36,7 +36,9 @@ const sidebarLinks = [
   { name: 'Users', to: '/admin/users', icon: 'solar:users-group-rounded-bold' },
   { name: 'Properties', to: '/admin/properties', icon: 'solar:buildings-2-bold' },
   { name: 'Reports', to: '/admin/reports', icon: 'solar:chart-bold' },
-  { name: 'Settings', to: '/admin/settings', icon: 'solar:settings-bold' }
+  { name: 'Account verifications', to: '/admin/verify-acc', icon: 'solar:verified-check-bold' },
+  { name: 'Settings', to: '/admin/settings', icon: 'solar:settings-bold' },
+  { name: 'Orders', to: '/admin/order', icon: 'solar:solar:bag-check-bold' }
 ]
 </script>
 
