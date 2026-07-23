@@ -113,7 +113,9 @@ onClickOutside(searchWrapper, () => {
             class="w-full rounded-md px-4 py-2  sm:py-4  -sm border border-gray-200 outline-none focus:ring-2 focus:ring-primary"
             />
             <div class=" h-full   bg-gray-950   w-14   absolute  right-0 ">
-             <Icon name="lucide:search" class="    h-full font-semibold  text-white  text-2xl" />
+            <NuxtLink to="/search"> 
+            <Icon name="lucide:search" class="    h-full font-semibold  text-white  text-2xl" />  
+            </NuxtLink>
             </div>
            
     </div>
@@ -134,7 +136,7 @@ onClickOutside(searchWrapper, () => {
 
         <NuxtLink
           v-for="item in searchResults"
-          :key="item._id"
+          :key="item.slug"
           :to="`/property/${item.slug || item._id}`"
           class="flex sm:gap-4 gap-1 sm:p-4 p-1 hover:bg-gray-50 transition border-b border-gray-100 last:border-none"
           @click="closeSuggestions"

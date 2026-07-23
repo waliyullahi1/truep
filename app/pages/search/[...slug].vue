@@ -402,7 +402,9 @@ const stateOptions = computed(()=>
 
 )
 
-
+const searchProperty = () => {
+  search.value = search.value.trim()
+}
 
 const selectSchool = ()=>{
 
@@ -690,135 +692,195 @@ watchEffect(()=>{
 /* =================================
    FILTER RESULTS
 ================================= */
-
-
-const filteredResults = computed(()=>
-
-
-results.value.filter(item=>{
-
-
- const itemState =
- normalize(item.location?.state)
-
-
-
- const itemCity =
- normalize(item.location?.city)
-
-
-
- /*
-  NEW HOSTEL SCHOOL FILTER
-
-  database:
-
-  hostelDetails:{
-     school:{
-        abbreviation:"OAU"
-     }
-  }
-
- */
-
- const itemSchool =
-
- normalize(
- item.hostelDetails?.school?.abbreviation
- )
-
-
-
-
-
- return (
-
-
-
- (!search.value ||
-
- `${item.title}`
- .toLowerCase()
- .includes(
- search.value.toLowerCase()
- )
-
- )
-
-
-
- &&
-
-
-
- (!selectedState.value ||
-
- itemState ===
- normalize(selectedState.value)
-
- )
-
-
-
- &&
-
-
-
- (!selectedCity.value ||
-
- itemCity ===
- normalize(selectedCity.value)
-
- )
-
-
-
- &&
-
-
-
- (!selectedFilter.value.type ||
-
- item.type ===
- selectedFilter.value.type
-
- )
-
-
-
- &&
-
-
-
- (!selectedFilter.value.category ||
-
- item.category ===
- selectedFilter.value.category
-
- )
-
-
-
- &&
-
-
-
- (!selectedSchool.value ||
-
- itemSchool ===
- normalize(selectedSchool.value)
-
- )
-
-
-
- )
-
-
-
+const filteredResults = computed(() => {
+  const keyword = normalize(search.value)
+
+  return results.value.filter(item => {
+    const itemState = normalize(item.location?.state)
+    const itemCity = normalize(item.location?.city)
+
+    const itemSchool = normalize(
+      item.hostelDetails?.school?.abbreviation
+    )
+
+    // Search across the property
+    const searchableText = normalize([
+      item.title,
+      item.description,
+      item.type,
+      item.category,
+      item.purpose,
+
+      item.location?.state,
+      item.location?.city,
+      item.location?.address,
+
+      item.hostelDetails?.school?.name,
+      item.hostelDetails?.school?.abbreviation,
+
+      item.user?.name,
+      item.user?.email,
+    ].filter(Boolean).join(' '))
+
+    const matchesSearch =
+      !keyword ||
+      searchableText.includes(keyword)
+
+    return (
+      matchesSearch &&
+
+      (!selectedState.value ||
+        itemState === normalize(selectedState.value)
+      ) &&
+
+      (!selectedCity.value ||
+        itemCity === normalize(selectedCity.value)
+      ) &&
+
+      (!selectedFilter.value.type ||
+        normalize(item.type) ===
+        normalize(selectedFilter.value.type)
+      ) &&
+
+      (!selectedFilter.value.category ||
+        normalize(item.category) ===
+        normalize(selectedFilter.value.category)
+      ) &&
+
+      (!selectedSchool.value ||
+        itemSchool === normalize(selectedSchool.value)
+      )
+    )
+  })
 })
 
-)
+// const filteredResults = computed(()=>
+
+
+// results.value.filter(item=>{
+
+
+//  const itemState =
+//  normalize(item.location?.state)
+
+
+
+//  const itemCity =
+//  normalize(item.location?.city)
+
+
+
+//  /*
+//   NEW HOSTEL SCHOOL FILTER
+
+//   database:
+
+//   hostelDetails:{
+//      school:{
+//         abbreviation:"OAU"
+//      }
+//   }
+
+//  */
+
+//  const itemSchool =
+
+//  normalize(
+//  item.hostelDetails?.school?.abbreviation
+//  )
+
+
+
+
+
+//  return (
+
+
+
+//  (!search.value ||
+
+//  `${item.title}`
+//  .toLowerCase()
+//  .includes(
+//  search.value.toLowerCase()
+//  )
+
+//  )
+
+
+
+//  &&
+
+
+
+//  (!selectedState.value ||
+
+//  itemState ===
+//  normalize(selectedState.value)
+
+//  )
+
+
+
+//  &&
+
+
+
+//  (!selectedCity.value ||
+
+//  itemCity ===
+//  normalize(selectedCity.value)
+
+//  )
+
+
+
+//  &&
+
+
+
+//  (!selectedFilter.value.type ||
+
+//  item.type ===
+//  selectedFilter.value.type
+
+//  )
+
+
+
+//  &&
+
+
+
+//  (!selectedFilter.value.category ||
+
+//  item.category ===
+//  selectedFilter.value.category
+
+//  )
+
+
+
+//  &&
+
+
+
+//  (!selectedSchool.value ||
+
+//  itemSchool ===
+//  normalize(selectedSchool.value)
+
+//  )
+
+
+
+//  )
+
+
+
+// })
+
+// )
 
 
 
@@ -1734,7 +1796,9 @@ const categories=[
                   <img src="@/assets/images/icons/searchb.svg" alt="" class=" w-3 md:w-5" srcset="">
                 </div>
                 <input
-                  v-model="search"
+                 v-model="search"
+                 @input="searchProperty"
+                 
                   placeholder="Search land, houses, agents..."
                   class="flex-1  text-sm font-normal sm:text-md  outline-none text-gray-700"
                 />
