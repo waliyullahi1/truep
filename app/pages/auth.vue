@@ -277,8 +277,8 @@ watch(
     </div>
    
     <div class=" w-full min-h-screen    pb-6 l   bg-black/80 ">
-        
-    
+         
+      
       <div class="  h-full flex justify-end ">
       <div v-if="!isregisterpage" class=" sm:max-w-xl  w-full px3  min-h-screen  bg-white rounded-sm shadow-lg p-2 sm:p-8">
         <NavigationBackArrow/>

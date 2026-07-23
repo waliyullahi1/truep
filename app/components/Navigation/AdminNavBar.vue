@@ -521,6 +521,17 @@ const sidebarLinks = [
     to: '/admin/properties',
     icon: 'solar:buildings-2-bold'
   },
+
+    {
+    name: 'orders',
+    to: '/admin/order',
+    icon: 'solar:buildings-2-bold'
+  },
+      {
+    name: 'Accounts',
+    to: '/admin/verify-acc',
+    icon: 'solar:buildings-2-bold'
+  },
   {
     name: 'Reports',
     to: '/admin/reports',

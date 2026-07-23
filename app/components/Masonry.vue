@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4">
+  <div class="sm:p-4 p-0">
     
     <div class="grid">
       <button @click="router.push('/search')"

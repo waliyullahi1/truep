@@ -6,7 +6,7 @@
 
 
 <!-- HERO SECTION -->
-<section class="relative min-h-[90vh] overflow-hidden">
+<section class="relative min-h-[90vh] overflow-visible -">
 
   <!-- Background -->
   <div
@@ -19,7 +19,7 @@
   <Container class="relative z-10">
 
     <div
-      class="min-h-[90vh] flex flex-col justify-center items-center text-center"
+      class="min-h-[90vh] overflow-visible flex flex-col justify-center items-center text-center"
     >
 
       <span
@@ -34,32 +34,20 @@
         Find Your Dream Property
         Across Nigeria
       </h1>
-
+      <div class=" w-full relative z-100">
+      
+      </div>
+    
       <p
         class="sm:mt-6 mt-3 text-white/90 text-lg max-w-2xl"
       >
         Discover verified properties, connect with trusted agents,
         and buy, rent, or sell with confidence.
       </p>
-
+          
       <!-- Search -->
-      <div
-        class="bg-white sm:mt-6 mt-3 rounded-lg shadow-2xl p-1 sm:p-3 flex  gap-3 w-full max-w-5xl"
-      >
-        <input
-          v-model="search"
-          placeholder="Search property, location, agent..."
-          class=" w-full  px-4 sm:py-3 py-1 outline-none"
-        />
-
-        <button
-          @click="router.push('/search')"
-          class="bg-primary flex justify-center items-center sm:px-8 px-4 sm:py-3 py-1 rounded-lg text-white font-semibold"
-        >
-        <Icon name="lucide:search"  class="text-white flex sm:hidden text-xl"/>
-         <span  class=" hidden sm:flex"> Search</span> 
-        </button>
-      </div>
+      <Search/>
+      
 
       <!-- Stats -->
       <div
@@ -91,7 +79,7 @@
 
 
 
-<section class="sm:py-20 py-10 bg-gradient-to-b from-white to-slate-50">
+<section class="sm:py-20  py-10 bg-gradient-to-b from-white to-slate-50">
   <Container>
     <!-- Heading -->
     <div class="text-center max-w-3xl mx-auto">
@@ -119,7 +107,7 @@
 
       <!-- Card -->
       <div
-        class="group relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+        class="group relative hioverflow-dden rounded-3xl bg-white border border-slate-200 p-7 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
       >
         <div
           class="absolute top-0 right-0 h-24 w-24 rounded-full bg-green-100 blur-2xl opacity-70"
@@ -368,7 +356,7 @@
 
           </div>
           
-            <UiTypographyP class="w-1/2 mt-2  ">
+            <UiTypographyP class="sm:w-1/2 mt-2   w-full">
                Discover properties in Nigeria's most sought-after locations
           </UiTypographyP> 
           <div>
@@ -478,7 +466,7 @@
         Join Our WhatsApp Community
       </h2>
 
-      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+      <p class="text-gray-600 sm:text-lg text-sm  mb-8 max-w-2xl mx-auto">
         Get instant property updates, new listings, investment opportunities,
         hostel vacancies, and exclusive deals directly on WhatsApp.
       </p>
